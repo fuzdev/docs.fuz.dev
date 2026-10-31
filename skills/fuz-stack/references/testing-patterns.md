@@ -256,10 +256,10 @@ export const task: Task = {
 };
 ```
 
-Run one feature: `gro src/test/fixtures/mdz/update`. A parent
+Run one feature: `gro task src/test/fixtures/mdz/update.task.ts`. A parent
 `src/test/fixtures/update.task.ts` can fan out via `invoke_task` —
-svelte-docinfo's runs `tsdoc`/`ts`/`svelte` by path name
-(`'src/test/fixtures/ts/update'`), which type-check through its
+svelte-docinfo's runs `tsdoc`/`ts`/`svelte` by task path, suffix included
+(`'src/test/fixtures/ts/update.task.ts'`), which type-check through its
 `src/gro_tasks.gen.ts` task registry (./task-patterns.md); its `svelte` child goes through
 the shared `runUpdateTask` with a `processAll` hook
 (`analyzeSvelteFixtureModules`), building one shared TS program across

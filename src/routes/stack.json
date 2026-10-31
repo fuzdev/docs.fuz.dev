@@ -6,14 +6,14 @@
 		"svelte": "5.57.2",
 		"sveltekit": "3.0.1",
 		"typescript": "6.0.3",
-		"gro": "0.223.0",
+		"gro": "0.224.0",
 		"vitest": "5.0.3"
 	},
 	"libraries": [
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_util",
-			"version": "0.79.0",
+			"version": "0.79.1",
 			"path": "fuz_util",
 			"description": "utility belt for JS",
 			"glyph": "🦕",
@@ -40,15 +40,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/gro",
-			"version": "0.223.0",
+			"version": "0.224.0",
 			"path": "gro",
 			"description": "task runner and toolkit extending SvelteKit",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
-			"module_count": 84,
-			"exported_module_count": 61,
-			"export_count": 372,
+			"module_count": 80,
+			"exported_module_count": 58,
+			"export_count": 386,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",

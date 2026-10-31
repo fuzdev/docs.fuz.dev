@@ -148,7 +148,8 @@ hides it from docs and tomes, so it's wrong when external consumers use it.
 - TypeScript strict mode, explicit types; Svelte 5 runes; tsv formatting with
   tabs, 100 char width
 - **Import extensions**: the real source extension — `./bar.ts`,
-  `./Foo.svelte`, never `.js`-for-a-`.ts`-file. Library code (`src/lib`)
+  `./Foo.svelte`, never `.js`-for-a-`.ts`-file — gro's loader resolves exactly
+  the named file, no extension probing. Library code (`src/lib`)
   imports relative; everything else (`src/routes`, `src/test`) uses the
   `#lib/*` / `#routes/*` package.json subpath imports (`#lib/db/db.ts`).
   Cross-package `@fuzdev/pkg/foo.ts` resolves via the package's `exports`
@@ -175,13 +176,17 @@ gro deploy       # build + force push to deploy branch
 gro release      # publish + deploy
 gro changeset    # create a changeset
 gro sync         # gen + update exports
-gro run file.ts  # execute TS
+gro run file.ts  # execute TS; everything after the path goes to the script
+gro task         # list project tasks under src/
+gro task src/lib/foo.task.ts  # run a project task by path
 ```
 
 `SKIP_EXAMPLE_TESTS=1 gro test` skips slow example tests in repos that
-support the flag. Tasks are overridable: local `src/lib/foo.task.ts` overrides
-the builtin; call the builtin with `gro gro/foo`. Custom tasks:
-./references/task-patterns.md.
+support the flag. A name means only a builtin; a project task runs by path,
+`.task.ts` suffix required — nothing is searched, and a project task never
+shadows a builtin. To extend a builtin, write a task that invokes it by name
+(composition, not an override) and point the `package.json` script at it.
+Custom tasks: ./references/task-patterns.md.
 
 ## Code Generation
 
@@ -375,7 +380,7 @@ levels), `test()` not `it()`. Split suites by aspect:
 `{module}.{aspect}.test.ts`; DB tests use `.db.test.ts` to share one WASM database
 instance via vitest `projects`. Parsers/transformers use fixtures under
 `src/test/fixtures/<feature>/<case>/` — **never hand-edit `expected.json`**;
-regenerate via `gro src/test/fixtures/<feature>/update`. See
+regenerate via `gro task src/test/fixtures/<feature>/update.task.ts`. See
 ./references/testing-patterns.md.
 
 ## TODOs

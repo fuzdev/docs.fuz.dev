@@ -79,7 +79,11 @@ index. For a published package's module, the import specifier
 
 Imports use the real source extension (`.ts` / `.svelte.ts` / `.svelte`),
 never `.js`-for-a-`.ts`-file, and pick the alias by **whether the module
-ships**:
+ships**. Gro's loader and server builds enforce the extension: a relative or
+absolute import resolves to exactly the file it names, with no extension
+probing and no `.js`→`.ts` mapping (`./foo.ts`, not `./foo` or `./foo.js` — a
+`.js` specifier loads the `.js` file), and a `#lib/x.js` naming a `.ts` file
+is refused with the fix. Aliases:
 
 - **`src/lib` (ships as `dist`) → relative only** (`./sibling.ts`). The build
   rewrites `.ts`→`.js` into `dist` (svelte-package 3 also rewrites `#` imports

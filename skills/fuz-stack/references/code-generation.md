@@ -1,5 +1,5 @@
 ---
-description: Gro gen system — .gen.* files, dependencies, output formats
+description: Gro gen system — .gen.* files, inputs, output formats
 ---
 
 # Code Generation
@@ -22,7 +22,7 @@ the output name can't equal the gen name.
 ## The `gen` Export
 
 A gen file exports `gen`: a function from `GenContext` to `RawGenResult` (or a
-promise of one), or a `{generate, dependencies?}` config object. Types come from
+promise of one), or a `{generate, inputs?}` config object. Types come from
 `@fuzdev/gro/gen.ts` (`Gen`, `GenContext` also re-exported from `@fuzdev/gro`).
 
 ```typescript
@@ -71,9 +71,7 @@ ${banner}
 
 **`GenContext`**: `origin_id` (absolute path), `origin_path` (project-relative;
 use it in generated-by banners), `config` (`GroConfig`), `svelte_config` (lazy
-promise), `filer` (filesystem tracker — reading source files), `log`,
-`timings`, `invoke_task`, and `changed_file_id` (set only during dependency
-resolution).
+promise), `log`, `timings`, and `invoke_task`.
 
 **`RawGenResult`** = `string | RawGenFile | null | Array<RawGenResult>`:
 
@@ -85,24 +83,30 @@ resolution).
 - array (nested arrays flatten) — many files from one gen; duplicate output
   IDs within one gen file are invalid
 
-## Dependencies
+## Inputs
 
-Without `dependencies`, a gen re-runs in watch mode only when the gen file or
-its imports change (tracked by filer). Use the config form for broader
-triggers:
+Without `inputs`, a gen re-runs in `gro dev` only when the gen file or a
+module it imports changes. Declare the other files it reads as static
+`inputs` — plain data the gen plugin reads from the `gen` export, no
+functions:
 
 ```typescript
 export const gen: Gen = {
 	generate: ({ origin_path }) => { /* ... */ },
-	dependencies: { patterns: [/\.svelte$/, /\.ts$/], files: ['src/lib/theme_highlight.css'] }
+	inputs: { patterns: ['*.svelte', '/src/data/'], files: ['src/lib/theme_highlight.css'] }
 };
 ```
 
-`dependencies` is `'all'` (any change — for gens over the whole source tree,
-e.g. fuz_css's `css_classes_fixture.gen.json.ts` → `css_classes_fixture.json`
-snapshot of its class definitions), a `{patterns, files}` config (`patterns`
-test absolute paths; `files` may be relative), or a resolver
-`(ctx) => config | 'all' | null` that reads `ctx.changed_file_id`.
+`inputs` is `'all'` (any change — for gens over the whole source tree, e.g.
+fuz_css's `css_classes_fixture.gen.json.ts` → `css_classes_fixture.json`
+snapshot of its class definitions) or `{files, patterns}`. `patterns` are
+gitignore strings anchored at the project root like a root `.gitignore`
+(`*.json` at any depth, `/package.json` only at the root, `src/data/` a
+directory, `!` to exclude, no `./` prefix), matching only files inside the
+root; `files` are exact paths, root-relative or absolute. Only changes under
+`watch.dir` in the gro config (default `src/`) trigger a re-run, deletes never
+do, and `gro dev` reads `inputs` once, so an edit applies on restart.
+`gro gen` and `gro gen --check` always run every gen file.
 
 ## CLI
 

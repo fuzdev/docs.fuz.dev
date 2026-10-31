@@ -117,5 +117,5 @@ streaming only when genuinely rendering partial input as it arrives.
 
 Fixture-based (`fixtures/mdz/`, `fixtures/svelte_preprocess_mdz/`) — the
 fixtures are ground truth for what parses; regenerate via
-`gro src/test/fixtures/mdz/update`, never hand-edit `expected.json`
+`gro task src/test/fixtures/mdz/update.task.ts`, never hand-edit `expected.json`
 (./testing-patterns.md §Fixture-Based Testing).

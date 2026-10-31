@@ -17,7 +17,7 @@ export const skills: Array<SkillMeta> = [
 			{
 				slug: 'code-generation',
 				title: 'Code Generation',
-				description: 'Gro gen system — .gen.* files, dependencies, output formats'
+				description: 'Gro gen system — .gen.* files, inputs, output formats'
 			},
 			{
 				slug: 'css-patterns',

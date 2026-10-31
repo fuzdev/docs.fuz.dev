@@ -172,9 +172,12 @@ fn main() -> ExitCode { // never std::process::exit
 ```
 
 `#[source]` chains causes — `Display` shows only the variant's message, the
-chain surfaces via `e.source()` for structured logging. Parsers carry an
-optional `position` on variants so the renderer can draw a caret (tsv's
-`ParseError`). WASM boundary errors: ./wasm-patterns.md.
+chain surfaces via `e.source()` for structured logging. Parser errors carry
+their location so a renderer can draw a caret — tsv's `Error` keeps its
+variants private and exposes accessors instead: `kind()` (a small public
+`ErrorKind` to branch on), `span()` (the byte range, `None` when there is no
+position), and `to_report()` (summary, caret frame, and line/column points
+for a binding to return). WASM boundary errors: ./wasm-patterns.md.
 
 **`.hint()` / `.exit_code()`** live on the binary's top-level error; library
 errors stay thin (a library with exactly one binary consumer may carry them

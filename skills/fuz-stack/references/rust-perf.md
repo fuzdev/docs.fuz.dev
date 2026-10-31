@@ -102,14 +102,16 @@ Beyond generic hygiene:
   without per-fn `#[inline]`. Reserve `#[cold]` + `#[inline(never)]` for rare
   error/panic formatters to keep the hot I-cache dense.
 - **Newtype over a boxed payload — never `Box<Error>` at call sites**: tsv's
-  `ParseError` is `struct ParseError(Box<ParseErrorKind>)` — pointer-sized,
-  enum private, so no signature anywhere mentions a `Box`. The win is
-  `Result` sizing (`Result<T, E>` is sized by `max(T, E)`; the payload enum
-  is 96 B, so an inline error moves 96 bytes through memory on every hot
-  `Ok` path) plus code size (measured −7.0% native `.text`, −16.7% on the
-  parse WASM bundle). Do **not** re-box at a call site
-  (`Result<T, Box<ParseError>>`) — that's a double indirection, measured to
-  buy nothing over the newtype.
+  error is `struct tsv_lang::Error(Box<Payload>)` — pointer-sized (a `const`
+  assert pins it, and the `Box` niche makes `Result<(), Error>` a bare
+  pointer too), the payload private (the variant enum plus a flag), so no
+  signature anywhere mentions a `Box` and callers read only accessors
+  (`kind()` / `span()` / `to_report()`). The win is `Result` sizing
+  (`Result<T, E>` is sized by `max(T, E)`; the variant enum is 96 B, so an
+  inline error moves 96 bytes through memory on every hot `Ok` path) plus
+  code size (measured −7.0% native `.text`, −16.7% on the parse WASM bundle).
+  Do **not** re-box at a call site (`Result<T, Box<Error>>`) — that's a
+  double indirection, measured to buy nothing over the newtype.
 - **Don't round-trip a closed set through serde on a hot path**: zzz's
   `ProviderName::parse(&str)` matches literals directly instead of allocating
   a `Value::String` per request, with `as_str`/`Display`/serde-rename

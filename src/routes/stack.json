@@ -353,7 +353,7 @@
 			"path": "zzz",
 			"description": "software garage for power users and devs",
 			"glyph": "💤",
-			"homepage_url": "https://www.zzz.software/",
+			"homepage_url": "https://github.com/fuzdev/zzz",
 			"published": false,
 			"module_count": 241,
 			"exported_module_count": 238,

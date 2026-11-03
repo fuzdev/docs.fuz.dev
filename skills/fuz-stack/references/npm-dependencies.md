@@ -114,7 +114,9 @@ fuz_util — not stack utilities; don't add them to app code.)
 
 Prefer web standards, then `node:` built-ins (gro's host modules replace
 these per module as they land, with a Node implementation and the gro
-runtime's builtins behind one import), then this list. New scripts and tasks
+runtime's builtins behind one import; code that fetches takes `fetch` as a
+dep, since the gro runtime has no global `fetch` and callers pass
+`net.fetch`), then this list. New scripts and tasks
 run on Node via gro, never on Deno. A new package needs explicit
 approval — name, purpose, what it replaces or enables, transitive footprint.
 Removing an unused dependency is pre-authorized: verify nothing references it,

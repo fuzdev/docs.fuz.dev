@@ -504,6 +504,15 @@ resolution would land, and aims any network call at a dead port — so a
 regression shows as the decoy being read, never as a write into the operator's
 real home.
 
+**Deliver a signal at a program phase, not a time.** A test that interrupts a
+child mid-phase (a staging tree being written) duty-cycles it under `SIGSTOP` /
+`SIGCONT` and sends the signal only on a state seen while every thread is
+stopped (`T` in `/proc/<pid>/task/*/stat`) — fuzi's gate `check-sigint.mjs`.
+The signal lands within one run quantum of the phase however fast the machine,
+and a run that still misses reads as a retry, never a pass. Continue the child
+on every exit path, and spawn it from the test harness, not as a
+non-interactive shell's `&` job, which starts with `SIGINT` ignored.
+
 ## CLI Patterns
 
 Arg parsing tracks binary size:
@@ -707,6 +716,16 @@ concurrency semaphore, with `fuz_fact`'s orphan-temp sweeper as the crash
 backstop). **Centralize the ceilings**: one private constant behind named
 public aliases (`fuz_sys::limits`: `ARTIFACT_CEILING_BYTES` feeding
 `MAX_TRANSFER_SIZE`, `MAX_FILE_SIZE`, …).
+
+### Floor writer mkdirs below a root you own
+
+`create_dir_all` re-creates every missing ancestor, so a writer racing a
+removal of its tree (an interrupt drain, a cleanup sweep) puts the root back
+and the tree outlives whoever removed it. Writers into a removable tree create
+directories only strictly below its root (`fuz_archive::create_dir_all_below`:
+never creates the base, refuses a path not below it through `Normal`
+components); a removed root then fails the next write with `NotFound`.
+Creating the root itself is one critical section with whatever removes it.
 
 ### Type state
 

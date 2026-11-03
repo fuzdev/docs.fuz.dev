@@ -39,13 +39,13 @@ Each package's `CLAUDE.md` is authoritative for what it actually uses.
 | -------------- | ------------------------------------------------------------------------------- |
 | `fuz_util`     | foundation utilities (zero deps) — hashing, async, schemas, types               |
 | `fuz_schema`   | performance-focused Standard Schema library — all but fuz_app data, `Flavored`  |
-| `gro`          | task runner and toolkit extending SvelteKit (internals adopting Rust)           |
+| `gro`          | security-first JS runtime and toolchain on V8 (today a Node task runner)        |
 | `fuz_css`      | semantic-first CSS framework and design system                                  |
 | `mdz`          | minimal markdown dialect — parser, renderer, Svelte preprocessor                |
 | `fuz_ui`       | Svelte 5 components — themes, layouts, overlays, auto-docs                      |
 | `fuz_app`      | stack spine — auth, sessions, DB, SSE, route specs                              |
 | `fuz_docs`     | experimental AI-generated docs and skills for Fuz                               |
-| `fuz_template` | web app template — TypeScript + SvelteKit + optional Rust                       |
+| `fuz_template` | starter template — SvelteKit web apps, Rust native tools, or both               |
 | `fuz_code`     | syntax styler for TypeScript, Svelte, Markdown, and more                        |
 | `fuz_blog`     | blog software from scratch with SvelteKit                                       |
 | `fuz_repos`    | multi-repo management                                                           |

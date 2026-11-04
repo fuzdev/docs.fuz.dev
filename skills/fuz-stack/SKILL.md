@@ -28,8 +28,8 @@ self-describing patterns let an agent learn once and apply everywhere:
 snake_case aligns TS, Rust, and SQL with zero renaming; schemas are the
 single source of truth for data shape, type, defaults, and validation
 (fuz_schema everywhere except fuz_app's app data and the apps on it, which
-are Zod); `fuz_app` is the shared backend spine (auth, sessions, DB, SSE)
-that zzz and the apps build on.
+are Zod — fuz_app's env loading is fuz_schema); `fuz_app` is the shared
+backend spine (auth, sessions, DB, SSE) that zzz and the apps build on.
 
 ## Package Ecosystem
 
@@ -344,14 +344,14 @@ built on it — JSON shape, TS type, defaults, metadata, and serialization;
 schema changes cascade through the stack. Everything else is
 `@fuzdev/fuz_schema`: the packages below fuz_app (fuz_util, gro, fuz_css),
 CLI and task args (./references/task-patterns.md), tooling, and
-fuz_app's testing daemon-info file. Porting from Zod, mind that a Zod object parse
-returns a new object in schema key order while fuz_schema `object` returns
-the input itself when no entry changed it (`strip_object` copies, in schema
-order, only when an unknown key is present) — output written to generated
-files changes key order unless reordered. Zod's `.extend`/`.pick`/`.omit`/
-`.partial` become a spread of `def` into a factory
-(`s.object({...Base.def, x})`; fuz_schema's README § Composing object
-schemas), not helpers; a refined object is extended at its bare base, then
+fuz_app's env loading and testing daemon-info file. Porting from Zod, mind
+that a Zod object parse returns a new object in schema key order while
+fuz_schema `object` returns the input itself when no entry changed it
+(`strip_object` copies, in schema order, only when an unknown key is
+present) — output written to generated files changes key order unless
+reordered. Zod's `.extend`/`.pick`/`.omit`/`.partial` become a spread of
+`def` into a factory (`s.object({...Base.def, x})`; fuz_schema's README §
+Composing object schemas), not helpers; a refined object is extended at its bare base, then
 piped.
 
 - **`z.strictObject()`** by default. `z.looseObject()` / `z.object()` only

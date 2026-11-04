@@ -12,7 +12,8 @@ runtime-inspectable (walkable via `@fuzdev/fuz_app/zod.ts`, exportable via
 branded strings for timestamps (`Datetime`), IDs (`Uuid`), and paths avoid
 serialization friction. Everything else — the packages below fuz_app, CLI
 and task args (parsed by fuz_util's `args_parse`, ./task-patterns.md),
-tooling, fuz_app's testing daemon-info file — is `@fuzdev/fuz_schema`.
+tooling, fuz_app's env loading (`BaseServerEnv`, `load_env`) and testing
+daemon-info file — is `@fuzdev/fuz_schema`.
 
 ## Schema helpers by layer
 
@@ -57,8 +58,8 @@ types. `z.infer<>` is the output (post-parse); `z.input<>` is what callers
 provide before defaults. Export `z.input<>` as `FooInput` when callers
 construct partial instances via `.parse()` — constructor/factory parameters
 (Cell instantiation, resource builders), config file shapes, form inputs,
-partial data from storage. Skip it for internally-consumed schemas (env
-loading, action spec `satisfies`).
+partial data from storage. Skip it for internally-consumed schemas (action
+spec `satisfies`).
 
 ```typescript
 // zzz — every Cell schema exports both
@@ -132,10 +133,9 @@ export const DiskfileDirectoryPath = PathWithTrailingSlash.pipe(DiskfilePath).br
 
 ## Zod 4 Primitives
 
-`z.uuid()` / `z.iso.datetime()` (paired with brands); `z.coerce.number()`
-(env vars); `z.toJSONSchema(schema)` (API surface snapshots);
-`z.prettifyError(error)` (error messages); `z.record(K, V)` (env vars, resource
-maps).
+`z.uuid()` / `z.iso.datetime()` (paired with brands);
+`z.toJSONSchema(schema)` (API surface snapshots); `z.prettifyError(error)`
+(error messages); `z.record(K, V)` (resource maps, JSON rows).
 
 - `z.null()` for HTTP input with no body (`input: z.null()` in route specs);
   `z.void()` / `z.void().optional()` for action specs with no input or output
@@ -200,10 +200,12 @@ class for the registry; both `FooJson` and `FooJsonInput` (constructors and
 other keys are domain-specific. fuz_app's `SchemaFieldMeta`
 (`@fuzdev/fuz_app/schema_meta.ts`) adds `sensitivity: 'secret'`, which masks
 values in logs and API surface snapshots
-(`DATABASE_URL: z.string().min(1).meta({description: '…', sensitivity: 'secret'})`),
-and `sensitivity: 'personal'` for personal data (a search term about people),
+(`token: z.string().min(1).meta({sensitivity: 'secret'})`), and
+`sensitivity: 'personal'` for personal data (a search term about people),
 which isn't masked. Both keep an action input off the URL: a read whose input
-carries either goes as a `POST`, not a `GET`.
+carries either goes as a `POST`, not a `GET`. fuz_app's fuz_schema env fields
+carry the same key through `meta(schema, {sensitivity})`, which
+`@fuzdev/fuz_app/sensitivity.ts` declares on fuz_schema's `SchemaMeta`.
 
 ## Validation at Boundaries
 
@@ -214,8 +216,9 @@ carries either goes as a `POST`, not a `GET`.
   specs validate input via `safeParse` and output in DEV only.
 - **`parse` for fail-fast** where invalid data is a bug or fatal misconfig —
   internal assertions (`RoleName.parse(name)`), factories, Cell field updates.
-- **`safeParse` + custom throw** when the error needs context — env loading
-  throws `EnvValidationError(raw, result.error)` carrying the raw values.
+- **`safeParse` + custom throw** when the error needs context, carrying the
+  raw input in the thrown error (fuz_app's env loading does this in
+  fuz_schema: `EnvValidationError(raw, issues)`).
 - **`safeParse` + return null** for optional data that may be absent or invalid
   — an optional config file (`runtime.warn(...); return null`).
 

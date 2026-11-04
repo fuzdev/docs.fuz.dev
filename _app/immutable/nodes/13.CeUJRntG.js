@@ -1,0 +1,1 @@
+export{t as component}from"../chunks/BD7_N5GV.js";

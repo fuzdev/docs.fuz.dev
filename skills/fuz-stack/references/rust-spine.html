@@ -23,8 +23,8 @@
 		<link href="/_app/immutable/chunks/Bqh8G2yR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Cyt8LZpN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ClJVXk_e.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.CyemF1yG.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.DFboIeD1.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.DiC8XFIH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.DXIyQILZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BsX-5h2w.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DdEUGy_v.js" rel="modulepreload">
@@ -32,10 +32,10 @@
 		<link href="/_app/immutable/chunks/yWx_1vUe.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DvyVAdoA.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/3gsecTea.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/3.RWEPX6B8.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/3.B0Jln7OZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ISdsov-F.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/eWPRky8_.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/B6aan0u7.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/9-yCha7e.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/UfIDI-FR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dg4uJei1.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BPVwp-J3.js" rel="modulepreload">
@@ -43,15 +43,15 @@
 		<link href="/_app/immutable/chunks/DCYw93gZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DgOJkruE.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/2tlPcHOe.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Cn2nWIoC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C8Y3w-Xr.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/30.HCqvdqD5.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/29.CdQ00fmG.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BhLIK611.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CS-piQRQ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/pGYaDZDM.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CqS31bzD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvCe-Tr9.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><title>@fuzdev/fuz_docs</title>
-		<link href="/_app/immutable/assets/0.B7ZfHHUF.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.BRllvddL.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Breadcrumb.C59yMZ2n.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/DialogContent.DfiimBCd.css" rel="stylesheet">
@@ -190,7 +190,12 @@ sessions' connections. <!--]--><!--[3--><!--[-1--><code>testing_spine_stub</code
 <!--]--><!--[3--><!--[-1--><code>z.strictObject</code><!--]--><!--]--><!--[2--> refuses it, then the serde decode). Consumers import, never
 re-declare — the envelope is what parity tests assert byte-for-byte. Prefer
 typed <!--]--><!--[3--><!--[-1--><code>#[derive(Deserialize)]</code><!--]--><!--]--><!--[2--> input structs + <!--]--><!--[3--><!--[-1--><code>parse_strict_params</code><!--]--><!--]--><!--[2--> over
-<!--]--><!--[3--><!--[-1--><code>params.get().and_then(Value::as_str)</code><!--]--><!--]--><!--[2--> chains (the chains are migration debt).<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[3--><!--[-1--><code>JsonrpcErrorCode</code><!--]--><!--]--><!--[2--> is an enum with a hand-written <!--]--><!--[3--><!--[-1--><code>Serialize</code><!--]--><!--]--><!--[2--> emitting the
+<!--]--><!--[3--><!--[-1--><code>params.get().and_then(Value::as_str)</code><!--]--><!--]--><!--[2--> chains (the chains are migration debt).<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[3--><!--[-1--><code>internal_error_with_source</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>db_unavailable_with_source</code><!--]--><!--]--><!--[2--> and their flat-REST
+twins <!--]--><!--[3--><!--[-1--><code>internal_error_response_with_source</code><!--]--><!--]--><!--[2--> /
+<!--]--><!--[3--><!--[-1--><code>db_unavailable_response_with_source</code><!--]--><!--]--><!--[2--> take <!--]--><!--[3--><!--[-1--><code>&amp;dyn Error</code><!--]--><!--]--><!--[2--> and log its cause chain
+(a <!--]--><!--[3--><!--[-1--><code>tokio_postgres::Error</code><!--]--><!--]--><!--[2-->'s <!--]--><!--[3--><!--[-1--><code>Display</code><!--]--><!--]--><!--[2--> is only its kind), plus a <!--]--><!--[3--><!--[-1--><code>sqlstate</code><!--]--><!--]--><!--[2-->
+field (<!--]--><!--[3--><!--[-1--><code>fuz_db::sqlstate_in_chain</code><!--]--><!--]--><!--[2-->) when a driver error in the chain carries
+one; a direct log of a DB error uses <!--]--><!--[3--><!--[-1--><code>error = ?e</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[3--><!--[-1--><code>JsonrpcErrorCode</code><!--]--><!--]--><!--[2--> is an enum with a hand-written <!--]--><!--[3--><!--[-1--><code>Serialize</code><!--]--><!--]--><!--[2--> emitting the
 bare <!--]--><!--[3--><!--[-1--><code>i32</code><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>as_i32()</code><!--]--><!--]--><!--[2-->) — not scattered <!--]--><!--[3--><!--[-1--><code>pub const … : i32</code><!--]--><!--]--><!--[2-->. Because
 <!--]--><!--[3--><!--[-1--><code>JsonrpcError.code</code><!--]--><!--]--><!--[2--> is the enum, <!--]--><!--[3--><!--[-1--><code>error_code_to_http_status</code><!--]--><!--]--><!--[2--> is exhaustive: a
 new base code is a compile error, not a silent 500. TS twin: <!--]--><!--[3--><!--[-1--><code>fuz_app</code><!--]--><!--]--><!--[2-->'s
@@ -370,18 +375,18 @@ are crates, not features: <!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/r
 			
 			<script>
 				{
-					__sveltekit_on81kf = {
+					__sveltekit_fl8xr2 = {
 						base: "",
-						version: "9b4b377f5849b057ed3f819cb0859b76d3bd89c3"
+						version: "ab88aa11f1c355bae1d4b7b4dd22aefa65ad209e"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CrLbZUT-.js").then(async (kit) => {
-						kit.init(__sveltekit_on81kf);
-						const app = await import("/_app/immutable/entry/app.CyemF1yG.js");
+						kit.init(__sveltekit_fl8xr2);
+						const app = await import("/_app/immutable/entry/app.DiC8XFIH.js");
 						kit.start(app, element, {
-							node_ids: [0, 3, 30],
+							node_ids: [0, 3, 29],
 							data: [null,null,null],
 							form: null,
 							error: null

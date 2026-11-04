@@ -23,8 +23,8 @@
 		<link href="/_app/immutable/chunks/Bqh8G2yR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Cyt8LZpN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ClJVXk_e.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.CyemF1yG.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.DFboIeD1.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.DiC8XFIH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.DXIyQILZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BsX-5h2w.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DdEUGy_v.js" rel="modulepreload">
@@ -32,10 +32,10 @@
 		<link href="/_app/immutable/chunks/yWx_1vUe.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DvyVAdoA.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/3gsecTea.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/3.RWEPX6B8.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/3.B0Jln7OZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ISdsov-F.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/eWPRky8_.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/B6aan0u7.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/9-yCha7e.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/UfIDI-FR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dg4uJei1.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BPVwp-J3.js" rel="modulepreload">
@@ -43,15 +43,15 @@
 		<link href="/_app/immutable/chunks/DCYw93gZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DgOJkruE.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/2tlPcHOe.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Cn2nWIoC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C8Y3w-Xr.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/28.DqFVW6Yj.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/27.BADMZdkb.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BhLIK611.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CS-piQRQ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/pGYaDZDM.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CqS31bzD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvCe-Tr9.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><title>@fuzdev/fuz_docs</title>
-		<link href="/_app/immutable/assets/0.B7ZfHHUF.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.BRllvddL.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Breadcrumb.C59yMZ2n.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/DialogContent.DfiimBCd.css" rel="stylesheet">
@@ -179,9 +179,12 @@ exit:<!--]--><!--]--><!----></p><!--]--><!--[15--><!--[0--><!--[--><code data-la
     <span class="token_punctuation">}</span>
     <span class="token_capitalized_identifier token_class_name">ExitCode</span><span class="token_punctuation">::</span><span class="token_function">from</span><span class="token_punctuation">(</span>e<span class="token_punctuation">.</span><span class="token_function">exit_code</span><span class="token_punctuation">())</span>
 <span class="token_punctuation">}</span><!----><!--]--></code><!--]--><!--]--><!--]--><!--[8--><p><!--[--><!--[3--><!--[-1--><code>#[source]</code><!--]--><!--]--><!--[2--> chains causes — <!--]--><!--[3--><!--[-1--><code>Display</code><!--]--><!--]--><!--[2--> shows only the variant's message, the
-chain surfaces via <!--]--><!--[3--><!--[-1--><code>e.source()</code><!--]--><!--]--><!--[2--> for structured logging. Parsers carry an
-optional <!--]--><!--[3--><!--[-1--><code>position</code><!--]--><!--]--><!--[2--> on variants so the renderer can draw a caret (tsv's
-<!--]--><!--[3--><!--[-1--><code>ParseError</code><!--]--><!--]--><!--[2-->). WASM boundary errors: <!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/wasm-patterns"><!--[--><!--[2-->./wasm-patterns<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>.hint()</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>.exit_code()</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> live on the binary's top-level error; library
+chain surfaces via <!--]--><!--[3--><!--[-1--><code>e.source()</code><!--]--><!--]--><!--[2--> for structured logging. Parser errors carry
+their location so a renderer can draw a caret — tsv's <!--]--><!--[3--><!--[-1--><code>Error</code><!--]--><!--]--><!--[2--> keeps its
+variants private and exposes accessors instead: <!--]--><!--[3--><!--[-1--><code>kind()</code><!--]--><!--]--><!--[2--> (a small public
+<!--]--><!--[3--><!--[-1--><code>ErrorKind</code><!--]--><!--]--><!--[2--> to branch on), <!--]--><!--[3--><!--[-1--><code>span()</code><!--]--><!--]--><!--[2--> (the byte range, <!--]--><!--[3--><!--[-1--><code>None</code><!--]--><!--]--><!--[2--> when there is no
+position), and <!--]--><!--[3--><!--[-1--><code>to_report()</code><!--]--><!--]--><!--[2--> (summary, caret frame, and line/column points
+for a binding to return). WASM boundary errors: <!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/wasm-patterns"><!--[--><!--[2-->./wasm-patterns<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>.hint()</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>.exit_code()</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> live on the binary's top-level error; library
 errors stay thin (a library with exactly one binary consumer may carry them
 itself — <!--]--><!--[3--><!--[-1--><code>zap_core::Error</code><!--]--><!--]--><!--[2--> co-locates exit-code policy with the variants).
 Classifiers are exempt and land wherever a consumer branches:<!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>.hint()</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> — user-facing fix suggestion: <!--]--><!--[3--><!--[-1--><code>Option&lt;HintMessage></code><!--]--><!--]--><!--[2--> when most
@@ -371,7 +374,14 @@ A mutant or regression case for a <!--]--><!--[3--><!--[-1--><code>$HOME</code><
 real binary under a scratch <!--]--><!--[3--><!--[-1--><code>HOME</code><!--]--><!--]--><!--[2--> and cwd, seeds a decoy where the wrong
 resolution would land, and aims any network call at a dead port — so a
 regression shows as the decoy being read, never as a write into the operator's
-real home.<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h2 id="cli-patterns"><!--[--><!--[2-->CLI Patterns<!--]--><!--]--><!----></h2><!----><!--]--><!--[8--><p><!--[--><!--[2-->Arg parsing tracks binary size:<!--]--><!--]--><!----></p><!--]--><!--[12--><table><!--[0--><thead><tr><!--[--><!----><th><!--[0--><!--[--><!--[2-->Use case<!--]--><!--]--><!--]--><!----></th><!----><!----><th><!--[0--><!--[--><!--[2-->Parser<!--]--><!--]--><!--]--><!----></th><!----><!----><th><!--[0--><!--[--><!--[2-->+bytes vs <!--]--><!--[3--><!--[-1--><code>println!("hello")</code><!--]--><!--]--><!--]--><!--]--><!----></th><!----><!--]--><!----></tr></thead><!--]--><!--[0--><tbody><!--[--><!--[-1--><!--]--><!--[0--><tr><!--[--><!----><td><!--[0--><!--[--><!--[2-->Backend daemons, a few flags<!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->manual <!--]--><!--[3--><!--[-1--><code>std::env::args</code><!--]--><!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->+5 KB<!--]--><!--]--><!--]--><!----></td><!----><!--]--><!----></tr><!--]--><!--[0--><tr><!--[--><!----><td><!--[0--><!--[--><!--[2-->User-facing CLIs with subcommands<!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[4--><strong><!--[--><!--[2-->argh<!--]--><!--]--><!----></strong><!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->+16 KB<!--]--><!--]--><!--]--><!----></td><!----><!--]--><!----></tr><!--]--><!--[0--><tr><!--[--><!----><td><!--[0--><!--[--><!--[2-->Needs env-var binding, shell completions, or <!--]--><!--[3--><!--[-1--><code>wrap_help</code><!--]--><!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->clap (<!--]--><!--[3--><!--[-1--><code>derive</code><!--]--><!--]--><!--[2-->)<!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->+340 KB<!--]--><!--]--><!--]--><!----></td><!----><!--]--><!----></tr><!--]--><!--]--></tbody><!--]--></table><!--]--><!--[8--><p><!--[--><!--[2-->argh is schema-driven (<!--]--><!--[3--><!--[-1--><code>#[derive(FromArgs)]</code><!--]--><!--]--><!--[2-->), the same mental model as
+real home.<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Deliver a signal at a program phase, not a time.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A test that interrupts a
+child mid-phase (a staging tree being written) duty-cycles it under <!--]--><!--[3--><!--[-1--><code>SIGSTOP</code><!--]--><!--]--><!--[2--> /
+<!--]--><!--[3--><!--[-1--><code>SIGCONT</code><!--]--><!--]--><!--[2--> and sends the signal only on a state seen while every thread is
+stopped (<!--]--><!--[3--><!--[-1--><code>T</code><!--]--><!--]--><!--[2--> in <!--]--><!--[3--><!--[-1--><code>/proc/&lt;pid>/task/*/stat</code><!--]--><!--]--><!--[2-->) — fuzi's gate <!--]--><!--[3--><!--[-1--><code>check-sigint.mjs</code><!--]--><!--]--><!--[2-->.
+The signal lands within one run quantum of the phase however fast the machine,
+and a run that still misses reads as a retry, never a pass. Continue the child
+on every exit path, and spawn it from the test harness, not as a
+non-interactive shell's <!--]--><!--[3--><!--[-1--><code>&amp;</code><!--]--><!--]--><!--[2--> job, which starts with <!--]--><!--[3--><!--[-1--><code>SIGINT</code><!--]--><!--]--><!--[2--> ignored.<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h2 id="cli-patterns"><!--[--><!--[2-->CLI Patterns<!--]--><!--]--><!----></h2><!----><!--]--><!--[8--><p><!--[--><!--[2-->Arg parsing tracks binary size:<!--]--><!--]--><!----></p><!--]--><!--[12--><table><!--[0--><thead><tr><!--[--><!----><th><!--[0--><!--[--><!--[2-->Use case<!--]--><!--]--><!--]--><!----></th><!----><!----><th><!--[0--><!--[--><!--[2-->Parser<!--]--><!--]--><!--]--><!----></th><!----><!----><th><!--[0--><!--[--><!--[2-->+bytes vs <!--]--><!--[3--><!--[-1--><code>println!("hello")</code><!--]--><!--]--><!--]--><!--]--><!----></th><!----><!--]--><!----></tr></thead><!--]--><!--[0--><tbody><!--[--><!--[-1--><!--]--><!--[0--><tr><!--[--><!----><td><!--[0--><!--[--><!--[2-->Backend daemons, a few flags<!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->manual <!--]--><!--[3--><!--[-1--><code>std::env::args</code><!--]--><!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->+5 KB<!--]--><!--]--><!--]--><!----></td><!----><!--]--><!----></tr><!--]--><!--[0--><tr><!--[--><!----><td><!--[0--><!--[--><!--[2-->User-facing CLIs with subcommands<!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[4--><strong><!--[--><!--[2-->argh<!--]--><!--]--><!----></strong><!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->+16 KB<!--]--><!--]--><!--]--><!----></td><!----><!--]--><!----></tr><!--]--><!--[0--><tr><!--[--><!----><td><!--[0--><!--[--><!--[2-->Needs env-var binding, shell completions, or <!--]--><!--[3--><!--[-1--><code>wrap_help</code><!--]--><!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->clap (<!--]--><!--[3--><!--[-1--><code>derive</code><!--]--><!--]--><!--[2-->)<!--]--><!--]--><!--]--><!----></td><!----><!----><td><!--[0--><!--[--><!--[2-->+340 KB<!--]--><!--]--><!--]--><!----></td><!----><!--]--><!----></tr><!--]--><!--]--></tbody><!--]--></table><!--]--><!--[8--><p><!--[--><!--[2-->argh is schema-driven (<!--]--><!--[3--><!--[-1--><code>#[derive(FromArgs)]</code><!--]--><!--]--><!--[2-->), the same mental model as
 fuz_util's <!--]--><!--[3--><!--[-1--><code>args_parse</code><!--]--><!--]--><!--[2--> over a fuz_schema object schema. Where a CLI exists in
 both TS and Rust, align flag names and aliases. Manual daemons <!--]--><!--[3--><!--[-1--><code>match</code><!--]--><!--]--><!--[2--> on the
 first arg and return <!--]--><!--[3--><!--[-1--><code>Result</code><!--]--><!--]--><!--[2--> to the <!--]--><!--[3--><!--[-1--><code>main() -> ExitCode</code><!--]--><!--]--><!--[2--> wrapper — no
@@ -510,7 +520,13 @@ preflight + counter + statvfs free-space check <!--]--><!--[3--><!--[-1--><code>
 concurrency semaphore, with <!--]--><!--[3--><!--[-1--><code>fuz_fact</code><!--]--><!--]--><!--[2-->'s orphan-temp sweeper as the crash
 backstop). <!--]--><!--[4--><strong><!--[--><!--[2-->Centralize the ceilings<!--]--><!--]--><!----></strong><!--]--><!--[2-->: one private constant behind named
 public aliases (<!--]--><!--[3--><!--[-1--><code>fuz_sys::limits</code><!--]--><!--]--><!--[2-->: <!--]--><!--[3--><!--[-1--><code>ARTIFACT_CEILING_BYTES</code><!--]--><!--]--><!--[2--> feeding
-<!--]--><!--[3--><!--[-1--><code>MAX_TRANSFER_SIZE</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>MAX_FILE_SIZE</code><!--]--><!--]--><!--[2-->, …).<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h3 id="type-state"><!--[--><!--[2-->Type state<!--]--><!--]--><!----></h3><!----><!--]--><!--[8--><p><!--[--><!--[2-->Encode phase in the type so calling a method in the wrong phase is a compile
+<!--]--><!--[3--><!--[-1--><code>MAX_TRANSFER_SIZE</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>MAX_FILE_SIZE</code><!--]--><!--]--><!--[2-->, …).<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h3 id="floor-writer-mkdirs-below-a-root-you-own"><!--[--><!--[2-->Floor writer mkdirs below a root you own<!--]--><!--]--><!----></h3><!----><!--]--><!--[8--><p><!--[--><!--[3--><!--[-1--><code>create_dir_all</code><!--]--><!--]--><!--[2--> re-creates every missing ancestor, so a writer racing a
+removal of its tree (an interrupt drain, a cleanup sweep) puts the root back
+and the tree outlives whoever removed it. Writers into a removable tree create
+directories only strictly below its root (<!--]--><!--[3--><!--[-1--><code>fuz_archive::create_dir_all_below</code><!--]--><!--]--><!--[2-->:
+never creates the base, refuses a path not below it through <!--]--><!--[3--><!--[-1--><code>Normal</code><!--]--><!--]--><!--[2-->
+components); a removed root then fails the next write with <!--]--><!--[3--><!--[-1--><code>NotFound</code><!--]--><!--]--><!--[2-->.
+Creating the root itself is one critical section with whatever removes it.<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h3 id="type-state"><!--[--><!--[2-->Type state<!--]--><!--]--><!----></h3><!----><!--]--><!--[8--><p><!--[--><!--[2-->Encode phase in the type so calling a method in the wrong phase is a compile
 error — a correctness pattern. The in-codebase shape is the <!--]--><!--[4--><strong><!--[--><!--[2-->consuming
 transition<!--]--><!--]--><!----></strong><!--]--><!--[2-->, not <!--]--><!--[3--><!--[-1--><code>PhantomData&lt;S></code><!--]--><!--]--><!--[2-->: zap's
 <!--]--><!--[3--><!--[-1--><code>SecretRegistry::freeze(mut self) -> Result&lt;SecretMasker></code><!--]--><!--]--><!--[2--> makes "mask before
@@ -529,18 +545,18 @@ logging; <!--]--><!--[3--><!--[-1--><code>--json</code><!--]--><!--]--><!--[2-->
 			
 			<script>
 				{
-					__sveltekit_on81kf = {
+					__sveltekit_fl8xr2 = {
 						base: "",
-						version: "9b4b377f5849b057ed3f819cb0859b76d3bd89c3"
+						version: "ab88aa11f1c355bae1d4b7b4dd22aefa65ad209e"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CrLbZUT-.js").then(async (kit) => {
-						kit.init(__sveltekit_on81kf);
-						const app = await import("/_app/immutable/entry/app.CyemF1yG.js");
+						kit.init(__sveltekit_fl8xr2);
+						const app = await import("/_app/immutable/entry/app.DiC8XFIH.js");
 						kit.start(app, element, {
-							node_ids: [0, 3, 28],
+							node_ids: [0, 3, 27],
 							data: [null,null,null],
 							form: null,
 							error: null

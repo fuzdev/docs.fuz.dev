@@ -23,8 +23,8 @@
 		<link href="/_app/immutable/chunks/Bqh8G2yR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Cyt8LZpN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ClJVXk_e.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.CyemF1yG.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.DFboIeD1.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.DiC8XFIH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.DXIyQILZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BsX-5h2w.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DdEUGy_v.js" rel="modulepreload">
@@ -32,10 +32,10 @@
 		<link href="/_app/immutable/chunks/yWx_1vUe.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DvyVAdoA.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/3gsecTea.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/3.RWEPX6B8.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/3.B0Jln7OZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ISdsov-F.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/eWPRky8_.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/B6aan0u7.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/9-yCha7e.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/UfIDI-FR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dg4uJei1.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BPVwp-J3.js" rel="modulepreload">
@@ -43,15 +43,15 @@
 		<link href="/_app/immutable/chunks/DCYw93gZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DgOJkruE.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/2tlPcHOe.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Cn2nWIoC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C8Y3w-Xr.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/29.BHH_9Y03.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/28.BI2Ap79O.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BhLIK611.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CS-piQRQ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/pGYaDZDM.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CqS31bzD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvCe-Tr9.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><title>@fuzdev/fuz_docs</title>
-		<link href="/_app/immutable/assets/0.B7ZfHHUF.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.BRllvddL.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Breadcrumb.C59yMZ2n.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/DialogContent.DfiimBCd.css" rel="stylesheet">
@@ -108,14 +108,16 @@ rewrites can't elide it, isolate the hot kernel in a crate that overrides
 <!--]--><!--[3--><!--[-1--><code>codegen-units = 1</code><!--]--><!--]--><!--[2--> (./rust-patterns §Release Profile) inlines across crates
 without per-fn <!--]--><!--[3--><!--[-1--><code>#[inline]</code><!--]--><!--]--><!--[2-->. Reserve <!--]--><!--[3--><!--[-1--><code>#[cold]</code><!--]--><!--]--><!--[2--> + <!--]--><!--[3--><!--[-1--><code>#[inline(never)]</code><!--]--><!--]--><!--[2--> for rare
 error/panic formatters to keep the hot I-cache dense.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Newtype over a boxed payload — never <!--]--><!--[3--><!--[-1--><code>Box&lt;Error></code><!--]--><!--]--><!--[2--> at call sites<!--]--><!--]--><!----></strong><!--]--><!--[2-->: tsv's
-<!--]--><!--[3--><!--[-1--><code>ParseError</code><!--]--><!--]--><!--[2--> is <!--]--><!--[3--><!--[-1--><code>struct ParseError(Box&lt;ParseErrorKind>)</code><!--]--><!--]--><!--[2--> — pointer-sized,
-enum private, so no signature anywhere mentions a <!--]--><!--[3--><!--[-1--><code>Box</code><!--]--><!--]--><!--[2-->. The win is
-<!--]--><!--[3--><!--[-1--><code>Result</code><!--]--><!--]--><!--[2--> sizing (<!--]--><!--[3--><!--[-1--><code>Result&lt;T, E></code><!--]--><!--]--><!--[2--> is sized by <!--]--><!--[3--><!--[-1--><code>max(T, E)</code><!--]--><!--]--><!--[2-->; the payload enum
-is 96 B, so an inline error moves 96 bytes through memory on every hot
-<!--]--><!--[3--><!--[-1--><code>Ok</code><!--]--><!--]--><!--[2--> path) plus code size (measured −7.0% native <!--]--><!--[3--><!--[-1--><code>.text</code><!--]--><!--]--><!--[2-->, −16.7% on the
-parse WASM bundle). Do <!--]--><!--[4--><strong><!--[--><!--[2-->not<!--]--><!--]--><!----></strong><!--]--><!--[2--> re-box at a call site
-(<!--]--><!--[3--><!--[-1--><code>Result&lt;T, Box&lt;ParseError>></code><!--]--><!--]--><!--[2-->) — that's a double indirection, measured to
-buy nothing over the newtype.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Don't round-trip a closed set through serde on a hot path<!--]--><!--]--><!----></strong><!--]--><!--[2-->: zzz's
+error is <!--]--><!--[3--><!--[-1--><code>struct tsv_lang::Error(Box&lt;Payload>)</code><!--]--><!--]--><!--[2--> — pointer-sized (a <!--]--><!--[3--><!--[-1--><code>const</code><!--]--><!--]--><!--[2-->
+assert pins it, and the <!--]--><!--[3--><!--[-1--><code>Box</code><!--]--><!--]--><!--[2--> niche makes <!--]--><!--[3--><!--[-1--><code>Result&lt;(), Error></code><!--]--><!--]--><!--[2--> a bare
+pointer too), the payload private (the variant enum plus a flag), so no
+signature anywhere mentions a <!--]--><!--[3--><!--[-1--><code>Box</code><!--]--><!--]--><!--[2--> and callers read only accessors
+(<!--]--><!--[3--><!--[-1--><code>kind()</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>span()</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>to_report()</code><!--]--><!--]--><!--[2-->). The win is <!--]--><!--[3--><!--[-1--><code>Result</code><!--]--><!--]--><!--[2--> sizing
+(<!--]--><!--[3--><!--[-1--><code>Result&lt;T, E></code><!--]--><!--]--><!--[2--> is sized by <!--]--><!--[3--><!--[-1--><code>max(T, E)</code><!--]--><!--]--><!--[2-->; the variant enum is 96 B, so an
+inline error moves 96 bytes through memory on every hot <!--]--><!--[3--><!--[-1--><code>Ok</code><!--]--><!--]--><!--[2--> path) plus
+code size (measured −7.0% native <!--]--><!--[3--><!--[-1--><code>.text</code><!--]--><!--]--><!--[2-->, −16.7% on the parse WASM bundle).
+Do <!--]--><!--[4--><strong><!--[--><!--[2-->not<!--]--><!--]--><!----></strong><!--]--><!--[2--> re-box at a call site (<!--]--><!--[3--><!--[-1--><code>Result&lt;T, Box&lt;Error>></code><!--]--><!--]--><!--[2-->) — that's a
+double indirection, measured to buy nothing over the newtype.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Don't round-trip a closed set through serde on a hot path<!--]--><!--]--><!----></strong><!--]--><!--[2-->: zzz's
 <!--]--><!--[3--><!--[-1--><code>ProviderName::parse(&amp;str)</code><!--]--><!--]--><!--[2--> matches literals directly instead of allocating
 a <!--]--><!--[3--><!--[-1--><code>Value::String</code><!--]--><!--]--><!--[2--> per request, with <!--]--><!--[3--><!--[-1--><code>as_str</code><!--]--><!--]--><!--[2-->/<!--]--><!--[3--><!--[-1--><code>Display</code><!--]--><!--]--><!--[2-->/serde-rename
 single-sourced from one match.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Compact span/token types<!--]--><!--]--><!----></strong><!--]--><!--[2-->: tsv's <!--]--><!--[3--><!--[-1--><code>Span { start: u32, end: u32 }</code><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>Copy</code><!--]--><!--]--><!--[2-->)
@@ -148,18 +150,18 @@ slow readers — niche to read:write ratios of orders of magnitude, after
 			
 			<script>
 				{
-					__sveltekit_on81kf = {
+					__sveltekit_fl8xr2 = {
 						base: "",
-						version: "9b4b377f5849b057ed3f819cb0859b76d3bd89c3"
+						version: "ab88aa11f1c355bae1d4b7b4dd22aefa65ad209e"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CrLbZUT-.js").then(async (kit) => {
-						kit.init(__sveltekit_on81kf);
-						const app = await import("/_app/immutable/entry/app.CyemF1yG.js");
+						kit.init(__sveltekit_fl8xr2);
+						const app = await import("/_app/immutable/entry/app.DiC8XFIH.js");
 						kit.start(app, element, {
-							node_ids: [0, 3, 29],
+							node_ids: [0, 3, 28],
 							data: [null,null,null],
 							form: null,
 							error: null

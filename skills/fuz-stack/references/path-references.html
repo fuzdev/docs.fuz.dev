@@ -23,8 +23,8 @@
 		<link href="/_app/immutable/chunks/Bqh8G2yR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Cyt8LZpN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ClJVXk_e.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.CyemF1yG.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.DFboIeD1.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.DiC8XFIH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.DXIyQILZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BsX-5h2w.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DdEUGy_v.js" rel="modulepreload">
@@ -32,10 +32,10 @@
 		<link href="/_app/immutable/chunks/yWx_1vUe.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DvyVAdoA.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/3gsecTea.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/3.RWEPX6B8.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/3.B0Jln7OZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ISdsov-F.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/eWPRky8_.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/B6aan0u7.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/9-yCha7e.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/UfIDI-FR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dg4uJei1.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BPVwp-J3.js" rel="modulepreload">
@@ -43,15 +43,15 @@
 		<link href="/_app/immutable/chunks/DCYw93gZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DgOJkruE.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/2tlPcHOe.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Cn2nWIoC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C8Y3w-Xr.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/26.CXLlOrRY.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/25.DC2SHW5O.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BhLIK611.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CS-piQRQ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/pGYaDZDM.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/CqS31bzD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvCe-Tr9.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><title>@fuzdev/fuz_docs</title>
-		<link href="/_app/immutable/assets/0.B7ZfHHUF.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.BRllvddL.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Breadcrumb.C59yMZ2n.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/DialogContent.DfiimBCd.css" rel="stylesheet">
@@ -93,7 +93,11 @@ published API docs where the package has no siblings. Attribute external
 inspiration in prose or link a URL. Backticked explanatory paths remain the
 escape hatch.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="5-import-specifiers-source-code-not-prose"><!--[--><!--[2-->5. Import specifiers (source code, not prose)<!--]--><!--]--><!----></h2><!----><!--]--><!--[8--><p><!--[--><!--[2-->Imports use the real source extension (<!--]--><!--[3--><!--[-1--><code>.ts</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>.svelte.ts</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>.svelte</code><!--]--><!--]--><!--[2-->),
 never <!--]--><!--[3--><!--[-1--><code>.js</code><!--]--><!--]--><!--[2-->-for-a-<!--]--><!--[3--><!--[-1--><code>.ts</code><!--]--><!--]--><!--[2-->-file, and pick the alias by <!--]--><!--[4--><strong><!--[--><!--[2-->whether the module
-ships<!--]--><!--]--><!----></strong><!--]--><!--[2-->:<!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>src/lib</code><!--]--><!--]--><!--[2--> (ships as <!--]--><!--[3--><!--[-1--><code>dist</code><!--]--><!--]--><!--[2-->) → relative only<!--]--><!--]--><!----></strong><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>./sibling.ts</code><!--]--><!--]--><!--[2-->). The build
+ships<!--]--><!--]--><!----></strong><!--]--><!--[2-->. Gro's loader and server builds enforce the extension: a relative or
+absolute import resolves to exactly the file it names, with no extension
+probing and no <!--]--><!--[3--><!--[-1--><code>.js</code><!--]--><!--]--><!--[2-->→<!--]--><!--[3--><!--[-1--><code>.ts</code><!--]--><!--]--><!--[2--> mapping (<!--]--><!--[3--><!--[-1--><code>./foo.ts</code><!--]--><!--]--><!--[2-->, not <!--]--><!--[3--><!--[-1--><code>./foo</code><!--]--><!--]--><!--[2--> or <!--]--><!--[3--><!--[-1--><code>./foo.js</code><!--]--><!--]--><!--[2--> — a
+<!--]--><!--[3--><!--[-1--><code>.js</code><!--]--><!--]--><!--[2--> specifier loads the <!--]--><!--[3--><!--[-1--><code>.js</code><!--]--><!--]--><!--[2--> file), and a <!--]--><!--[3--><!--[-1--><code>#lib/x.js</code><!--]--><!--]--><!--[2--> naming a <!--]--><!--[3--><!--[-1--><code>.ts</code><!--]--><!--]--><!--[2--> file
+is refused with the fix. Aliases:<!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>src/lib</code><!--]--><!--]--><!--[2--> (ships as <!--]--><!--[3--><!--[-1--><code>dist</code><!--]--><!--]--><!--[2-->) → relative only<!--]--><!--]--><!----></strong><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>./sibling.ts</code><!--]--><!--]--><!--[2-->). The build
 rewrites <!--]--><!--[3--><!--[-1--><code>.ts</code><!--]--><!--]--><!--[2-->→<!--]--><!--[3--><!--[-1--><code>.js</code><!--]--><!--]--><!--[2--> into <!--]--><!--[3--><!--[-1--><code>dist</code><!--]--><!--]--><!--[2--> (svelte-package 3 also rewrites <!--]--><!--[3--><!--[-1--><code>#</code><!--]--><!--]--><!--[2--> imports
 to relative ones, but <!--]--><!--[3--><!--[-1--><code>dist</code><!--]--><!--]--><!--[2--> is kept free of subpath imports by convention, and
 gro's dist tooling assumes it). The hard reason is generated and injected code:
@@ -131,18 +135,18 @@ prose; when several appear in one sentence, restructure as a bullet list.<!--]--
 			
 			<script>
 				{
-					__sveltekit_on81kf = {
+					__sveltekit_fl8xr2 = {
 						base: "",
-						version: "9b4b377f5849b057ed3f819cb0859b76d3bd89c3"
+						version: "ab88aa11f1c355bae1d4b7b4dd22aefa65ad209e"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CrLbZUT-.js").then(async (kit) => {
-						kit.init(__sveltekit_on81kf);
-						const app = await import("/_app/immutable/entry/app.CyemF1yG.js");
+						kit.init(__sveltekit_fl8xr2);
+						const app = await import("/_app/immutable/entry/app.DiC8XFIH.js");
 						kit.start(app, element, {
-							node_ids: [0, 3, 26],
+							node_ids: [0, 3, 25],
 							data: [null,null,null],
 							form: null,
 							error: null

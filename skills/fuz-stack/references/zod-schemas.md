@@ -85,7 +85,7 @@ export const package_resource = (config: Omit<PackageResourceInput, 'type'>): Pa
 
 ```typescript
 // fuz_app/primitive_schemas.ts — Zod 4 validators + brand
-export const Uuid = z.uuid().brand('Uuid');
+export const Uuid = z.uuid().toLowerCase().brand('Uuid'); // either case in, lowercase out
 export const Datetime = z.iso.datetime().brand('Datetime');
 
 // zzz/diskfile_types.ts — refine + brand for domain validation
@@ -136,6 +136,14 @@ export const DiskfileDirectoryPath = PathWithTrailingSlash.pipe(DiskfilePath).br
 `z.uuid()` / `z.iso.datetime()` (paired with brands);
 `z.toJSONSchema(schema)` (API surface snapshots); `z.prettifyError(error)`
 (error messages); `z.record(K, V)` (resource maps, JSON rows).
+
+Porting to fuz_schema, `z.uuid()` is `s.pipe(s.string, s.uuid)` and
+`z.iso.datetime()` is `s.pipe(s.string, s.iso_datetime)`, which serialize to
+fuz_schema's Rust crate where a `regex` doesn't. `uuid` also takes the max
+UUID in any case, and `iso_datetime` caps a fraction at 9 digits (fuz_schema's
+`docs/formats.md`). There is no email or URL kind: fuz_app's `Email` is its own
+regex, and a URL is fuz_util's `Url`. A `.toLowerCase()` after it becomes
+a fuz_schema `transform`, which doesn't serialize.
 
 - `z.null()` for HTTP input with no body (`input: z.null()` in route specs);
   `z.void()` / `z.void().optional()` for action specs with no input or output

@@ -352,7 +352,10 @@ present) — output written to generated files changes key order unless
 reordered. Zod's `.extend`/`.pick`/`.omit`/`.partial` become a spread of
 `def` into a factory (`s.object({...Base.def, x})`; fuz_schema's README §
 Composing object schemas), not helpers; a refined object is extended at its bare base, then
-piped.
+piped. `z.uuid()` and `z.iso.datetime()` become `s.pipe(s.string, s.uuid)` and
+`s.pipe(s.string, s.iso_datetime)`, which serialize to the Rust crate where a
+`regex` doesn't; there is no email or URL kind (./references/zod-schemas.md §
+Zod 4 Primitives).
 
 - **`z.strictObject()`** by default. `z.looseObject()` / `z.object()` only
   for external data, client-consumed response/error shapes, and extensible

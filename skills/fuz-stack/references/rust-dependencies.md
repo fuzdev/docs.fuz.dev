@@ -97,6 +97,7 @@ few approved crates are pinned at the member-crate level rather than the root:
 | -------- | ----------------------------------------------------------- |
 | `nix`    | POSIX syscalls (advisory `flock`, permissions)              |
 | `libc`   | Raw libc FFI for syscalls/types beyond `nix` (PTY, signals) |
+| `rustix` | Safe syscalls `nix` lacks, where `unsafe` is forbidden (zap's xattr reads for POSIX ACLs) |
 | `notify` | Filesystem watching (inotify / FSEvents)                    |
 | `landlock` | Linux Landlock sandboxing through a safe API (gro's confined eval: read-only roots, no write/exec, no TCP) |
 | `seccompiler` | Linux seccomp-bpf filters (the no-exec / no-socket backstop in fuzi and gro's confined eval) |

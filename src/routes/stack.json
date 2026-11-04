@@ -123,7 +123,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_ui",
-			"version": "0.221.0",
+			"version": "0.222.0",
 			"path": "fuz_ui",
 			"description": "Svelte component library and frontend helpers",
 			"glyph": "🧶",

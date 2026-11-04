@@ -57627,7 +57627,7 @@
 	"fuz_ui": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_ui",
-			"version": "0.221.0",
+			"version": "0.222.0",
 			"description": "Svelte component library and frontend helpers",
 			"tagline": "friendly user zystem",
 			"glyph": "🧶",

@@ -12,7 +12,7 @@
 		children: Snippet;
 	} = $props();
 
-	const library = new Library(library_json, '/fuz_docs');
+	const library = new Library(library_json, '/docs.fuz.dev');
 	library_context.set(() => library);
 </script>
 

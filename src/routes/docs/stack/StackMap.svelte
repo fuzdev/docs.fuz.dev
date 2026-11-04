@@ -64,7 +64,7 @@
 
 	const MIN_SCALE = 0.2;
 	const MAX_SCALE = 4;
-	const STORAGE_KEY = 'fuz_docs:stack_map';
+	const STORAGE_KEY = 'docs.fuz.dev:stack_map';
 
 	/** Radius in world units for a node with the given dependency fan-in. */
 	const node_radius = (fan_in: number): number => 12 + Math.min(fan_in, 8) * 2;

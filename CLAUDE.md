@@ -1,8 +1,8 @@
-# fuz_docs
+# docs.fuz.dev
 
 > experimental AI-generated docs and skills for Fuz, a zippy stack for human agency
 
-fuz_docs (`@fuzdev/fuz_docs`) hosts experimental AI-generated documentation
+docs.fuz.dev hosts experimental AI-generated documentation
 and agent skills for the [Fuz](https://fuz.dev/) ecosystem, designed
 for both human and machine consumption. Mostly poorly reviewed — conventions, patterns, and
 reference material for `@fuzdev` projects.
@@ -13,7 +13,7 @@ For coding conventions, see Skill(fuz-stack).
 
 ## Scope
 
-fuz_docs is an **experimental AI-generated docs site and skills repo**:
+docs.fuz.dev is an **experimental AI-generated docs site and skills repo**:
 
 - Static documentation site at docs.fuz.dev
 - AI agent skills for AI-assisted development

@@ -11,8 +11,8 @@ import type {
 } from '#lib/stack_graph_types.ts';
 import { stack_repos } from '#lib/stack_repos.ts';
 
-// Sibling repos live one level up from the fuz_docs repo root (the gen runs from
-// the repo root, so `process.cwd()` is the fuz_docs repo root and the workspace is its parent).
+// Sibling repos live one level up from the docs.fuz.dev repo root (the gen runs from
+// the repo root, so `process.cwd()` is the docs.fuz.dev repo root and the workspace is its parent).
 const DEV_DIR = join(process.cwd(), '..');
 
 /**

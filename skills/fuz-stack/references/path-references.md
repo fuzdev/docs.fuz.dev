@@ -116,9 +116,9 @@ is refused with the fix. Aliases:
 
 ## Web-rendered caveat
 
-In files published via mdz on a website (this skill renders on fuz_docs),
+In files published via mdz on a website (this skill renders on docs.fuz.dev),
 non-`.md` `./foo` and `../foo` examples must be backticked or mdz renders them
-as broken `<a>` tags. Bare relative `.md` links are fine — fuz_docs's
+as broken `<a>` tags. Bare relative `.md` links are fine — docs.fuz.dev's
 `skill_docs.gen.ts` rewrites them to routes. `~/dev/foo` and bare
 workspace-root paths are safe bare (mdz doesn't linkify those prefixes).
 

@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>@fuzdev/fuz_docs</title>
+	<title>docs.fuz.dev</title>
 </svelte:head>
 
 <ThemeRoot>

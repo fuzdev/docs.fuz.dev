@@ -129,7 +129,7 @@ resolves them.
   typed method enums, metatypes, and handler interfaces, delegating to
   fuz_app's `@fuzdev/fuz_app/actions/action_codegen.ts` helpers
   (`compose_gen_file`, `generate_action_method_enums`, …).
-- **Route-tree generation** — fuz_docs's `skill_docs.gen.ts` discovers skills
+- **Route-tree generation** — docs.fuz.dev's `skill_docs.gen.ts` discovers skills
   and returns a manifest, per-skill data files, and `+page.svelte` routes from
   one gen.
 - **Task registry** — a `src/gro_tasks.gen.ts` exporting gro's

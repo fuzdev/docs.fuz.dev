@@ -23,13 +23,24 @@ export const stack_nodes: Array<StackNode> = [
 		y: 960
 	},
 	{
+		name: 'docs.fuz.dev',
+		category: 'app',
+		language: 'ts',
+		description:
+			'experimental AI-generated docs and skills for Fuz, a zippy stack for human agency',
+		layer: 7,
+		fan_in: 0,
+		x: -375,
+		y: 120
+	},
+	{
 		name: 'fuz_app',
 		category: 'fullstack',
 		language: 'ts',
 		description: 'fullstack app library',
 		layer: 7,
 		fan_in: 1,
-		x: -300,
+		x: -225,
 		y: 120
 	},
 	{
@@ -39,7 +50,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'blog software from scratch with SvelteKit',
 		layer: 7,
 		fan_in: 0,
-		x: -150,
+		x: -75,
 		y: 120
 	},
 	{
@@ -48,7 +59,7 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'syntax styler for TypeScript, Svelte, Markdown, and more',
 		layer: 5,
-		fan_in: 7,
+		fan_in: 8,
 		x: 0,
 		y: 360
 	},
@@ -59,7 +70,7 @@ export const stack_nodes: Array<StackNode> = [
 		description:
 			'semantic-first CSS framework and design system: styled HTML defaults, themes derived from a few knobs, and utility classes generated from what you use',
 		layer: 4,
-		fan_in: 8,
+		fan_in: 9,
 		x: 0,
 		y: 480
 	},
@@ -70,7 +81,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'a tool for managing many repos',
 		layer: 7,
 		fan_in: 0,
-		x: 0,
+		x: 75,
 		y: 120
 	},
 	{
@@ -80,7 +91,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'starter template for SvelteKit web apps, Rust native tools, or both',
 		layer: 7,
 		fan_in: 0,
-		x: 150,
+		x: 225,
 		y: 120
 	},
 	{
@@ -89,7 +100,7 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'Svelte component library and frontend helpers',
 		layer: 6,
-		fan_in: 6,
+		fan_in: 7,
 		x: 0,
 		y: 240
 	},
@@ -99,7 +110,7 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'utility belt for JS',
 		layer: 1,
-		fan_in: 11,
+		fan_in: 12,
 		x: 0,
 		y: 840
 	},
@@ -110,7 +121,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'homepage for Fuz, free software for human agency',
 		layer: 7,
 		fan_in: 0,
-		x: 300,
+		x: 375,
 		y: 120
 	},
 	{
@@ -119,7 +130,7 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'security-first JS runtime and toolchain on V8',
 		layer: 3,
-		fan_in: 7,
+		fan_in: 8,
 		x: 0,
 		y: 600
 	},
@@ -130,7 +141,7 @@ export const stack_nodes: Array<StackNode> = [
 		description:
 			'a strict markdown dialect built for streaming, Svelte authoring, docs websites, and untrusted content',
 		layer: 2,
-		fan_in: 8,
+		fan_in: 9,
 		x: 0,
 		y: 720
 	},
@@ -140,7 +151,7 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'static analysis for TypeScript and Svelte',
 		layer: 0,
-		fan_in: 12,
+		fan_in: 13,
 		x: 75,
 		y: 960
 	},
@@ -161,6 +172,46 @@ export const stack_edges: Array<StackEdge> = [
 	{
 		from: 'blake3',
 		to: 'fuz_util',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'blake3',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'fuz_code',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'fuz_css',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'fuz_ui',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'fuz_util',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'gro',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'mdz',
+		kind: 'dev'
+	},
+	{
+		from: 'docs.fuz.dev',
+		to: 'svelte-docinfo',
 		kind: 'dev'
 	},
 	{

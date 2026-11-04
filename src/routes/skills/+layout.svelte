@@ -10,7 +10,7 @@
 	// Skill docs render with `Mdz`, whose injected `DocsLink` resolves backticked
 	// identifiers against `library_context` — so the `/skills` subtree provides its
 	// own (this section loads the heavy analyzed `modules`; the landing doesn't).
-	const library = new Library(library_json, '/fuz_docs');
+	const library = new Library(library_json, '/docs.fuz.dev');
 	library_context.set(() => library);
 </script>
 

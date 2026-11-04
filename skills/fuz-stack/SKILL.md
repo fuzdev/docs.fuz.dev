@@ -44,7 +44,7 @@ Each package's `CLAUDE.md` is authoritative for what it actually uses.
 | `mdz`          | minimal markdown dialect — parser, renderer, Svelte preprocessor                |
 | `fuz_ui`       | Svelte 5 components — themes, layouts, overlays, auto-docs                      |
 | `fuz_app`      | stack spine — auth, sessions, DB, SSE, route specs                              |
-| `fuz_docs`     | experimental AI-generated docs and skills for Fuz                               |
+| `docs.fuz.dev` | experimental AI-generated docs and skills for Fuz                               |
 | `fuz_template` | starter template — SvelteKit web apps, Rust native tools, or both               |
 | `fuz_code`     | syntax styler for TypeScript, Svelte, Markdown, and more                        |
 | `fuz_blog`     | blog software from scratch with SvelteKit                                       |

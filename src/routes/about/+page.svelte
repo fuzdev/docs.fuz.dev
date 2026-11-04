@@ -9,13 +9,13 @@
 
 	import { library_json } from '#routes/library.ts';
 
-	const library = new Library(library_json, '/fuz_docs');
+	const library = new Library(library_json, '/docs.fuz.dev');
 	library_context.set(() => library);
 	const site = site_context.get();
 </script>
 
 <svelte:head>
-	<title>about - fuz_docs</title>
+	<title>about - docs.fuz.dev</title>
 </svelte:head>
 
 <main class="width_atmost_md pb_xl9">

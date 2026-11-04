@@ -15,7 +15,7 @@
 <main class="box width:100%">
 	<div class="box width_atmost_md mb_xl9">
 		<section class="box">
-			<h1 class="mb_sm" style:margin-top={MAIN_HEADER_MARGIN_TOP}>fuz_docs</h1>
+			<h1 class="mb_sm" style:margin-top={MAIN_HEADER_MARGIN_TOP}>docs.fuz.dev</h1>
 			<div class="box mb_lg"><Svg data={logo_fuz} size="var(--icon_size_xl2)" /></div>
 			<blockquote
 				class="unstyled panel shade_05 shadow_bottom_sm py_sm px_xl mb_xl3 text-align:center"
@@ -25,7 +25,7 @@
 			<div class="mb_lg p_xs2 shadow_md border_radius_sm">
 				<div class="width_atmost_sm panel p_lg shadow_inset_xs shade_00">
 					<p>
-						fuz_docs is an AI-generated site with docs and
+						docs.fuz.dev is an AI-generated site with docs and
 						<a href="https://agentskills.io/">agent skills</a> for the
 						<a href="https://www.fuz.dev/">Fuz</a> ecosystem, designed for both human and machine
 						consumption.

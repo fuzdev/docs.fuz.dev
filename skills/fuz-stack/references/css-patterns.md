@@ -527,7 +527,7 @@ transitions; rendering contexts (canvas, 3D); theming APIs for children
 ```
 
 kebab-case for local classes is the **target**, adopted in zzz and fuz_ui; the
-fuz_css and fuz_docs sites still lean `snake_case` locally. New code uses
+fuz_css and docs.fuz.dev sites still lean `snake_case` locally. New code uses
 kebab-case.
 
 ## When to Use Classes vs Styles

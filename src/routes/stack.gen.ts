@@ -50,7 +50,7 @@ export const gen: Gen = async ({ origin_path, log }) => {
 	if (node) toolchain.node = node;
 
 	// Read exact installed versions from node_modules
-	const node_modules = join(DEV_DIR, 'fuz_docs', 'node_modules');
+	const node_modules = join(DEV_DIR, 'docs.fuz.dev', 'node_modules');
 	const toolchain_packages: Array<[string, string]> = [
 		['svelte', 'svelte'],
 		['sveltekit', '@sveltejs/kit'],

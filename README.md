@@ -1,4 +1,4 @@
-# fuz_docs
+# docs.fuz.dev
 
 > experimental AI-generated docs and
 > [skills](https://agentskills.io/) for [Fuz](https://fuz.dev/),
@@ -45,8 +45,8 @@ Copy a skill folder to `~/.claude/skills/`, e.g.
 
 You may also try pointing your agent to:
 
-- [github.com/fuzdev/fuz_docs/blob/main/skills/fuz-stack/SKILL.md](https://github.com/fuzdev/fuz_docs/blob/main/skills/fuz-stack/SKILL.md)
-- [github.com/fuzdev/fuz_docs/blob/main/skills/grimoire/SKILL.md](https://github.com/fuzdev/fuz_docs/blob/main/skills/grimoire/SKILL.md)
+- [github.com/fuzdev/docs.fuz.dev/blob/main/skills/fuz-stack/SKILL.md](https://github.com/fuzdev/docs.fuz.dev/blob/main/skills/fuz-stack/SKILL.md)
+- [github.com/fuzdev/docs.fuz.dev/blob/main/skills/grimoire/SKILL.md](https://github.com/fuzdev/docs.fuz.dev/blob/main/skills/grimoire/SKILL.md)
 
 ## Contributing
 

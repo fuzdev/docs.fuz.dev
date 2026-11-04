@@ -27,12 +27,12 @@
 		</header>
 		<Breadcrumb />
 	</section>
-	<EcosystemLinksPanel />
-	<section class="box width:100%">
+	<section class="box mb_lg">
 		<div class="panel p_md width_atmost_md">
 			<LibrarySummary {library} />
 		</div>
 	</section>
+	<EcosystemLinksPanel />
 	<section class="box">
 		<DocsFooter repo_url={site.repo_url} root_url={FUZ_DEV_URL}>
 			<div class="mb_xl5">

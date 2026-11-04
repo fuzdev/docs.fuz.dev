@@ -3,7 +3,6 @@ import ApiPage from './api/+page.svelte';
 import FuzStackPage from './fuz-stack/+page.svelte';
 import GrimoirePage from './grimoire/+page.svelte';
 import IntroductionPage from './introduction/+page.svelte';
-import LibraryPage from './library/+page.svelte';
 import StackPage from './stack/+page.svelte';
 
 export const tomes: Array<Tome> = [
@@ -35,7 +34,7 @@ export const tomes: Array<Tome> = [
 		slug: 'stack',
 		category: 'reference',
 		Component: StackPage,
-		related_tomes: ['api', 'library'],
+		related_tomes: ['api'],
 		related_modules: [],
 		related_declarations: []
 	},
@@ -43,15 +42,7 @@ export const tomes: Array<Tome> = [
 		slug: 'api',
 		category: 'reference',
 		Component: ApiPage,
-		related_tomes: ['stack', 'library'],
-		related_modules: [],
-		related_declarations: []
-	},
-	{
-		slug: 'library',
-		category: 'reference',
-		Component: LibraryPage,
-		related_tomes: ['api', 'stack'],
+		related_tomes: ['stack'],
 		related_modules: [],
 		related_declarations: []
 	}

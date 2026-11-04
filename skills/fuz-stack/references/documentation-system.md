@@ -169,9 +169,8 @@ typecheck or tests — so it must be set by a common ancestor of every reader
 (`DeclarationLink`, `ModuleLink`, `TypeLink`, `DocsTertiaryNav`, `Mdz` with
 an injected `DocsLink`). Any consumer outside `/docs` (an `/about` page, a
 `/skills` subtree) provides its own from the same `library.ts`. Components
-taking a `library` prop project it for their subtree — `LibraryDetail` sets it
-directly; `ApiIndex`/`ApiModule` resolve prop-or-ancestor via
-`set_library_context_with_fallback` — so an aggregator can render a foreign
+taking a `library` prop project it for their subtree — `ApiIndex`/`ApiModule`
+resolve prop-or-ancestor via `set_library_context_with_fallback` — so an aggregator can render a foreign
 library without touching the site-level context. After moving any provider,
 verify with `gro build`.
 
@@ -219,8 +218,8 @@ root), `tomes_context` (set by `Docs`), `tome_context` (set by `TomeContent`),
 `docs_links_context` (`DocsLinks`, fragment tracking).
 
 Components a consumer wires: `Docs`, `TomeContent`, `TomeSection`,
-`TomeSectionHeader`, `ApiIndex`, `ApiModule`, `LibrarySummary` /
-`LibraryDetail` (metadata card / expanded package info). The full component
+`TomeSectionHeader`, `ApiIndex`, `ApiModule`, `LibrarySummary` (metadata
+card). The full component
 set is fuz_ui inventory (its `CLAUDE.md`). fuz_ui defines everything; other
 projects import unchanged — only tomes, categories, and branding differ.
 

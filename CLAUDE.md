@@ -77,7 +77,7 @@ auto-generated API docs.
 ### Routes
 
 - `/` - Landing page with description, theme controls, ProjectLinks
-- `/about` - Library detail, ecosystem links
+- `/about` - Library summary, ecosystem links
 - `/docs` - Tome-based documentation index
 - `/docs/introduction` - Ecosystem introduction
 - `/docs/fuz-stack` - Fuz stack conventions overview (links to skill docs)
@@ -85,7 +85,6 @@ auto-generated API docs.
 - `/docs/stack` - Stack libraries overview with an interactive, zoomable dependency map
 - `/docs/api` - Auto-generated API documentation
 - `/docs/api/[...module_path]` - Per-module API pages
-- `/docs/library` - Library metadata page
 - `/skills` - Skills index (auto-populated from manifest)
 - `/skills/{skill}` - Browsable skill docs (generated, rendered with mdz)
 - `/skills/{skill}/references` - Generated references index

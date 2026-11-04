@@ -76,10 +76,6 @@
 					<td><TomeLink slug="api" /></td>
 					<td>Auto-generated TypeScript and Svelte API documentation</td>
 				</tr>
-				<tr>
-					<td><TomeLink slug="library" /></td>
-					<td>Package metadata and exports</td>
-				</tr>
 			</tbody>
 		</table>
 	</TomeSection>

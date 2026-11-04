@@ -57627,7 +57627,7 @@
 	"fuz_ui": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_ui",
-			"version": "0.222.0",
+			"version": "0.222.1",
 			"description": "Svelte component library and frontend helpers",
 			"tagline": "friendly user zystem",
 			"glyph": "🧶",
@@ -79429,11 +79429,11 @@
 							"kind": "function",
 							"docComment": "Single JSON-RPC 2.0 endpoint — the canonical RPC transport binding.\n\nReturns two `RouteSpec` entries (GET + POST on the same path) for\n`apply_route_specs`. The internal dispatcher handles:\n\n1. **Parse envelope** — POST: JSON body through `classify_jsonrpc_message`. GET: `method`\n   and `params` from query string.\n2. **Lookup method** — find the `RpcAction` by method name.\n3. **Pre-authorization auth** — short-circuit `unauthenticated` when no\n   account is on the request, before any later phase runs.\n4. **Authorization phase** — resolve the acting actor (when the action's\n   auth requires role_grants or its input declares `acting?: ActingActor`)\n   and build the request context. Runs before input validation so\n   role-grant-grain auth checks return 403 before 400 invalid_params;\n   `acting` is read from raw params by `read_acting`, which parses it as\n   a UUID and treats anything else as omitted.\n5. **Post-authorization auth** — enforce role / keeper requirements\n   against the request context.\n6. **Rate limit** — per-action IP / account throttling, ahead of params\n   validation so a malformed call still charges.\n7. **Validate params** — parse input against the action's `input` schema.\n8. **Dispatch** — acquire DB handle (transaction for mutations, pool for reads),\n   construct `ActionContext`, call handler, return JSON-RPC response.\n\nGET is restricted to `side_effects: false` actions, and every response the\nGET handler writes, its refusals included, carries `Cache-Control: no-store`\n(`RPC_GET_CACHE_CONTROL`) — a refusal by middleware ahead of it does not.\nAll errors use JSON-RPC format: `{jsonrpc, id, error: {code, message, data?}}`.\n\nThe RouteSpecs use `auth: {type: 'none'}` because auth is checked per-action\ninside the dispatcher, and `transaction: false` because transaction scope\nis per-action (mutations get a transaction, reads get pool). They are\nmarked `reads_credential`, since the dispatcher reads the resolved\ncredential, so assembly refuses the pair mounted outside the auth\nmiddleware's scope (`assert_credential_routes_in_auth_scope`) whether it\narrives as `rpc_endpoints` or through `create_route_specs`.",
 							"typeSignature": "(options: CreateRpcEndpointOptions): RouteSpec[]",
-							"sourceLine": 123,
+							"sourceLine": 124,
 							"throws": [
 								{
 									"type": "Error",
-									"description": "if two actions share the same `spec.method` (registration-time\nduplicate detection); also throws if any action's `spec.input` is\n`z.null()` (JSON-RPC 2.0 §4.2 forbids `params: null` on the wire — use\n`z.void()` for parameterless methods)."
+									"description": "if two actions share the same `spec.method` (registration-time\nduplicate detection); also throws if any action's `spec.input` is a null\nschema (`z.null()` or fuz_schema `literal(null)`; JSON-RPC 2.0 §4.2 forbids\n`params: null` on the wire — use a void schema for parameterless methods)\nor its `spec.output` is a void schema."
 								}
 							],
 							"parameters": [
@@ -81230,7 +81230,7 @@
 							"kind": "interface",
 							"docComment": "Result returned by `compile_action_registry`.",
 							"typeSignature": "ActionRegistryCompileResult",
-							"sourceLine": 49,
+							"sourceLine": 50,
 							"members": [
 								{
 									"name": "action_map",
@@ -81259,7 +81259,7 @@
 							"kind": "function",
 							"docComment": "Validate registry-time invariants and build the dispatcher's\nmethod → action lookup.",
 							"typeSignature": "(actions: readonly Action<{ method: string; initiator: \"frontend\" | \"backend\" | \"both\"; side_effects: boolean; input: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>; output: ZodType<unknown, unknown, $ZodTypeInternals<...>>; ... 6 more ...; rate_limit?: \"both\" | ... 2 more ... | undefined; } | { ...; } | { ...; }>[], ctx_label: string): ActionRegistryCompileResult",
-							"sourceLine": 67,
+							"sourceLine": 68,
 							"throws": [
 								{
 									"type": "Error",
@@ -81296,7 +81296,7 @@
 							"returnType": "ActionRegistryCompileResult"
 						}
 					],
-					"moduleComment": "Shared registration loop for action-dispatcher endpoints.\n\n`create_rpc_endpoint` (HTTP RPC) and `register_action_ws` (WebSocket)\nboth build a `Map<method, RpcAction>` from a list of action specs and\ngate the build on the same checks, in this order (named rather than\nnumbered — \"registry-time invariant N\" elsewhere in the codebase refers to\nthe `RouteAuth` cross-axis set in `http/auth_shape.ts`, a different list):\n\n- **Auth-shape biconditional** — per `assert_route_auth_acting_biconditional`\n  in `http/auth_shape.ts`: `auth.actor !== 'none' ⟺ input declares\n  acting?: ActingActor` (that set's invariant 2). Fires for every spec with\n  non-null auth.\n- **No `auth.required_scope` on an action** — `ActionSpec.auth` is the same\n  `RouteAuth` a route spec carries, so the field parses here, but only\n  `apply_route_specs` mounts a guard from it and `perform_action` never\n  reads it. Declaring it on an action would be a security control that\n  silently does nothing, which is the exact shape token scoping was built\n  to refuse. Rejected loudly instead; actions are governed by the\n  per-method scope gate inside `perform_action`, which derives the same\n  `rpc:<method>` capability from `spec.method` rather than trusting a\n  hand-written one.\n- **Rate-limit / account axis** — `rate_limit: 'account' | 'both'`\n  requires `auth.account === 'required'`; without an account on the\n  request there is no key for the per-account bucket.\n- **JSON-RPC §4.2 wire validity** — `request_response` specs whose\n  handler will reach the dispatch map must not use `z.null()` for\n  input (the wire format forbids `\"params\": null`; use `z.void()`\n  for parameterless methods), nor `z.void()` for output (a response\n  always carries a `result`, which clients validate against\n  `spec.output`; use `z.null()` for methods with nothing to return).\n- **Duplicate method names** — JSON-RPC keys on `method`, so every\n  spec in the array must declare a unique `method` regardless of\n  kind / handler presence.\n\nPre-consolidation each dispatcher inlined these checks; the comment\nin `actions/register_action_ws.ts` literally said \"mirrors the HTTP RPC\nregistration check\" but nothing kept them mirrored. Centralizing the\nloop closes the most likely future drift surface.",
+					"moduleComment": "Shared registration loop for action-dispatcher endpoints.\n\n`create_rpc_endpoint` (HTTP RPC) and `register_action_ws` (WebSocket)\nboth build a `Map<method, RpcAction>` from a list of action specs and\ngate the build on the same checks, in this order (named rather than\nnumbered — \"registry-time invariant N\" elsewhere in the codebase refers to\nthe `RouteAuth` cross-axis set in `http/auth_shape.ts`, a different list):\n\n- **Auth-shape biconditional** — per `assert_route_auth_acting_biconditional`\n  in `http/auth_shape.ts`: `auth.actor !== 'none' ⟺ input declares\n  acting?: ActingActor` (that set's invariant 2). Fires for every spec with\n  non-null auth.\n- **No `auth.required_scope` on an action** — `ActionSpec.auth` is the same\n  `RouteAuth` a route spec carries, so the field parses here, but only\n  `apply_route_specs` mounts a guard from it and `perform_action` never\n  reads it. Declaring it on an action would be a security control that\n  silently does nothing, which is the exact shape token scoping was built\n  to refuse. Rejected loudly instead; actions are governed by the\n  per-method scope gate inside `perform_action`, which derives the same\n  `rpc:<method>` capability from `spec.method` rather than trusting a\n  hand-written one.\n- **Rate-limit / account axis** — `rate_limit: 'account' | 'both'`\n  requires `auth.account === 'required'`; without an account on the\n  request there is no key for the per-account bucket.\n- **JSON-RPC §4.2 wire validity** — `request_response` specs whose\n  handler will reach the dispatch map must not use a null schema\n  (`z.null()`, fuz_schema `literal(null)`) for input (the wire format\n  forbids `\"params\": null`; use a void schema, `z.void()` or fuz_schema\n  `s.void`, for parameterless methods), nor a void schema for output (a\n  response always carries a `result`, which clients validate against\n  `spec.output`; use a null schema for methods with nothing to return).\n- **Duplicate method names** — JSON-RPC keys on `method`, so every\n  spec in the array must declare a unique `method` regardless of\n  kind / handler presence.\n\nPre-consolidation each dispatcher inlined these checks; the comment\nin `actions/register_action_ws.ts` literally said \"mirrors the HTTP RPC\nregistration check\" but nothing kept them mirrored. Centralizing the\nloop closes the most likely future drift surface.",
 					"dependencies": [
 						"actions/action_types.ts",
 						"http/auth_shape.ts",
@@ -84105,7 +84105,7 @@
 							"returnDescription": "the envelope text and the HTTP status to send it with"
 						}
 					],
-					"moduleComment": "Transport-agnostic dispatch core shared by HTTP RPC and WebSocket\naction dispatchers.\n\n`perform_action` runs the post-parse pipeline that every action-spec\nhandler must traverse:\n\n1. **Pre-authorization auth (401)** — short-circuits unauthenticated callers\n   on `'required'` axes.\n2. **Authorization phase** — when `auth.actor !== 'none'` (or\n   `auth.account !== 'none' && actor === 'none'`), resolves the actor\n   via `apply_authorization_phase` against the resolved credential's account\n   plus the request's `acting` selector, read off the raw params by\n   `read_acting`. Failures fold into a JSON-RPC error envelope. The\n   test-harness escape hatch lives in the caller — pass\n   `preset.request_context` to skip the live phase and use a pre-baked\n   context instead.\n3. **Post-authorization auth (403)** — gates `auth.credential_types`,\n   the credential's scope (`resolved_auth_scope`), and `auth.roles` against\n   the resolved context.\n4. **Rate limit (429)** — per-action IP / account throttling, throttle-\n   requests semantics (every invocation records, regardless of outcome).\n   Ahead of validation so the budget is charged for malformed params too\n   — a flood of garbage bodies must cost the sender its quota, not slip\n   past the limiter on a cheap 400 — and so a throttled caller never pays\n   for schema work. The account key is the credential's own account\n   (`request_context.account.id`), settled by authentication, so the gate\n   sits behind the authority gates by choice rather than necessity: a\n   caller those gates refuse is answered 403, not 429.\n5. **Validate params (400)** — first, object `params` holding an own\n   `__proto__` key at any depth (`json_has_own_proto_key`) are refused\n   with `data.reason` `params_proto_key` (`ERROR_PARAMS_PROTO_KEY`), on\n   every input schema, before it runs; then\n   `spec.input` parses the params (`parse_any`, Zod or fuz_schema) with\n   `z.void()` / `?? {}` rules (`to_input_params`). A refusal is the generic\n   `invalid params`, with `data.reason` when the first issue's field\n   declares an `invalid_reason` (`to_invalid_params_error`) and the\n   library's issues under DEV only. Runs **after** the authority gates: a\n   400 describing the action's input shape to a caller those gates\n   refuse would confirm the method exists and describe how to call it,\n   to a channel that should have learned nothing. Coarse authority\n   facts before fine ones, and no shape disclosure before authority is\n   settled — the same argument that puts the credential gate ahead of\n   the scope gate. The cost: a malformed request from an *authenticated*\n   caller pays for the authorization phase's actor + role_grant reads\n   before being rejected, rather than being turned away by validation\n   first. Not a new DoS lever — the same caller reaches that work anyway\n   by sending well-formed params — but there is no cheap-rejection path\n   for buggy clients.\n6. **Dispatch + DEV-only output validation + error normalization** —\n   `spec.side_effects` picks transaction (`deps.db.transaction`) vs\n   pool. Handler throws roll back the transaction; the catch sits\n   outside the transaction boundary. Handler outputs are validated\n   against `spec.output` under DEV (logs an error on mismatch, never\n   throws, never mutates the result).\n\nThe function is pure data — it never touches a Hono context, so HTTP\nRPC and WS dispatch call into it the same way and bind the discriminated\n`PerformActionResult` to their wire shape.",
+					"moduleComment": "Transport-agnostic dispatch core shared by HTTP RPC and WebSocket\naction dispatchers.\n\n`perform_action` runs the post-parse pipeline that every action-spec\nhandler must traverse:\n\n1. **Pre-authorization auth (401)** — short-circuits unauthenticated callers\n   on `'required'` axes.\n2. **Authorization phase** — when `auth.actor !== 'none'` (or\n   `auth.account !== 'none' && actor === 'none'`), resolves the actor\n   via `apply_authorization_phase` against the resolved credential's account\n   plus the request's `acting` selector, read off the raw params by\n   `read_acting`. Failures fold into a JSON-RPC error envelope. The\n   test-harness escape hatch lives in the caller — pass\n   `preset.request_context` to skip the live phase and use a pre-baked\n   context instead.\n3. **Post-authorization auth (403)** — gates `auth.credential_types`,\n   the credential's scope (`resolved_auth_scope`), and `auth.roles` against\n   the resolved context.\n4. **Rate limit (429)** — per-action IP / account throttling, throttle-\n   requests semantics (every invocation records, regardless of outcome).\n   Ahead of validation so the budget is charged for malformed params too\n   — a flood of garbage bodies must cost the sender its quota, not slip\n   past the limiter on a cheap 400 — and so a throttled caller never pays\n   for schema work. The account key is the credential's own account\n   (`request_context.account.id`), settled by authentication, so the gate\n   sits behind the authority gates by choice rather than necessity: a\n   caller those gates refuse is answered 403, not 429.\n5. **Validate params (400)** — first, object `params` holding an own\n   `__proto__` key at any depth (`json_has_own_proto_key`) are refused\n   with `data.reason` `params_proto_key` (`ERROR_PARAMS_PROTO_KEY`), on\n   every input schema, before it runs; then\n   `spec.input` parses the params (`parse_any`, Zod or fuz_schema) with\n   void / `?? {}` rules (`to_input_params`). A refusal is the generic\n   `invalid params`, with `data.reason` when the first issue's field\n   declares an `invalid_reason` (`to_invalid_params_error`) and the\n   library's issues under DEV only. Runs **after** the authority gates: a\n   400 describing the action's input shape to a caller those gates\n   refuse would confirm the method exists and describe how to call it,\n   to a channel that should have learned nothing. Coarse authority\n   facts before fine ones, and no shape disclosure before authority is\n   settled — the same argument that puts the credential gate ahead of\n   the scope gate. The cost: a malformed request from an *authenticated*\n   caller pays for the authorization phase's actor + role_grant reads\n   before being rejected, rather than being turned away by validation\n   first. Not a new DoS lever — the same caller reaches that work anyway\n   by sending well-formed params — but there is no cheap-rejection path\n   for buggy clients.\n6. **Dispatch + DEV-only output validation + error normalization** —\n   `spec.side_effects` picks transaction (`deps.db.transaction`) vs\n   pool. Handler throws roll back the transaction; the catch sits\n   outside the transaction boundary. Handler outputs are validated\n   against `spec.output` under DEV (logs an error on mismatch, never\n   throws, never mutates the result).\n\nThe function is pure data — it never touches a Hono context, so HTTP\nRPC and WS dispatch call into it the same way and bind the discriminated\n`PerformActionResult` to their wire shape.",
 					"dependencies": [
 						"actions/action_types.ts",
 						"actions/peer_request.ts",
@@ -127790,20 +127790,16 @@
 							],
 							"returnType": "PipeSchema<number, Schema<string, string, \"string\", undefined>>",
 							"returnTypeInfo": {
-								"kind": "reference",
-								"name": "PipeSchema",
-								"typeArgs": [
-									{
-										"kind": "intrinsic",
-										"text": "number"
-									},
+								"kind": "intersection",
+								"alias": "PipeSchema",
+								"members": [
 									{
 										"kind": "reference",
 										"name": "Schema",
 										"typeArgs": [
 											{
 												"kind": "intrinsic",
-												"text": "string"
+												"text": "number"
 											},
 											{
 												"kind": "intrinsic",
@@ -127811,14 +127807,353 @@
 											},
 											{
 												"kind": "literal",
-												"value": "string",
-												"text": "\"string\""
+												"value": "pipe",
+												"text": "\"pipe\""
 											},
 											{
-												"kind": "intrinsic",
-												"text": "undefined"
+												"kind": "array",
+												"element": {
+													"kind": "union",
+													"members": [
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"string\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"number\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"bigint\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"boolean\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"object\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"literal\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"unknown\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"record\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"array\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"union\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"nullable\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"optional\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"transform\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"pipe\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"lazy\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"check\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"uuid\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"one_of\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"with_default\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"with_default_fn\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"loose_object\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"strip_object\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"object_with_rest\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"variant\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"min_length\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"max_length\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"min_value\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"max_value\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"integer\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"safe_integer\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"regex\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"iso_datetime\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"to_lower_case\""
+																}
+															]
+														}
+													]
+												},
+												"readonly": true
 											}
 										]
+									},
+									{
+										"kind": "object",
+										"text": "{ readonly '~types'?: { readonly input: string; readonly first: Schema<string, string, \"string\", undefined>; } | undefined; }"
 									}
 								]
 							}
@@ -127830,20 +128165,16 @@
 							"typeSignature": "PipeSchema<boolean, Schema<string, string, \"string\", undefined>>",
 							"sourceLine": 92,
 							"typeInfo": {
-								"kind": "reference",
-								"name": "PipeSchema",
-								"typeArgs": [
-									{
-										"kind": "intrinsic",
-										"text": "boolean"
-									},
+								"kind": "intersection",
+								"alias": "PipeSchema",
+								"members": [
 									{
 										"kind": "reference",
 										"name": "Schema",
 										"typeArgs": [
 											{
 												"kind": "intrinsic",
-												"text": "string"
+												"text": "boolean"
 											},
 											{
 												"kind": "intrinsic",
@@ -127851,14 +128182,353 @@
 											},
 											{
 												"kind": "literal",
-												"value": "string",
-												"text": "\"string\""
+												"value": "pipe",
+												"text": "\"pipe\""
 											},
 											{
-												"kind": "intrinsic",
-												"text": "undefined"
+												"kind": "array",
+												"element": {
+													"kind": "union",
+													"members": [
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"string\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"number\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"bigint\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"boolean\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"object\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"literal\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"unknown\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"record\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"array\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"union\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"nullable\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"optional\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"transform\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"pipe\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"lazy\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"check\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"uuid\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"one_of\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"with_default\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"with_default_fn\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"loose_object\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"strip_object\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"object_with_rest\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"variant\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"min_length\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"max_length\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"min_value\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"max_value\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"integer\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"safe_integer\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"regex\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"iso_datetime\""
+																}
+															]
+														},
+														{
+															"kind": "reference",
+															"name": "SchemaOfKind",
+															"typeArgs": [
+																{
+																	"kind": "other",
+																	"text": "\"to_lower_case\""
+																}
+															]
+														}
+													]
+												},
+												"readonly": true
 											}
 										]
+									},
+									{
+										"kind": "object",
+										"text": "{ readonly '~types'?: { readonly input: string; readonly first: Schema<string, string, \"string\", undefined>; } | undefined; }"
 									}
 								]
 							}
@@ -128310,7 +128980,7 @@
 							"kind": "type",
 							"docComment": "`acting` field shared by every input that needs the caller's acting actor.\nDeclaring `acting: ActingActor` on a route or action input signals to the\ndispatcher's authorization phase to resolve an actor against the\nauthenticated account: it runs `resolve_acting_actor`, builds the\nactor-bound `RequestContext`, and loads role_grants before auth guards fire.\n\nResolution rules: omitted + 1 actor → use it; omitted + multiple actors →\n`actor_required` with the available list; supplied + on the account → use\nit; supplied + foreign actor → `actor_not_on_account`.\n\nAccount-grain routes — input doesn't declare `acting` and auth doesn't\nrequire role_grants — skip resolution entirely; their `RequestContext.actor`\nis `null` and the audit envelope's `actor_id` stays null.\n\nLives next to `RouteAuth` because the two are paired by registry-time\ninvariant 2: `auth.actor !== 'none'` ⟺ input (or query, on REST GETs)\ndeclares `acting?: ActingActor`. Keeping the contract in one module\nremoves the http/ → auth/ import that an earlier split forced.",
 							"typeSignature": "(string & $brand<\"Uuid\">) | undefined",
-							"sourceLine": 63,
+							"sourceLine": 66,
 							"typeInfo": {
 								"kind": "union",
 								"members": [
@@ -128347,7 +129017,7 @@
 							"kind": "function",
 							"docComment": "Read an `acting` selector out of an unvalidated value.\n\nThe authorization phase runs **before** input validation on both dispatchers\n(see `http/CLAUDE.md` §Validation pipeline), so it reads the selector raw.\n\n**A malformed selector reads as omitted, not as an error.** Safe because\n`acting` only ever picks among actors the resolved account already owns — a\nvalue that names nothing grants nothing — and because the typed input schema\nrejects it a step later, so the caller still gets a 400. Refusing here\ninstead would put an input-shape complaint ahead of the authority gates,\nwhich is the ordering this pipeline exists to avoid.\n\nThe dispatchers pass through here so that rule has one home: the action\ndispatcher's `read_acting` and the REST authorization handler's\n`read_route_acting`. Twin of the Rust dispatcher's `read_acting`. The status\nroute and the WS upgrade read the raw `?acting=` through it too; neither has\nan input schema behind it, so there a malformed selector is final (the\nstatus route answers account-only).",
 							"typeSignature": "(value: unknown): string | undefined",
-							"sourceLine": 88,
+							"sourceLine": 91,
 							"parameters": [
 								{
 									"name": "value",
@@ -128376,7 +129046,7 @@
 							"kind": "type",
 							"docComment": "Per-axis auth state — names the dispatcher's behavior on `account` and\n`actor` independently:\n\n- `'none'` — explicitly skipped, even when the credential provides it.\n  Public actions (no auth surface) and notifications declare this.\n- `'optional'` — surfaced if the credential provides it, null otherwise.\n  Identity-aware reads with anonymous fallback (cell_get-style) declare\n  this on `account` / `actor`.\n- `'required'` — must be resolved; the dispatcher rejects requests that\n  fail to provide it (401 for `account === 'required'` without a\n  credential; the authorization phase 4xx for `actor === 'required'`\n  without an actor binding).",
 							"typeSignature": "\"optional\" | \"none\" | \"required\"",
-							"sourceLine": 108,
+							"sourceLine": 111,
 							"typeInfo": {
 								"kind": "union",
 								"members": [
@@ -128404,7 +129074,7 @@
 							"kind": "type",
 							"docComment": "The canonical auth shape used by both `ActionSpec.auth` and\n`RouteSpec.auth`.\n\nCross-axis registry invariants enforced via `.superRefine`:\n\n1. **Roles imply actor.** `roles?.length` ⟹ `actor === 'required'`.\n   Role checks read the actor's role_grants, so a role-gated spec without\n   a resolved actor would have nothing to check.\n3. **No accountless actors yet.** `account === 'none' && actor !== 'none'`\n   is invalid in v1. The credential resolver always binds account before\n   actor today; agent-token / group-actor credentials will lift this.\n4. **Unrestricted is leaf.** `account === 'none' && actor === 'none'`\n   ⟹ no `roles`, no `credential_types` (nothing left to gate). The same\n   rule covers `required_scope`, but enforcing it needs the capability\n   vocabulary from `auth/`, so it lives with the other `required_scope`\n   check in `fuz_auth_guard_resolver` — which is also the only site every\n   route spec traverses, since the route pipeline never parses this schema.\n\nInvariant 2 — the `actor !== 'none' ⟺ input or query declares\nacting?: ActingActor` biconditional — needs introspection of the\nspec's input/query schemas, so it is checked at registration time,\nnot on this schema. See `assert_route_auth_acting_biconditional`\nbelow.",
 							"typeSignature": "{ account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }",
-							"sourceLine": 215,
+							"sourceLine": 218,
 							"members": [
 								{
 									"name": "account",
@@ -128483,7 +129153,7 @@
 							"kind": "function",
 							"docComment": "True iff the route is fully public — both account and actor axes\nare `'none'`. Public routes skip the dispatcher's authorization\nphase entirely (per registry-time invariant 4 they also cannot\ndeclare roles or credential gates).",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }): boolean",
-							"sourceLine": 231,
+							"sourceLine": 234,
 							"parameters": [
 								{
 									"name": "auth",
@@ -128501,7 +129171,7 @@
 							"kind": "function",
 							"docComment": "True iff the route declares an actor axis (`'optional'` or\n`'required'`). Equivalent to \"the dispatcher's authorization phase\nmay resolve an actor for this request\" — which by registry-time\ninvariant 2 also means the input (or query, on REST GETs) declares\n`acting?: ActingActor`.",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }): boolean",
-							"sourceLine": 241,
+							"sourceLine": 244,
 							"parameters": [
 								{
 									"name": "auth",
@@ -128519,7 +129189,7 @@
 							"kind": "function",
 							"docComment": "True iff the route declares any role gate (`auth.roles?.length`).",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }): boolean",
-							"sourceLine": 244,
+							"sourceLine": 247,
 							"parameters": [
 								{
 									"name": "auth",
@@ -128537,7 +129207,7 @@
 							"kind": "function",
 							"docComment": "True iff the route declares any credential-type gate (`auth.credential_types?.length`).",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }): boolean",
-							"sourceLine": 247,
+							"sourceLine": 250,
 							"parameters": [
 								{
 									"name": "auth",
@@ -128555,7 +129225,7 @@
 							"kind": "function",
 							"docComment": "True iff the route is the keeper bucket — a credential gate admitting\n`daemon_token`. Knows the literal directly, because keeper is a named\nauthority level rather than one channel among many: it is the ceiling\nsessions and api tokens cannot reach.\n\nNarrower than `is_credential_gated_auth`, which is true of every channel\ngate — including the session-only gates pointing the other way (the\ncredential-minting actions, `POST /logout` / `POST /password`, the audit\nSSE stream). Reach for the general predicate when the question is \"does a\nchannel gate answer here\"; reach for this one only when the question is\nabout keeper specifically.",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }): boolean",
-							"sourceLine": 263,
+							"sourceLine": 266,
 							"parameters": [
 								{
 									"name": "auth",
@@ -128573,7 +129243,7 @@
 							"kind": "function",
 							"docComment": "True iff the route is plain authenticated — `account === 'required'`\nwith no role gate and no credential gate: any credential the auth\nmiddleware resolved gets in.\n\nA channel gate takes a route out of this bucket, which is why the\naccount-grain routes one might expect here are not — `POST /logout`,\n`POST /password`, and the `account_*` credential-lifecycle actions all\ndeclare `credential_types: ['session']` and answer to\n`is_credential_gated_auth` instead.",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }): boolean",
-							"sourceLine": 277,
+							"sourceLine": 280,
 							"parameters": [
 								{
 									"name": "auth",
@@ -128589,28 +129259,20 @@
 						{
 							"name": "input_schema_declares_acting",
 							"kind": "function",
-							"docComment": "Whether a schema declares the canonical `acting?: ActingActor` field.\nReference-equality on the exported `ActingActor` schema — consumer\nschemas with unrelated `acting` fields don't trip this check.\n\nPeels through Zod wrappers (`optional`, `nullable`, `default`,\n`transform`, `pipe`, `prefault`) via `zod_unwrap_to_object` so a spec\nauthored as `z.optional(z.strictObject({acting: ActingActor}))` or\n`z.strictObject({acting: ActingActor}).default({})` still trips the\npredicate.",
-							"typeSignature": "(schema: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>): boolean",
-							"sourceLine": 301,
+							"docComment": "Whether a schema declares the canonical `acting?: ActingActor` field.\nReference-equality on the exported `ActingActor` schema — consumer\nschemas with unrelated `acting` fields don't trip this check.\n\nPeels through Zod wrappers (`optional`, `nullable`, `default`,\n`transform`, `pipe`, `prefault`) via `zod_unwrap_to_object` so a spec\nauthored as `z.optional(z.strictObject({acting: ActingActor}))` or\n`z.strictObject({acting: ActingActor}).default({})` still trips the\npredicate.\n\nA `@fuzdev/fuz_schema` schema (a void input, say) answers `false`:\n`ActingActor` is a Zod schema, so no fuz_schema input holds it, and a spec\nresolving an actor with one is refused by the biconditional.",
+							"typeSignature": "(schema: ValidationSchema): boolean",
+							"sourceLine": 308,
 							"parameters": [
 								{
 									"name": "schema",
-									"type": "ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>",
+									"type": "ValidationSchema",
 									"typeInfo": {
-										"kind": "reference",
-										"name": "ZodType",
-										"typeArgs": [
-											{
-												"kind": "intrinsic",
-												"text": "unknown"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "unknown"
-											},
+										"kind": "union",
+										"alias": "ValidationSchema",
+										"members": [
 											{
 												"kind": "reference",
-												"name": "$ZodTypeInternals",
+												"name": "ZodType",
 												"typeArgs": [
 													{
 														"kind": "intrinsic",
@@ -128619,8 +129281,26 @@
 													{
 														"kind": "intrinsic",
 														"text": "unknown"
+													},
+													{
+														"kind": "reference",
+														"name": "$ZodTypeInternals",
+														"typeArgs": [
+															{
+																"kind": "intrinsic",
+																"text": "unknown"
+															},
+															{
+																"kind": "intrinsic",
+																"text": "unknown"
+															}
+														]
 													}
 												]
+											},
+											{
+												"kind": "reference",
+												"name": "AnySchema"
 											}
 										]
 									}
@@ -128633,7 +129313,7 @@
 							"kind": "interface",
 							"docComment": "Slots where a spec may declare the `acting?: ActingActor` field —\ninput for both REST + actions; query for REST GETs that bi-locate\n`acting` on the query schema (actions have no `query` shape, so the\nfield is omitted on action call sites).",
 							"typeSignature": "ActingSlots",
-							"sourceLine": 313,
+							"sourceLine": 322,
 							"members": [
 								{
 									"name": "input",
@@ -128709,7 +129389,7 @@
 							"kind": "function",
 							"docComment": "Registry-time biconditional check: `auth.actor !== 'none' ⟺ some\nsupplied slot declares acting?: ActingActor`. Throws on violation.\n\nThe slot set differs by surface: REST passes `{input, query}` (both\nlocatable, query only set for GETs); action dispatchers pass `{input}`\n(no query shape on `ActionSpec`). The throw message lists the slots\nthat were actually in play, so an actor-required action without\n`acting` doesn't point the operator at a query slot that doesn't\nexist on their spec.\n\nCalled by every dispatcher registration loop (`apply_route_specs`,\n`compile_action_registry`) on every spec it accepts.",
 							"typeSignature": "(auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }, slots: ActingSlots, context: string): void",
-							"sourceLine": 337,
+							"sourceLine": 346,
 							"throws": [
 								{
 									"type": "Error",
@@ -128743,6 +129423,7 @@
 					"moduleComment": "Canonical auth shape for action specs and route specs.\n\nReplaces the discriminated `'public' | 'authenticated' | 'keeper' | {role}`\nliteral that conflated authentication, account resolution, actor resolution,\nand authorization into a single value. The flat record names each axis\nthe dispatcher actually walks:\n\n- `account` — does the dispatcher require / load / skip the account?\n- `actor` — does the dispatcher require / load / skip the acting actor?\n- `roles` — disjunction of permitted roles (any-of); absent = no role check.\n- `credential_types` — restricts the credential channel (e.g. daemon_token);\n  absent = any authenticated credential.\n- `required_scope` — the capability an api token's scope must admit to reach\n  this route (`surface:<name>`); route specs only, absent = no scope gate.\n\nThe same shape governs both `ActionSpec.auth` (in `actions/action_spec.ts`)\nand `RouteSpec.auth` (in `http/route_spec.ts`). The canonical schema\nlives here in `http/` because that preserves the existing\n`actions → http` dependency direction (and `http/error_schemas.ts` /\n`http/surface.ts` consume the type).\n\nRegistry-time invariants 1, 3, and 4 live on the schema's\n`.superRefine` so any spec that fails them throws at the Zod parse\nboundary. Invariant 2 (the `actor !== 'none' ⟺ input or query\ndeclares acting?: ActingActor` biconditional) needs introspection of\nthe spec's input/query schemas, so it is enforced at registration\ntime inside the dispatcher loops (`apply_route_specs`,\n`create_rpc_endpoint`, `register_action_ws`) via the\n`assert_route_auth_acting_biconditional` helper exported below.",
 					"dependencies": [
 						"primitive_schemas.ts",
+						"schema_issues.ts",
 						"zod.ts"
 					],
 					"dependents": [
@@ -135539,9 +136220,9 @@
 						{
 							"name": "is_void_schema",
 							"kind": "function",
-							"docComment": "Check if a schema is exactly `z.void()`.\n\nRPC action specs use `z.void()` to declare a parameterless method —\nJSON-RPC 2.0 forbids `params: null` (params must be omitted or be a\nStructured value), so `z.void()` is the correct schema for \"no params\"\nand the dispatcher maps absent params to `undefined` for these specs.",
+							"docComment": "Check if a schema is exactly `z.void()`, or a `@fuzdev/fuz_schema`\n`literal(undefined)` (what its `s.void` is, `meta` copies included).\n\nRPC action specs use a void schema to declare a parameterless method —\nJSON-RPC 2.0 forbids `params: null` (params must be omitted or be a\nStructured value), so void is the correct schema for \"no params\" and the\ndispatcher maps absent params to `undefined` for these specs. Like\n`is_null_schema`, it reads the schema's kind rather than parsing\n`undefined`, so an optional schema is not void. `z.undefined()` is not\nvoid either.",
 							"typeSignature": "(schema: ValidationSchema): boolean",
-							"sourceLine": 52,
+							"sourceLine": 56,
 							"parameters": [
 								{
 									"name": "schema",
@@ -135591,9 +136272,9 @@
 						{
 							"name": "to_void_params",
 							"kind": "function",
-							"docComment": "Normalize the raw `params` of a `z.void()` input: an absent `params`, an\nempty object, and the `null` a GET `?params=null` parses to are all the\nno-arg call (`undefined`); anything else passes through for `z.void()` to\nrefuse.\n\nJSON-RPC 2.0 lets a parameterless call omit `params`, and an empty by-name\nstructure carries no parameters, so refusing `{}` would only break clients\nthat send it for a parameterless call. Arrays — `[]` included — are not\nnormalized: RPC params are by-name only. The Rust spine's\n`require_void_params` accepts the same shapes. Receiving ends reach it\nthrough `to_input_params`.",
+							"docComment": "Normalize the raw `params` of a void input (`is_void_schema`): an absent\n`params`, an empty object, and the `null` a GET `?params=null` parses to\nare all the no-arg call (`undefined`); anything else passes through for the\nvoid schema to refuse.\n\nJSON-RPC 2.0 lets a parameterless call omit `params`, and an empty by-name\nstructure carries no parameters, so refusing `{}` would only break clients\nthat send it for a parameterless call. Arrays — `[]` included — are not\nnormalized: RPC params are by-name only. The Rust spine's\n`require_void_params` accepts the same shapes. Receiving ends reach it\nthrough `to_input_params`.",
 							"typeSignature": "(raw_params: unknown): unknown",
-							"sourceLine": 70,
+							"sourceLine": 76,
 							"parameters": [
 								{
 									"name": "raw_params",
@@ -135607,28 +136288,20 @@
 						{
 							"name": "to_input_params",
 							"kind": "function",
-							"docComment": "Normalize the raw `params` of an RPC call for `input` to validate: for a\n`z.void()` input, `to_void_params`; for any other input, an absent or\n`null` `params` reads as `{}`, so an all-optional object input accepts a\ncall that omits them. Every receiving end — the server dispatch\n(`perform_action`) and a peer receiving a request or notification\n(`ActionDispatcher`) — reads params through this, so a peer is never\nstricter than the server.",
-							"typeSignature": "(input: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>, raw_params: unknown): unknown",
-							"sourceLine": 95,
+							"docComment": "Normalize the raw `params` of an RPC call for `input` to validate: for a\nvoid input (`is_void_schema`, Zod or fuz_schema), `to_void_params`; for\nany other input, an absent or `null` `params` reads as `{}`, so an\nall-optional object input accepts a call that omits them. Every receiving\nend — the server dispatch (`perform_action`) and a peer receiving a\nrequest or notification (`ActionDispatcher`) — reads params through this,\nso a peer is never stricter than the server.",
+							"typeSignature": "(input: ValidationSchema, raw_params: unknown): unknown",
+							"sourceLine": 101,
 							"parameters": [
 								{
 									"name": "input",
-									"type": "ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>",
+									"type": "ValidationSchema",
 									"typeInfo": {
-										"kind": "reference",
-										"name": "ZodType",
-										"typeArgs": [
-											{
-												"kind": "intrinsic",
-												"text": "unknown"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "unknown"
-											},
+										"kind": "union",
+										"alias": "ValidationSchema",
+										"members": [
 											{
 												"kind": "reference",
-												"name": "$ZodTypeInternals",
+												"name": "ZodType",
 												"typeArgs": [
 													{
 														"kind": "intrinsic",
@@ -135637,12 +136310,30 @@
 													{
 														"kind": "intrinsic",
 														"text": "unknown"
+													},
+													{
+														"kind": "reference",
+														"name": "$ZodTypeInternals",
+														"typeArgs": [
+															{
+																"kind": "intrinsic",
+																"text": "unknown"
+															},
+															{
+																"kind": "intrinsic",
+																"text": "unknown"
+															}
+														]
 													}
 												]
+											},
+											{
+												"kind": "reference",
+												"name": "AnySchema"
 											}
 										]
 									},
-									"description": "the action's input schema"
+									"description": "the action's input schema, Zod or fuz_schema"
 								},
 								{
 									"name": "raw_params",
@@ -135658,7 +136349,7 @@
 							"kind": "function",
 							"docComment": "Check whether a parsed JSON value holds an own `__proto__` key in any\nobject, at any depth — what the dispatcher refuses in a request's `params`\n(`ERROR_PARAMS_PROTO_KEY`).\n\n`JSON.parse` defines `\"__proto__\"` as an ordinary own key, but the first\nplain assignment that copies it (`target[key] = value`, as any shallow copy\nor merge loop does) hits the prototype setter instead, so stored JSON\ncarrying one is a prototype-pollution sink for whoever reads it back. An\nown `constructor` or `prototype` key is inert on a plain object and is not\nchecked.\n\nWalks with an explicit stack rather than recursion: `JSON.parse` accepts\nnesting deep enough to overflow the call stack, and the walk is linear in\nthe value's nodes, which the request body limit bounds. The Rust spine's\n`fuz_http::json_has_own_proto_key` is the twin.",
 							"typeSignature": "(value: unknown): boolean",
-							"sourceLine": 118,
+							"sourceLine": 124,
 							"parameters": [
 								{
 									"name": "value",
@@ -135674,7 +136365,7 @@
 							"kind": "function",
 							"docComment": "`parse_any(schema, value)`, except that keys the schema doesn't declare are\ndropped rather than refused — the forward-compatible read of a payload a\nremote authored. Takes a Zod or a `@fuzdev/fuz_schema` schema.\n\nOutput schemas are strict so the server's DEV output validation catches a\nhandler leaking fields it shouldn't. The receiving side, though, is often\nolder than the remote it talks to — a deploy lands before open tabs reload\n— and a remote that adds a field is making a compatible change. So when\nevery issue is an unknown key (`unknown_key_targets`), those keys are\nstripped from a copy of `value` and it's parsed again, until a parse\nsucceeds or reports anything else; any other issue (a wrong type, a missing\nfield, `null` where a value is required) still fails. `value` itself is\nnever mutated. This matches serde's default on the Rust spine, which\nignores unknown fields.\n\nA fuz_schema parse reports at most a hundred issues, so a pass that only\ndeleted the reported keys would take a parse per hundred unknown keys,\nquadratic in a payload of many. So after the first parse that reports\nunknown keys, one schema-guided pass deletes every key a strict fuz_schema\n`object` doesn't name anywhere the schema reaches — object entries, array\nitems, record values, the `variant` option the discriminator picks — and\nthe next parse usually succeeds. A key under a fuz_schema `union` is never\nstripped: which option will match isn't known, and the union fails as one\nissue of its own. A later `pipe` stage is stripped only as reported, as the\npass reads only a pipe's first schema, so keys a later stage refuses that\nthe first names still go a hundred a parse. A pass that finds\nnothing to strip ends it, and the passes are capped at\n`UNKNOWN_KEY_PASSES_MAX` for both libraries, past which the last failure is\nreturned, so the work stays linear in the payload whatever its shape.\n\nUnions differ by library. A Zod `z.union` of strict objects reports the\nunknown key itself (`unrecognized_keys` on the object), so it is stripped,\nas are a `z.discriminatedUnion`'s matched-branch keys. A fuz_schema `union`\nreports one issue of its own, so a key inside one is not stripped and the\nparse fails; a `variant` reports its matched option's issues, so those are.\n\nUsed for a response's `result` (`ActionEvent`) and for a peer's reply to a\nserver-initiated request (`peer/ping`).",
 							"typeSignature": "<T extends ValidationSchema>(schema: T, value: unknown): ParseAnyResult<ValidationOutput<T>>",
-							"sourceLine": 177,
+							"sourceLine": 183,
 							"genericParams": [
 								{
 									"name": "T",
@@ -135733,14 +136424,14 @@
 							"kind": "variable",
 							"docComment": "The most parses after the first that `safe_parse_dropping_unknown_keys`\nruns, each after stripping the keys the one before refused.",
 							"typeSignature": "4",
-							"sourceLine": 212
+							"sourceLine": 218
 						},
 						{
 							"name": "is_strict_object_schema",
 							"kind": "function",
 							"docComment": "Check if a schema is a strict object: `z.strictObject()`, or a\n`@fuzdev/fuz_schema` `object` (which refuses unknown keys, where\n`strip_object` drops them and `loose_object` keeps them).\n\nStrict Zod objects set `catchall` to `ZodNever` to reject unknown keys.\nRegular `z.object()` has `catchall: undefined` (strips unknown keys in Zod 4).\nA refined strict object reads strict in both libraries: Zod keeps a\n`.refine()` on the `ZodObject`, and a fuz_schema `pipe` is read through to\nits first schema when no stage of it is a `transform` (`message`, `flavor`,\n`brand` and `meta` keep the kind they wrap). A transformed object is not a\nstrict object in either: Zod's is a `ZodPipe`. The two libraries differ on a\npipe without a transform: Zod's `O.pipe(O)` is a `ZodPipe` and reads not\nstrict, where fuz_schema's `pipe(F, F)` reads strict through to `F`.",
 							"typeSignature": "(schema: ValidationSchema): boolean",
-							"sourceLine": 321,
+							"sourceLine": 327,
 							"parameters": [
 								{
 									"name": "schema",
@@ -135792,7 +136483,7 @@
 							"kind": "interface",
 							"docComment": "Options of `schema_to_surface`.",
 							"typeSignature": "SchemaToSurfaceOptions",
-							"sourceLine": 339,
+							"sourceLine": 345,
 							"members": [
 								{
 									"name": "io",
@@ -135843,9 +136534,9 @@
 						{
 							"name": "schema_to_surface",
 							"kind": "function",
-							"docComment": "Convert a Zod or `@fuzdev/fuz_schema` schema to its JSON Schema for the\nsurface, with `$schema` and `default` stripped at every depth.\n\nReturns `null` for a null schema (`is_null_schema`) and a `z.void()`\n(`is_void_schema`): no body, no params. Any other schema is written with\nits library's emitter (`to_json_schema` for fuz_schema, `z.toJSONSchema`\nfor Zod) on the side `options.io` names. A part JSON Schema can't say (a\ntransform on the output side, a `z.custom()`, a fuz_schema `check`) is left\nout or written as `{}` (a `pipe(string, check(…))` writes as\n`{type: 'string'}`), and `options.on_unrepresentable` hears the library's\nmessage, so the surface describes what it can and records the gap.\n\nIt never answers `null` for a schema it failed to write, as that would\nread as \"takes no input\" and drop the schema out of every suite reading the\nsurface: a schema with no JSON Schema form at all (`{}` where the schema\nisn't `z.unknown()` or `z.any()`), and one either emitter refuses outright\n(a fuz_schema entry named like a member of `Object.prototype`, metadata\nthat isn't JSON), throw. So an output whose root is a transform (a Zod\n`.transform()`, a fuz_schema `pipe(object(…), transform(…))`), a\n`z.custom()`, or a `z.date()` throws, and since `generate_app_surface`\nruns at server assembly, a route or action declaring one fails the server\nat boot. That includes `z.unknown().transform(f)`, though `{}` would\ndescribe it: the output side of a transform is unknown, whatever its input.",
+							"docComment": "Convert a Zod or `@fuzdev/fuz_schema` schema to its JSON Schema for the\nsurface, with `$schema` and `default` stripped at every depth.\n\nReturns `null` for a null schema (`is_null_schema`) and a void schema\n(`is_void_schema`), in either library: no body, no params. Any other\nschema is written with its library's emitter (`to_json_schema` for fuz_schema, `z.toJSONSchema`\nfor Zod) on the side `options.io` names. A part JSON Schema can't say (a\ntransform on the output side, a `z.custom()`, a fuz_schema `check`) is left\nout or written as `{}` (a `pipe(string, check(…))` writes as\n`{type: 'string'}`), and `options.on_unrepresentable` hears the library's\nmessage, so the surface describes what it can and records the gap.\n\nIt never answers `null` for a schema it failed to write, as that would\nread as \"takes no input\" and drop the schema out of every suite reading the\nsurface: a schema with no JSON Schema form at all (`{}` where the schema\nisn't `z.unknown()` or `z.any()`), and one either emitter refuses outright\n(a fuz_schema entry named like a member of `Object.prototype`, metadata\nthat isn't JSON), throw. So an output whose root is a transform (a Zod\n`.transform()`, a fuz_schema `pipe(object(…), transform(…))`), a\n`z.custom()`, or a `z.date()` throws, and since `generate_app_surface`\nruns at server assembly, a route or action declaring one fails the server\nat boot. That includes `z.unknown().transform(f)`, though `{}` would\ndescribe it: the output side of a transform is unknown, whatever its input.",
 							"typeSignature": "(schema: ValidationSchema, options?: SchemaToSurfaceOptions | undefined): unknown",
-							"sourceLine": 387,
+							"sourceLine": 393,
 							"throws": [
 								{
 									"type": "Error",
@@ -135911,7 +136602,7 @@
 							"kind": "function",
 							"docComment": "Check if a middleware path pattern applies to a route path.\n\nSupports Hono-style patterns:\n- `/api/*` matches `/api/anything`\n- `/api/zap/*` matches `/api/zap/runs` but not `/api/account/login`\n- Exact match: `/health` matches `/health`",
 							"typeSignature": "(mw_path: string, route_path: string): boolean",
-							"sourceLine": 448,
+							"sourceLine": 454,
 							"parameters": [
 								{
 									"name": "mw_path",
@@ -135929,7 +136620,7 @@
 							"kind": "function",
 							"docComment": "Check if two middleware path patterns can match a common route path — the\npattern-against-pattern form of `middleware_applies`, over the same\ngrammar (`*`, an exact path, or a `/prefix/*` that also matches `/prefix`).",
 							"typeSignature": "(a: string, b: string): boolean",
-							"sourceLine": 466,
+							"sourceLine": 472,
 							"parameters": [
 								{
 									"name": "a",
@@ -135949,7 +136640,7 @@
 							"kind": "function",
 							"docComment": "Check if a middleware layer runs on a route path: its `path` pattern\napplies (`middleware_applies`) and none of its `carve_outs` does.",
 							"typeSignature": "(spec: { readonly path: string; readonly carve_outs?: readonly { readonly path: string; }[] | null | undefined; }, route_path: string): boolean",
-							"sourceLine": 481,
+							"sourceLine": 487,
 							"parameters": [
 								{
 									"name": "spec",
@@ -135969,7 +136660,7 @@
 							"kind": "function",
 							"docComment": "Merge auto-derived, middleware, and explicit error schemas for a route spec.\n\nMerge order: derived -> middleware -> explicit route errors.\nLater layers override earlier ones for the same status code.",
 							"typeSignature": "(spec: { method: RouteMethod; auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }; ... 4 more ...; errors?: Partial<...> | undefined; }, middleware_errors?: Partial<...> | ... 1 more ... | undefined): Partial<...> | null",
-							"sourceLine": 501,
+							"sourceLine": 507,
 							"parameters": [
 								{
 									"name": "spec",
@@ -142495,10 +143186,12 @@
 						"actions/action_event.ts",
 						"actions/perform_action.ts",
 						"auth/cell_actions.ts",
+						"http/auth_shape.ts",
 						"http/schema_helpers.ts",
 						"http/surface.ts",
 						"schema_meta.ts",
 						"testing/adversarial_404.ts",
+						"testing/cross_backend/action_manifest.ts",
 						"testing/data_exposure.ts",
 						"testing/schema_generators.ts"
 					]
@@ -150157,7 +150850,7 @@
 							"kind": "type",
 							"docComment": "One method's normalized RPC metadata — the cross-impl-comparable unit.\n`roles` / `credential_types` are always present + sorted (an absent gate\nand an empty list both serialize to `[]`) so the diff never trips on a\n`undefined`-vs-`[]` or declaration-order difference between impls; the\nauth axes reuse the canonical `AuthAxisState` enum. `rate_limit` is\nnullable rather than optional for the same reason — an unthrottled action\nserializes an explicit `null`, so a missing key is drift, not a default.",
 							"typeSignature": "{ method: string; input: \"object\" | \"void\"; side_effects: boolean; account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles: string[]; credential_types: string[]; rate_limit: \"both\" | ... 2 more ... | null; }",
-							"sourceLine": 73,
+							"sourceLine": 74,
 							"members": [
 								{
 									"name": "method",
@@ -150168,7 +150861,7 @@
 								{
 									"name": "input",
 									"kind": "variable",
-									"docComment": "`'void'` when the input is `z.void()` (a parameterless method), else\n`'object'` — the Rust spine's declared `InputShape`, which its dispatcher\nenforces. A `z.strictObject({})` input is `'object'`.",
+									"docComment": "`'void'` when the input is a void schema (`is_void_schema`: `z.void()`\nor fuz_schema `s.void`, a parameterless method), else `'object'` — the\nRust spine's declared `InputShape`, which its dispatcher enforces. A `z.strictObject({})` input is `'object'`.",
 									"typeSignature": "\"object\" | \"void\"",
 									"typeInfo": {
 										"kind": "union",
@@ -150294,7 +150987,7 @@
 							"kind": "type",
 							"docComment": "The full action manifest — every entry, sorted by `method`.",
 							"typeSignature": "{ methods: { method: string; input: \"object\" | \"void\"; side_effects: boolean; account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles: string[]; credential_types: string[]; rate_limit: \"both\" | ... 2 more ... | null; }[]; }",
-							"sourceLine": 79,
+							"sourceLine": 80,
 							"members": [
 								{
 									"name": "methods",
@@ -150316,12 +151009,12 @@
 							"name": "action_manifest_entry",
 							"kind": "function",
 							"docComment": "Normalize one spec's input shape + auth + side-effects into a manifest\nentry. Reads the input shape off `is_void_schema(spec.input)`, pulls the\nfour auth axes off `RouteAuth` (the same shape the Rust `AuthSpec` mirrors),\nand flattens optional `roles` / `credential_types` to sorted arrays.",
-							"typeSignature": "(spec: { readonly method: string; readonly input: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>; readonly auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }; readonly side_effects: boolean; readonly rate_limit?: \"both\" | ... 2 more ... | undefined; }): { ...; }",
-							"sourceLine": 91,
+							"typeSignature": "(spec: { readonly method: string; readonly input: ValidationSchema; readonly auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }; readonly side_effects: boolean; readonly rate_limit?: \"both\" | ... 2 more ... | undefined; }): { ...; }",
+							"sourceLine": 92,
 							"parameters": [
 								{
 									"name": "spec",
-									"type": "{ readonly method: string; readonly input: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>; readonly auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: str..."
+									"type": "{ readonly method: string; readonly input: ValidationSchema; readonly auth: { account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles?: readonly string[] | undefined; credential_types?: readonly string[] | undefined; required_scope?: string | undefined; }; readonly side_effects: boo..."
 								}
 							],
 							"returnType": "{ method: string; input: \"object\" | \"void\"; side_effects: boolean; account: \"optional\" | \"none\" | \"required\"; actor: \"optional\" | \"none\" | \"required\"; roles: string[]; credential_types: string[]; rate_limit: \"both\" | ... 2 more ... | null; }",
@@ -150335,7 +151028,7 @@
 							"kind": "function",
 							"docComment": "Build the normalized `ActionManifest` from a list of request-response\nspecs. Entries are sorted by `method` so two impls producing the same set\nserialize identically regardless of mount order. The caller owns the scope\nit passes (the TS spine passes its full mount; the Rust stub filters\n`PROTOCOL_ACTION_SPECS` first) — see the module doc.",
 							"typeSignature": "(specs: readonly Pick<{ method: string; initiator: \"frontend\" | \"backend\" | \"both\"; side_effects: boolean; input: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>; output: ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>>; ... 6 more ...; rate_limit?: \"both\" | ... 2 more ... | undefined; }, \"method\" | ... 3 more ... | \"rate_limit\">[]): { ...; }",
-							"sourceLine": 119,
+							"sourceLine": 120,
 							"parameters": [
 								{
 									"name": "specs",
@@ -150399,6 +151092,7 @@
 						"http/auth_shape.ts",
 						"http/error_schemas.ts",
 						"http/schema_helpers.ts",
+						"schema_issues.ts",
 						"testing/assert_dev_env.ts"
 					],
 					"dependents": [
@@ -200691,7 +201385,7 @@
 	"fuz_repos": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_repos",
-			"version": "0.89.0",
+			"version": "0.90.0",
 			"description": "a tool for managing many repos",
 			"glyph": "🪄",
 			"logo": "logo.svg",

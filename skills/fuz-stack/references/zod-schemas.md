@@ -19,7 +19,7 @@ daemon-info file — is `@fuzdev/fuz_schema`.
 
 | Layer        | Module                                                   | Capabilities                                                                                                                                                                       |
 | ------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spine        | `@fuzdev/fuz_app/zod.ts`                                 | Walkers — unwrap wrappers (`zod_unwrap_def`, `zod_get_base_type`, `zod_get_innermost_type`, `zod_unwrap_to_object`); field helpers (`zod_get_schema_keys`, `zod_get_field_schema`); `zod_extract_fields` → `ZodFieldInfo` (`name`, `base_type`, `required`, `has_default`, `nullable`) |
+| Spine        | `@fuzdev/fuz_app/zod.ts`                                 | Walkers — unwrap wrappers (`zod_unwrap_def`, `zod_get_base_type`, `zod_get_innermost_type`, `zod_unwrap_to_object`); field helpers (`zod_get_schema_keys`, `zod_get_field_schema`); `zod_extract_fields` → `SchemaFieldInfo` (`name`, `base_type`, `required`, `has_default`, `nullable`) |
 | Spine        | `@fuzdev/fuz_app/primitive_schemas.ts`                   | `Uuid`, `Datetime`, `Blake3Hash`, `FactHashSchema` (output `FactHash`, a fuz_schema `Branded` from `@fuzdev/fuz_util/hash_schemas.ts`) + factories (`create_uuid`, `get_datetime_now`, `UuidWithDefault`, `DatetimeNow`)                                               |
 | Cell helpers | `@fuzdev/zzz/zod_helpers.ts`                             | Path-transform schemas (`PathWithTrailingSlash`, `PathWithoutTrailingSlash`, `PathWithLeadingSlash`)                                                                               |
 | HTTP         | `@fuzdev/fuz_app/http/schema_helpers.ts`                 | `schema_to_surface()` — JSON Schema via `z.toJSONSchema()` for snapshot-testable API surfaces                                                                                      |
@@ -146,7 +146,10 @@ regex, and a URL is fuz_util's `Url`. A `.toLowerCase()` after it becomes
 a fuz_schema `transform`, which doesn't serialize.
 
 - `z.null()` for HTTP input with no body (`input: z.null()` in route specs);
-  `z.void()` / `z.void().optional()` for action specs with no input or output
+  `z.void()` for an action spec with no input (a bare `z.void()`: a wrapped
+  one such as `z.void().optional()` isn't read as void, so the dispatcher
+  hands it `{}` and it refuses every call); `z.void()` or `z.void().optional()`
+  for no output
 - `z.custom<T>(check?)` embeds complex types without full validation — sparingly
   (`z.custom<z.ZodType>(...)` in fuz_app action specs)
 
@@ -157,7 +160,7 @@ getter (`schema.def.type`) — not `._zod.def` (same value, internal API).
 `@fuzdev/fuz_app/zod.ts` unwraps optional/nullable/default/transform/pipe
 wrappers (`zod_unwrap_def`, `zod_get_base_type`, `zod_get_innermost_type`,
 `zod_unwrap_to_object`) and reads object fields (`zod_get_schema_keys`,
-`zod_get_field_schema`). `zod_extract_fields` returns a `ZodFieldInfo` per
+`zod_get_field_schema`). `zod_extract_fields` returns a `SchemaFieldInfo` per
 field (`required`, `has_default`, `nullable`) — use it for
 optional/nullable/default checks. fuz_util itself is zod-free.
 
@@ -251,7 +254,8 @@ messages), `z.treeifyError` (nested, mirrors the schema), `z.flattenError`
 | Factories                      | `schema.parse(data)`                                     | `schema.safeParse(data)` with unnecessary error handling |
 | Env loading                    | `safeParse` + custom throw (better error context)        | bare `parse` (loses raw values)                          |
 | Optional config files          | `safeParse` + return null                                | `parse` (crashes on missing file)                        |
-| No input/output                | `z.void()` or `z.void().optional()`                      | `z.undefined()`, omitting the field                      |
+| No input                       | `z.void()`                                               | `z.void().optional()`, `z.undefined()`, omitting it      |
+| No output                      | `z.void()` or `z.void().optional()`                      | `z.undefined()`, omitting the field                      |
 | Optional reference             | `Uuid.nullable().default(null)`                          | `Uuid.optional()` (ambiguous undefined vs absent)        |
 | Complex embedded types         | `z.custom<MyType>()`                                     | hand-rolled validation                                   |
 | Key-value maps                 | `z.record(z.string(), ValueSchema)`                      | `z.strictObject` with dynamic keys                       |

@@ -23,7 +23,7 @@
 		<link href="/_app/immutable/chunks/Bqh8G2yR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Cyt8LZpN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ClJVXk_e.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.DkK0qsXY.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.Cr8xWZH2.js" rel="modulepreload">
 		<link href="/_app/immutable/nodes/0.CHJYljS4.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BsX-5h2w.js" rel="modulepreload">
@@ -32,7 +32,7 @@
 		<link href="/_app/immutable/chunks/yWx_1vUe.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/B_3kVP8d.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/JHJLlpdr.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/2.9HyijY0_.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/2.BRz0YPqw.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/UfIDI-FR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DgOJkruE.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dg4uJei1.js" rel="modulepreload">
@@ -47,18 +47,18 @@
 		<link href="/_app/immutable/chunks/DsYLaEg-.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DdwFUbGg.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/8Ezm2U4e.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/BRjrfK2Y.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/wW9olzWV.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ysXUU0Dy.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DESYhqEG.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/C7mfxgfX.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DIFBqYnT.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DS1D4otZ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CPUXX4R0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BhLIK611.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/C8Y3w-Xr.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BbvraUoW.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BObfJznm.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/2iUbVnta.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DSKLPFgh.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DosXCd9F.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/9.CLPF-BO8.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/9.D3WwAbg3.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CS-piQRQ.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><!--1ir2cq6--><!----><!--15lzmkk--><!----><title>actions - API docs - @fuzdev stack</title>
 		<link href="/_app/immutable/assets/0.BRllvddL.css" rel="stylesheet">
@@ -156,11 +156,12 @@ per-method scope gate inside <!--]--><!--[3--><!--[0--><!--[--><!--[0--><!--[0--
 hand-written one.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Rate-limit / account axis<!--]--><!--]--><!----></strong><!--]--><!--[2--> — <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->rate_limit: 'account' | 'both'<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->
 requires <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->auth.account === 'required'<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->; without an account on the
 request there is no key for the per-account bucket.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->JSON-RPC §4.2 wire validity<!--]--><!--]--><!----></strong><!--]--><!--[2--> — <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->request_response<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> specs whose
-handler will reach the dispatch map must not use <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.null()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> for
-input (the wire format forbids <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->"params": null<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->; use <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.void()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->
-for parameterless methods), nor <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.void()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> for output (a response
-always carries a <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->result<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, which clients validate against
-<!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->spec.output<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->; use <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.null()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> for methods with nothing to return).<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Duplicate method names<!--]--><!--]--><!----></strong><!--]--><!--[2--> — JSON-RPC keys on <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->method<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, so every
+handler will reach the dispatch map must not use a null schema
+(<!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.null()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, fuz_schema <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->literal(null)<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->) for input (the wire format
+forbids <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->"params": null<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->; use a void schema, <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.void()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> or fuz_schema
+<!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->s.void<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, for parameterless methods), nor a void schema for output (a
+response always carries a <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->result<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, which clients validate against
+<!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->spec.output<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->; use a null schema for methods with nothing to return).<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Duplicate method names<!--]--><!--]--><!----></strong><!--]--><!--[2--> — JSON-RPC keys on <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->method<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, so every
 spec in the array must declare a unique <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->method<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> regardless of
 kind / handler presence.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[2-->Pre-consolidation each dispatcher inlined these checks; the comment
 in <!--]--><!--[3--><!--[0--><!--[--><!--[1--><!--[0--><a class="module-link chip " href="/docs/api/fuz_app/actions/register_action_ws.ts"><!--[0--><!--[-1-->actions/register_action_ws.ts<!--]--><!----><!--]--></a><!--]--><!--]--><!--]--><!--]--><!--]--><!--[2--> literally said "mirrors the HTTP RPC
@@ -376,7 +377,7 @@ caller those gates refuse is answered 403, not 429.<!--]--><!--]--><!----></li><
 with <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->data.reason<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->params_proto_key<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[0--><!--[--><!--[0--><!--[0--><a class="declaration-link chip" href="/docs/api/fuz_app/http/error_schemas.ts#ERROR_PARAMS_PROTO_KEY"><!--[0--><!--[-1-->ERROR_PARAMS_PROTO_KEY<!--]--><!----><!--]--></a><!--]--><!--]--><!--]--><!--]--><!--]--><!--[2-->), on
 every input schema, before it runs; then
 <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->spec.input<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> parses the params (<!--]--><!--[3--><!--[0--><!--[--><!--[0--><!--[0--><a class="declaration-link chip" href="/docs/api/fuz_app/schema_issues.ts#parse_any"><!--[0--><!--[-1-->parse_any<!--]--><!----><!--]--></a><!--]--><!--]--><!--]--><!--]--><!--]--><!--[2-->, Zod or fuz_schema) with
-<!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->z.void()<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->?? {}<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> rules (<!--]--><!--[3--><!--[0--><!--[--><!--[0--><!--[0--><a class="declaration-link chip" href="/docs/api/fuz_app/http/schema_helpers.ts#to_input_params"><!--[0--><!--[-1-->to_input_params<!--]--><!----><!--]--></a><!--]--><!--]--><!--]--><!--]--><!--]--><!--[2-->). A refusal is the generic
+void / <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->?? {}<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> rules (<!--]--><!--[3--><!--[0--><!--[--><!--[0--><!--[0--><a class="declaration-link chip" href="/docs/api/fuz_app/http/schema_helpers.ts#to_input_params"><!--[0--><!--[-1-->to_input_params<!--]--><!----><!--]--></a><!--]--><!--]--><!--]--><!--]--><!--]--><!--[2-->). A refusal is the generic
 <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->invalid params<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2-->, with <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->data.reason<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> when the first issue's field
 declares an <!--]--><!--[3--><!--[0--><!--[--><!--[-1--><code><!--[-1-->invalid_reason<!--]--><!----></code><!--]--><!--]--><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[0--><!--[--><!--[0--><!--[0--><a class="declaration-link chip" href="/docs/api/fuz_app/actions/perform_action.ts#to_invalid_params_error"><!--[0--><!--[-1-->to_invalid_params_error<!--]--><!----><!--]--></a><!--]--><!--]--><!--]--><!--]--><!--]--><!--[2-->) and the
 library's issues under DEV only. Runs <!--]--><!--[4--><strong><!--[--><!--[2-->after<!--]--><!--]--><!----></strong><!--]--><!--[2--> the authority gates: a
@@ -594,16 +595,16 @@ everything and answers nothing.<!--]--><!--]--><!----></p><!--]--><!--]--><!--]-
 			
 			<script>
 				{
-					__sveltekit_3yidov = {
+					__sveltekit_18c2kb2 = {
 						base: "",
-						version: "1f44c7a33570238d7d81c2d67e3d06ccdc95d130"
+						version: "ef3b21b64b98899a4a4d94fb0aae29b9eff7e916"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CrLbZUT-.js").then(async (kit) => {
-						kit.init(__sveltekit_3yidov);
-						const app = await import("/_app/immutable/entry/app.DkK0qsXY.js");
+						kit.init(__sveltekit_18c2kb2);
+						const app = await import("/_app/immutable/entry/app.Cr8xWZH2.js");
 						kit.start(app, element, {
 							node_ids: [0, 2, 9],
 							data: [null,null,null],

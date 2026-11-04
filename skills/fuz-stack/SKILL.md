@@ -348,7 +348,11 @@ fuz_app's testing daemon-info file. Porting from Zod, mind that a Zod object par
 returns a new object in schema key order while fuz_schema `object` returns
 the input itself when no entry changed it (`strip_object` copies, in schema
 order, only when an unknown key is present) — output written to generated
-files changes key order unless reordered.
+files changes key order unless reordered. Zod's `.extend`/`.pick`/`.omit`/
+`.partial` become a spread of `def` into a factory
+(`s.object({...Base.def, x})`; fuz_schema's README § Composing object
+schemas), not helpers; a refined object is extended at its bare base, then
+piped.
 
 - **`z.strictObject()`** by default. `z.looseObject()` / `z.object()` only
   for external data, client-consumed response/error shapes, and extensible

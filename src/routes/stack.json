@@ -2,12 +2,7 @@
 	"toolchain": {
 		"rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
 		"cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
-		"node": "v24.14.1",
-		"svelte": "5.57.2",
-		"sveltekit": "3.0.1",
-		"typescript": "6.0.3",
-		"gro": "0.224.0",
-		"vitest": "5.0.3"
+		"node": "v26.13.0"
 	},
 	"libraries": [
 		{
@@ -42,13 +37,13 @@
 			"name": "@fuzdev/gro",
 			"version": "0.224.0",
 			"path": "gro",
-			"description": "task runner and toolkit extending SvelteKit",
+			"description": "security-first JS runtime and toolchain on V8",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
 			"module_count": 80,
 			"exported_module_count": 58,
-			"export_count": 386,
+			"export_count": 393,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",
@@ -125,13 +120,13 @@
 			"name": "@fuzdev/fuz_ui",
 			"version": "0.221.0",
 			"path": "fuz_ui",
-			"description": "Svelte UI library",
+			"description": "Svelte component library and frontend helpers",
 			"glyph": "🧶",
 			"homepage_url": "https://ui.fuz.dev/",
 			"published": true,
-			"module_count": 100,
-			"exported_module_count": 100,
-			"export_count": 313,
+			"module_count": 99,
+			"exported_module_count": 99,
+			"export_count": 311,
 			"peer_dependencies": [
 				"@fuzdev/fuz_code",
 				"@fuzdev/fuz_css",
@@ -153,15 +148,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_app",
-			"version": "0.153.0",
+			"version": "0.155.1",
 			"path": "fuz_app",
 			"description": "fullstack app library",
 			"glyph": "🗝",
 			"homepage_url": "https://app.fuz.dev/",
 			"published": true,
-			"module_count": 401,
-			"exported_module_count": 398,
-			"export_count": 2523,
+			"module_count": 403,
+			"exported_module_count": 400,
+			"export_count": 2541,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_css",
@@ -214,13 +209,13 @@
 			"name": "@fuzdev/fuz_template",
 			"version": "0.0.1",
 			"path": "fuz_template",
-			"description": "a web app template with TypeScript + SvelteKit + optional Rust for the fuz-stack",
+			"description": "starter template for SvelteKit web apps, Rust native tools, or both",
 			"glyph": "❄",
 			"homepage_url": "https://template.fuz.dev/",
 			"published": false,
 			"module_count": 3,
 			"exported_module_count": 3,
-			"export_count": 48,
+			"export_count": 53,
 			"peer_dependencies": [],
 			"runtime_dependencies": [],
 			"dev_dependencies": [
@@ -284,31 +279,6 @@
 				"@fuzdev/fuz_util",
 				"@fuzdev/gro"
 			],
-			"runtime_dependencies": [],
-			"dev_dependencies": [
-				"@fuzdev/blake3-wasm",
-				"@fuzdev/fuz_code",
-				"@fuzdev/fuz_css",
-				"@fuzdev/fuz_schema",
-				"@fuzdev/fuz_ui",
-				"@fuzdev/fuz_util",
-				"@fuzdev/gro",
-				"@fuzdev/mdz"
-			]
-		},
-		{
-			"kind": "package",
-			"name": "@fuzdev/fuz_docs",
-			"version": "0.0.1",
-			"path": "fuz_docs",
-			"description": "experimental AI-generated docs and skills for Fuz, a zippy stack for human agency",
-			"glyph": "📜",
-			"homepage_url": "https://docs.fuz.dev/",
-			"published": false,
-			"module_count": 4,
-			"exported_module_count": 4,
-			"export_count": 12,
-			"peer_dependencies": [],
 			"runtime_dependencies": [],
 			"dev_dependencies": [
 				"@fuzdev/blake3-wasm",
@@ -525,7 +495,6 @@
 			"@fuzdev/fuz_util",
 			"@fuzdev/gro"
 		],
-		"@fuzdev/fuz_docs": [],
 		"@fuzdev/fuz.dev": [],
 		"@fuzdev/zzz": [
 			"@fuzdev/blake3-wasm",

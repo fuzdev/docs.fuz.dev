@@ -151,7 +151,6 @@ a fuz_schema `transform`, which doesn't serialize.
   hands it `{}` and it refuses every call); `z.void()` or `z.void().optional()`
   for no output
 - `z.custom<T>(check?)` embeds complex types without full validation — sparingly
-  (`z.custom<z.ZodType>(...)` in fuz_app action specs)
 
 ## Schema Introspection
 
@@ -191,11 +190,12 @@ entries.
 `.extend()` adds or overrides fields, preserving strict mode:
 
 ```typescript
-export const RequestResponseActionSpec = ActionSpec.extend({
-	kind: z.literal('request_response').default('request_response'),
-	auth: RouteAuth, // four-axis {account, actor, roles?, credential_types?}
-	async: z.literal(true).default(true)
-});
+// zzz provider.svelte.ts
+export const ProviderJson = CellJson.extend({
+	name: ProviderName,
+	title: z.string(),
+	api_key_url: z.string().nullable()
+}).meta({ cell_class_name: 'Provider' });
 ```
 
 **Cell schemas (zzz)** are `CellJson.extend()`: every field has `.default()`

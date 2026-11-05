@@ -6,8 +6,8 @@
  * place instead of drifting across separate hardcoded copies.
  *
  * Explicit allowlist, never globbed: a stray `private_*` clone in the workspace
- * must never leak into generated output. Personal sites (`ryanatkn.com`,
- * `webdevladder.net`) are intentionally excluded — this is the `@fuzdev`
+ * must never leak into generated output. Personal sites like
+ * `ryanatkn.com` are intentionally excluded — this is the `@fuzdev`
  * ecosystem stack, not every repo in the workspace. Cargo-only repos with no
  * `package.json` (tsv) are excluded until the generators support
  * manifest-less repos.

@@ -139,7 +139,7 @@ export const stack_nodes: Array<StackNode> = [
 		category: 'ui',
 		language: 'ts',
 		description:
-			'a strict markdown dialect built for streaming, Svelte authoring, docs websites, and untrusted content',
+			'a strict markdown dialect built for streaming, web authoring, docs, and untrusted content',
 		layer: 2,
 		fan_in: 9,
 		x: 0,

@@ -253,7 +253,8 @@ px); border radii 7 (`xs3`–`xl`); distances 5 (`xs`–`xl`, px absolute widths
 
 `fuz.base` (default variables + element styles) < `fuz.preferences` (OS
 preference mappings — `prefers-reduced-motion` zeroing durations,
-`prefers-contrast: more` bending lightness curves) < `fuz.theme` (theme
+`prefers-contrast: more` setting the contrast input the neutral ramps
+derive from) < `fuz.theme` (theme
 overrides, where `render_theme_style()` renders) < `fuz.utilities` (generated
 classes). Consumers' unlayered styles beat everything except two `!important`
 declarations: `[hidden]`'s `display: none` and the `prefers-reduced-motion`
@@ -460,9 +461,13 @@ shorthand (`style:` is invalid on component tags):
 `:root.dark { color-scheme: dark; }` / `:root.light { color-scheme: light; }`);
 persistence and system preference live in fuz_ui's `ThemeState` / `ThemeRoot`.
 
-**Themes**: `default_themes` registers `base` and `ledger`; low/high contrast
-are `contrast_modifiers.low`/`.high` (a record), composed via
-`compose_themes`; shipped-but-unregistered exemplars under `themes/` (`zine`, `pebble`, `parchment`, `phosphor`,
+**Themes**: `default_themes` registers `base` and `ledger`. Contrast is a
+knob (`--contrast`, 0–1, the fraction of the way from a theme's ground to its
+scheme's end): the one modifier, `contrast_modifiers.high` (a record keyed by
+the name a picker selects), sets it to 0.5 and composes via `compose_themes`;
+the OS `prefers-contrast: more` preference reaches the same derivation through
+its own input and only ever raises a theme's contrast, so no theme silences it.
+There is no low-contrast modifier. Shipped-but-unregistered exemplars under `themes/` (`zine`, `pebble`, `parchment`, `phosphor`,
 `guestbook`, `marquee`, `signage` — phosphor and marquee dark-only via
 `scheme`) show the range. A `Theme` (from `@fuzdev/fuz_css/variable.ts`, a
 strict schema) is a `name`, an optional `summary` for pickers, and

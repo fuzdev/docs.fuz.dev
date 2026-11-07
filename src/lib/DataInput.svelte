@@ -200,7 +200,7 @@
 				<button type="button" class="chip" onclick={() => file_input_el?.click()}>
 					choose file
 				</button>
-				<input bind:this={file_input_el} type="file" onchange={onfilechange} class="display:none" />
+				<input bind:this={file_input_el} type="file" onchange={onfilechange} hidden />
 			</div>
 		{:else if input_mode === 'hex'}
 			<div class="box">

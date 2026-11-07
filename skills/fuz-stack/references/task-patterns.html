@@ -23,7 +23,7 @@
 		<link href="/_app/immutable/chunks/Bqh8G2yR.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Cyt8LZpN.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/ClJVXk_e.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.DZFSYj9S.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.eG0dwSxa.js" rel="modulepreload">
 		<link href="/_app/immutable/nodes/0.CHJYljS4.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BsX-5h2w.js" rel="modulepreload">
@@ -45,11 +45,11 @@
 		<link href="/_app/immutable/chunks/2tlPcHOe.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/C8Y3w-Xr.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/31.ClafW-RA.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/31.CuueVFu6.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BhLIK611.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CS-piQRQ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/pGYaDZDM.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/Cf9DM3G3.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BiUzKPU4.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><title>docs.fuz.dev</title>
 		<link href="/_app/immutable/assets/0.BRllvddL.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
@@ -101,14 +101,13 @@ schema through fuz_schema's <!--]--><!--[3--><!--[-1--><code>introspect.ts</code
 fuz_util's <!--]--><!--[3--><!--[-1--><code>args_parse(argv_parse(argv), schema)</code><!--]--><!--]--><!--[2-->. <!--]--><!--[3--><!--[-1--><code>s.parse_or_throw(Args, value)</code><!--]--><!--]--><!--[2-->
 skips alias expansion and <!--]--><!--[3--><!--[-1--><code>--no-*</code><!--]--><!--]--><!--[2--> sync — fine for a test that passes
 canonical keys; <!--]--><!--[3--><!--[-1--><code>args_parse</code><!--]--><!--]--><!--[2--> for one that exercises flags.<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h2 id="taskcontext"><!--[--><!--[2-->TaskContext<!--]--><!--]--><!----></h2><!----><!--]--><!--[8--><p><!--[--><!--[2-->Fields: <!--]--><!--[3--><!--[-1--><code>args</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>config: GroConfig</code><!--]--><!--]--><!--[2-->,
-<!--]--><!--[3--><!--[-1--><code>svelte_config: Promise&lt;ParsedSvelteConfig></code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>graph</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>watcher</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>log</code><!--]--><!--]--><!--[2-->,
-<!--]--><!--[3--><!--[-1--><code>timings</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>invoke_task</code><!--]--><!--]--><!--[2-->. <!--]--><!--[3--><!--[-1--><code>svelte_config</code><!--]--><!--]--><!--[2--> is lazy (resolved on first access).
+<!--]--><!--[3--><!--[-1--><code>svelte_config: Promise&lt;ParsedSvelteConfig></code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>graph</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>log</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>timings</code><!--]--><!--]--><!--[2-->,
+<!--]--><!--[3--><!--[-1--><code>invoke_task</code><!--]--><!--]--><!--[2-->. <!--]--><!--[3--><!--[-1--><code>svelte_config</code><!--]--><!--]--><!--[2--> is lazy (resolved on first access).
 <!--]--><!--[3--><!--[-1--><code>graph</code><!--]--><!--]--><!--[2--> is a <!--]--><!--[3--><!--[-1--><code>ModuleGraph</code><!--]--><!--]--><!--[2--> (the modules under <!--]--><!--[3--><!--[-1--><code>src/</code><!--]--><!--]--><!--[2-->, which imports which —
-transitive <!--]--><!--[3--><!--[-1--><code>dependents</code><!--]--><!--]--><!--[2--> — and content-based change events via <!--]--><!--[3--><!--[-1--><code>watch</code><!--]--><!--]--><!--[2-->);
-<!--]--><!--[3--><!--[-1--><code>watcher</code><!--]--><!--]--><!--[2--> is a plain file watch over the same directory. Both load on first
-use, so a task that never touches them starts no watch; <!--]--><!--[3--><!--[-1--><code>config.watch</code><!--]--><!--]--><!--[2-->
-(<!--]--><!--[3--><!--[-1--><code>{dir, filter}</code><!--]--><!--]--><!--[2-->, default <!--]--><!--[3--><!--[-1--><code>src/</code><!--]--><!--]--><!--[2-->) sets what they watch, and an invoked task
-shares its invoker's. <!--]--><!--[3--><!--[-1--><code>log</code><!--]--><!--]--><!--[2-->/<!--]--><!--[3--><!--[-1--><code>timings</code><!--]--><!--]--><!--[2--> are task-scoped.<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>invoke_task(name_or_path, args?, {config?})</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> composes tasks by the CLI's
+transitive <!--]--><!--[3--><!--[-1--><code>dependents</code><!--]--><!--]--><!--[2--> — and content-based change events via <!--]--><!--[3--><!--[-1--><code>watch</code><!--]--><!--]--><!--[2-->). It
+loads on first use, so a task that never touches it starts no watch;
+<!--]--><!--[3--><!--[-1--><code>config.watch</code><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>{dir, filter}</code><!--]--><!--]--><!--[2-->, default <!--]--><!--[3--><!--[-1--><code>src/</code><!--]--><!--]--><!--[2-->) sets what it watches, and an
+invoked task shares its invoker's. <!--]--><!--[3--><!--[-1--><code>log</code><!--]--><!--]--><!--[2-->/<!--]--><!--[3--><!--[-1--><code>timings</code><!--]--><!--]--><!--[2--> are task-scoped.<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>invoke_task(name_or_path, args?, {config?})</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> composes tasks by the CLI's
 rule: an input containing a <!--]--><!--[3--><!--[-1--><code>/</code><!--]--><!--]--><!--[2--> or ending in <!--]--><!--[3--><!--[-1--><code>.task.ts</code><!--]--><!--]--><!--[2-->/<!--]--><!--[3--><!--[-1--><code>.task.js</code><!--]--><!--]--><!--[2--> is a task
 path (relative to the project root, not the invoking task's directory, or
 absolute), anything else a builtin name — so <!--]--><!--[3--><!--[-1--><code>invoke_task('test')</code><!--]--><!--]--><!--[2--> always
@@ -172,16 +171,16 @@ path:<!--]--><!--]--><!----></p><!--]--><!--[15--><!--[0--><!--[--><code data-la
 			
 			<script>
 				{
-					__sveltekit_12en6wf = {
+					__sveltekit_xchsfh = {
 						base: "",
-						version: "7a163a0194a767b5115b047ff17048158f0b5a25"
+						version: "f07feab4b5d3db185d96db39de0d335fb555224e"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.CrLbZUT-.js").then(async (kit) => {
-						kit.init(__sveltekit_12en6wf);
-						const app = await import("/_app/immutable/entry/app.DZFSYj9S.js");
+						kit.init(__sveltekit_xchsfh);
+						const app = await import("/_app/immutable/entry/app.eG0dwSxa.js");
 						kit.start(app, element, {
 							node_ids: [0, 3, 31],
 							data: [null,null,null],

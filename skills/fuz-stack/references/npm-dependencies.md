@@ -70,7 +70,6 @@ oracle).
 
 | Package                     | Purpose                                                      |
 | --------------------------- | ------------------------------------------------------------ |
-| `zod`                       | Schema validation for app data                               |
 | `esm-env`                   | Environment flags (`DEV` / `BROWSER`)                        |
 | `zimmerframe`               | AST walker                                                   |
 | `magic-string`              | Source-string edits with sourcemaps                          |
@@ -134,9 +133,10 @@ package, would anything break?_ Yes → peer. No, but published code imports it 
   consumer's tree: a framework host (`svelte`, `@sveltejs/kit`;
   `svelte/compiler` used only as a parser shares no runtime state, so it may
   be a plain dependency, as in fuz_css) or anything whose instances/types
-  cross the library's API boundary (`zod` schemas, `esm-env` flags). Two
-  copies break `instanceof`, Zod `.brand()` identity, Svelte context keys,
-  and the dev/prod env gate. Mirror the version in `devDependencies` so the
+  cross the library's API boundary (`@fuzdev/fuz_schema` schemas, `esm-env`
+  flags). Two copies break `instanceof`, fuz_schema brand identity and
+  declaration-merged `SchemaMeta` keys, Svelte context keys, and the dev/prod
+  env gate. Mirror the version in `devDependencies` so the
   library's own build resolves it. Required when the public API always
   reaches it; **optional** (via `peerDependenciesMeta`) for
   an opt-in path (a preprocessor, a deep-import module many consumers skip) —

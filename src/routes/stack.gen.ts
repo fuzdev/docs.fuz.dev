@@ -200,7 +200,7 @@ export const gen: Gen = async ({ origin_path, log }) => {
 	const stack_json = JSON.stringify(stack_data, null, '\t');
 	// Serialize through `compactReplacer` so the baked `modules` match svelte-docinfo's
 	// wire shape (the input side emitted by `virtual:svelte-docinfo`): empty arrays and
-	// `false` are dropped, restored by Zod defaults on parse. Shrinks the file and keeps
+	// `false` are dropped, restored by schema defaults on parse. Shrinks the file and keeps
 	// both producers shape-aligned. gro's loader hands back the fuller output side.
 	const libraries_json = JSON.stringify(libraries_by_path, compactReplacer, '\t');
 

@@ -114,9 +114,9 @@ lookups instead of array scans.
 A serializable reactive class pairs `Foo`, `FooJson` (serialized shape), and
 `FooOptions` (usually `Partial<FooJson>`), with `toJSON(): FooJson`. fuz_ui's
 `ThemeState` is the simple exemplar (plain-interface `ThemeStateJson`); zzz's
-Cell pattern upgrades the shape to a Zod schema and automates hydration in a
+Cell pattern upgrades the shape to a fuz_schema schema and automates hydration in a
 `Cell` base class — same rune conventions (`$state()!` for schema fields,
-`readonly $derived` for computed). See ./zod-schemas.md.
+`readonly $derived` for computed). See ./fuz-schema.md.
 
 ## Context Patterns
 

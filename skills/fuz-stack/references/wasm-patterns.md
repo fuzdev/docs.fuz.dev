@@ -187,7 +187,7 @@ ecosystem convention (`initSync` re-exported as `init_sync`).
   `export const blake3_ready = init();` (eager; immediate under sync init,
   awaited in browsers) and
   `hash_blake3(data: Uint8Array | BufferSource | string): string` returning
-  64-char hex (fuz_app's `Blake3Hash` Zod schema validates this shape).
+  64-char hex (fuz_app's `Blake3Hash` schema validates this shape).
 - **`deno compile`**: wasm-bindgen's deno target loads WASM via `fetch()`,
   which `deno compile` can't do. The build patches the generated JS to
   `Deno.readFileSync` and creates a `_bg.js` stub for module resolution.

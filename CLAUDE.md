@@ -122,6 +122,7 @@ skills/
 │   │   ├── db-patterns.md             # Query modules, named-column projections, schema drift guard (TS + Rust)
 │   │   ├── dependency-injection.md    # Injectable *Deps interfaces, mock factories, composition patterns
 │   │   ├── documentation-system.md    # Docs pipeline, Tome system, layout architecture, project setup
+│   │   ├── fuz-schema.md              # fuz_schema conventions (strict objects, naming, brands, defaults, metadata)
 │   │   ├── fuz-util.md                # fuz_util: Result, error helpers, Logger, Timings, concurrency, DAG, type utilities
 │   │   ├── mdz.md                     # mdz dialect: grammar surface, component/element registration, rendering seam, autolink, preprocessor
 │   │   ├── npm-dependencies.md        # Approved external npm package allowlist for TS/Svelte repos
@@ -135,8 +136,7 @@ skills/
 │   │   ├── testing-patterns.md        # Testing patterns, fixtures, mocks, assertions
 │   │   ├── tsdoc-comments.md          # TSDoc style guide: tags, conventions, drift detection
 │   │   ├── twin-impl.md               # TS ↔ Rust twin implementations: convergence, naming parity, wire crates, digests
-│   │   ├── wasm-patterns.md           # WASM/N-API build targets, WIT, wasm-bindgen, component model (blake3, tsv)
-│   │   └── zod-schemas.md             # Zod schema conventions (strictObject, naming, branded types, introspection)
+│   │   └── wasm-patterns.md           # WASM/N-API build targets, WIT, wasm-bindgen, component model (blake3, tsv)
 └── grimoire/
     └── SKILL.md                       # Grimoire pattern (lore, quests, arcs)
 ```

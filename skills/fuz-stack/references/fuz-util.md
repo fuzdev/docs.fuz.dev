@@ -163,9 +163,9 @@ fuz_schema schema of the same name), `BlogPostId` (fuz_blog), `InputPath`
 (gro), `ReorderableId` (zzz). `Branded<TValue, TName>` (requires a cast, also
 from fuz_schema) is for values that must not assign from a bare base value:
 fuz_util's `FactHash` (`hash_schemas.ts`), produced only by hashing or
-`is_fact_hash`. Zod `.brand()` stays the app-data form when the value crosses a
-runtime boundary and should validate (`Uuid`, `Datetime` in fuz_app;
-./zod-schemas.md §Branded Types).
+`is_fact_hash`. A schema's `s.brand()` is the form when the value crosses a
+runtime boundary and should validate (`Uuid` in fuz_app; ./fuz-schema.md
+§Branded and Flavored Types).
 
 **Strict and distributive.** `OmitStrict<T, K extends keyof T>` — `Omit`
 that rejects non-keys (standard `Omit` lets typos compile); widely used.

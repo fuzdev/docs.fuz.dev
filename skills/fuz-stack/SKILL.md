@@ -27,9 +27,7 @@ accessible to anyone with intent and an AI partner. Consistent,
 self-describing patterns let an agent learn once and apply everywhere:
 snake_case aligns TS, Rust, and SQL with zero renaming; schemas are the
 single source of truth for data shape, type, defaults, and validation
-(fuz_schema everywhere but the app data of the apps built on fuz_app, which
-is Zod — fuz_app's own schemas are fuz_schema, and its action and route specs
-take either library); `fuz_app` is the shared
+(`@fuzdev/fuz_schema`, stack-wide); `fuz_app` is the shared
 backend spine (auth, sessions, DB, SSE) that zzz and the apps build on.
 
 ## Package Ecosystem
@@ -338,38 +336,43 @@ Full guide: ./references/dependency-injection.md.
 
 See ./references/fuz-util.md.
 
-## Zod Schemas
+## fuz_schema Schemas
 
-Zod schemas are the source of truth for the app data of the apps built on
-fuz_app — JSON shape, TS type, defaults, metadata, and serialization; schema
-changes cascade through the stack. Everything else is `@fuzdev/fuz_schema`:
-the packages below fuz_app (fuz_util, gro, fuz_css), CLI and task args
-(./references/task-patterns.md), tooling, and fuz_app's own schemas (its
-actions, routes, errors, cells, protocol envelopes, and env), whose action and
-route specs take a schema of either library. Porting from Zod, mind
-that a Zod object parse returns a new object in schema key order while
-fuz_schema `object` returns the input itself when no entry changed it
-(`strip_object` copies, in schema order, only when an unknown key is
-present) — output written to generated files changes key order unless
-reordered. Zod's `.extend`/`.pick`/`.omit`/`.partial` become a spread of
-`def` into a factory (`s.object({...Base.def, x})`; fuz_schema's README §
-Composing object schemas), not helpers; a refined object is extended at its bare base, then
-piped. `z.uuid()` and `z.iso.datetime()` become `s.pipe(s.string, s.uuid)` and
-`s.pipe(s.string, s.iso_datetime)`, which serialize to the Rust crate where a
-`regex` doesn't; there is no email or URL kind (./references/zod-schemas.md §
-Zod 4 Primitives).
+`@fuzdev/fuz_schema` schemas are the source of truth for data across the
+stack — JSON shape, TS type, defaults, metadata, and serialization; schema
+changes cascade through the stack. The packages below fuz_app import the
+namespace (`import * as s from '@fuzdev/fuz_schema/schema.ts'`); fuz_app and
+the apps import by name, aliasing the reserved word (`void as fuz_void`).
 
-- **`z.strictObject()`** by default. `z.looseObject()` / `z.object()` only
-  for external data, client-consumed response/error shapes, and extensible
-  protocol shapes — with a comment saying why.
+- **`s.object()`** by default, action inputs and outputs included — it
+  rejects unknown keys; readers of remote payloads drop unknown keys
+  (fuz_app's `safe_parse_dropping_unknown_keys`). `s.loose_object()` (keeps
+  them) / `s.strip_object()` (drops them) only for external data, persisted
+  files read across versions, REST error bodies, and protocol envelopes —
+  with a comment saying why.
 - **PascalCase, schema and type share the name**:
-  `const Foo = z.strictObject({...}); type Foo = z.infer<typeof Foo>;`
-- **`.meta({description})`**, not `.describe()` — both work in Zod 4, but
-  `.meta()` is the convention and carries extra keys (`sensitivity`)
-- **`.brand()`** for validated nominal types (`Uuid`, `Datetime`, `DiskfilePath`)
-- **`safeParse` at boundaries**, `parse` for internal assertions
+  `const Foo = s.object({...}); type Foo = s.Infer<typeof Foo>;`
+  (`s.InferInput` for the pre-default input, exported as `FooInput`)
+- **`meta(schema, {description})`** (`@fuzdev/fuz_schema/meta.ts`) for
+  metadata; app keys like fuz_app's `sensitivity` extend `SchemaMeta` by
+  declaration merging, read fail-safe with `find_schema_meta`
+- **`s.brand()`** for validated nominal types (`Uuid`, `DiskfilePath`),
+  outermost, after any step that changes the value
+- **Compose by spreading `def`** — `s.object({...Base.def, x})`; there are no
+  `extend`/`pick`/`omit`/`partial` helpers
+- **`s.parse` at boundaries** (returns `{ok, value}` / `{ok: false, issues}`,
+  never throws), **`s.parse_or_throw`** for internal assertions
+- **`s.with_default_fn`** for mutable defaults — `with_default` shares its one
+  value across every parse
 
-See ./references/zod-schemas.md.
+Ported from Zod, mind that `pipe` stops at its first failing step and that
+`object` returns the input itself when nothing changed, so output keeps the
+input's key order. UUIDs and timestamps are `s.pipe(s.string, s.uuid)` and
+`s.pipe(s.string, s.iso_datetime)` (fuz_app's `Uuid`, `Timestamp`), which
+serialize to fuz_schema's Rust side where a `regex` doesn't; there is no email
+or URL kind (fuz_app's `Email`, fuz_util's `Url`).
+
+See ./references/fuz-schema.md.
 
 ## Query Modules (DB)
 

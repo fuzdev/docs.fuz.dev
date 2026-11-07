@@ -60,7 +60,7 @@ makes it cheap.
   Rust spine without any business logic, so spine parity is tested
   independently of zzz/fuz_forge.
 - **Strict-schema parsing of read bodies** — parsing every populated read-RPC
-  response with the strict TS Zod schema catches missing/extra/renamed fields
+  response with the strict TS schema catches missing/extra/renamed fields
   wholesale.
 - **Schema parity** — DB introspection compared across backends, zero excluded
   tables as the target.

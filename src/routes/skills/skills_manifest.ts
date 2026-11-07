@@ -41,6 +41,12 @@ export const skills: Array<SkillMeta> = [
 				description: 'Docs pipeline — Tome system, layout architecture, project setup'
 			},
 			{
+				slug: 'fuz-schema',
+				title: 'fuz_schema Schemas',
+				description:
+					'fuz_schema conventions — strict objects, naming, brands, defaults, metadata, introspection'
+			},
+			{
 				slug: 'fuz-util',
 				title: 'fuz_util',
 				description:
@@ -112,11 +118,6 @@ export const skills: Array<SkillMeta> = [
 				slug: 'wasm-patterns',
 				title: 'WASM Patterns',
 				description: 'WASM/N-API build targets — wasm-bindgen, component model, JS interop'
-			},
-			{
-				slug: 'zod-schemas',
-				title: 'Zod Schemas',
-				description: 'Zod conventions — strictObject, branded types, introspection'
 			}
 		]
 	},

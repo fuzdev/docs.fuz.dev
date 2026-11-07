@@ -117,7 +117,7 @@ identifiers backticked. Single-sentence descriptions are lowercase fragments
 with no period (`@param foo - the value to clamp`); multi-sentence descriptions
 are capitalized sentences with periods, continuation lines indented
 (`@param exclude_dev - If true, excludes dev dependencies to break cycles.` then
-` *   Publishing uses exclude_dev=true …`). Acronyms and proper names (CSS, Zod,
+` *   Publishing uses exclude_dev=true …`). Acronyms and proper names (CSS, BLAKE3,
 Fisher-Yates) stay capitalized. A legacy sentence-style file may stay internally
 consistent until touched.
 

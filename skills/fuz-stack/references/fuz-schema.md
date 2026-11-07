@@ -65,8 +65,7 @@ and fuz_app re-use them rather than defining their own.
 3. **`meta(schema, {description})`** for descriptions and other metadata —
    §Metadata.
 4. **`parse` returns a result, `parse_or_throw` throws** — §Validation at
-   Boundaries. `parse` never throws; code ported from Zod that expected it to
-   gets a result object instead.
+   Boundaries. `parse` never throws.
 
 ## Input vs Output Types
 

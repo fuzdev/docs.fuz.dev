@@ -19,7 +19,7 @@ interface Task<TArgs = Args, TArgsSchema extends Schema<Args, Args> = Schema<Arg
 ```
 
 Tasks are either `Task` or `Task<Args>` — the other params are rarely
-customized. `Args` is a `@fuzdev/fuz_schema` schema, not Zod; the schema and
+customized. `Args` is a `@fuzdev/fuz_schema` schema; the schema and
 its inferred type are both exported as `Args`:
 
 ```typescript

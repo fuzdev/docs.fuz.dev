@@ -365,7 +365,7 @@ the apps import by name, aliasing the reserved word (`void as fuz_void`).
 - **`s.with_default_fn`** for mutable defaults — `with_default` shares its one
   value across every parse
 
-Ported from Zod, mind that `pipe` stops at its first failing step and that
+Mind that `pipe` stops at its first failing step and that
 `object` returns the input itself when nothing changed, so output keeps the
 input's key order. UUIDs and timestamps are `s.pipe(s.string, s.uuid)` and
 `s.pipe(s.string, s.iso_datetime)` (fuz_app's `Uuid`, `Timestamp`), which

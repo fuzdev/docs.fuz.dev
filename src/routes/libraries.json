@@ -73716,7 +73716,7 @@
 	"fuz_app": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_app",
-			"version": "0.172.0",
+			"version": "0.173.0",
 			"description": "fullstack app library",
 			"glyph": "🗝",
 			"logo": "logo.svg",
@@ -203459,7 +203459,7 @@
 	"fuz_code": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_code",
-			"version": "0.56.0",
+			"version": "0.57.0",
 			"description": "syntax styler for TypeScript, Svelte, Markdown, and more",
 			"glyph": "🎨",
 			"logo": "logo.svg",
@@ -208216,7 +208216,7 @@
 	"fuz_blog": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_blog",
-			"version": "0.38.0",
+			"version": "0.39.0",
 			"description": "blog software from scratch with SvelteKit",
 			"glyph": "🖊️",
 			"logo": "logo.svg",
@@ -210922,7 +210922,7 @@
 	"fuz_repos": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_repos",
-			"version": "0.90.1",
+			"version": "0.91.0",
 			"description": "a tool for managing many repos",
 			"glyph": "🪄",
 			"logo": "logo.svg",

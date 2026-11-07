@@ -282,7 +282,7 @@ Most app files have no `<style>` block at all.
 
 1. Semantic HTML (right element, no class)
 2. Built-in conventions (`.selected`, `.palette_a`–`.palette_j`, `.inline`, `.unstyled`)
-3. Composite classes (`row`, `column`, `box`, `panel`, `chip`, `ellipsis`)
+3. Composite classes (`row`, `row_wrap`, `column`, `box`, `panel`, `chip`, `ellipsis`)
 4. Token or keyword classes (`p_md`, `gap_lg`, `flex`)
 5. Literal classes (`justify-content:space-between`, `width:100%`, `hover:opacity:80%`)
 6. `<style>` block with design tokens
@@ -290,8 +290,10 @@ Most app files have no `<style>` block at all.
 Rungs 3–5 are one tier — mix freely; the real cuts are semantic-vs-class and
 classes-vs-`<style>`. Don't churn existing `<style>` blocks into class strings.
 Token classes are `snake_case`; keyword classes are bare CSS keywords (`flex`,
-`sticky`), plus `hidden`; component-local classes are `kebab-case` (`site-header`)
-and never take a keyword's name. Full reference: ./references/css-patterns.md.
+`sticky`), plus `hidden`; any other single non-token declaration stays a
+literal (`flex:1`, `border-radius:50%`) - no coined name, `hidden` the one
+exception. Component-local classes are `kebab-case` (`site-header`) and never
+take a keyword's name. Full reference: ./references/css-patterns.md.
 
 ## Dependency Injection
 

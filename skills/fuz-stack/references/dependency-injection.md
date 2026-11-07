@@ -99,19 +99,19 @@ apart — each is the language-appropriate shape.)
 
 ## Naming
 
-| What              | Convention                  | Example                              |
-| ----------------- | --------------------------- | ------------------------------------ |
-| Small interface   | `{Domain}Deps`              | `EnvDeps`, `FsReadDeps`, `CacheDeps` |
-| Capability bundle | `{Scope}Deps`               | `AppDeps`, `RouteFactoryDeps`        |
-| Full composite    | `RuntimeDeps`               | extends all small `*Deps`            |
-| Default impl      | `default_{domain}_deps`     | `default_cache_deps`                 |
-| Mock factory      | `create_mock_{domain}_deps` | `create_mock_cache_deps`             |
-| Stub              | `stub_{scope}_deps`         | `stub_password_deps`                 |
+| What              | Convention                  | Example                           |
+| ----------------- | --------------------------- | --------------------------------- |
+| Small interface   | `{Domain}Deps`              | `EnvDeps`, `FsReadDeps`, `FsDeps` |
+| Capability bundle | `{Scope}Deps`               | `AppDeps`, `RouteFactoryDeps`     |
+| Full composite    | `RuntimeDeps`               | extends all small `*Deps`         |
+| Default impl      | `default_{domain}_deps`     | `default_fs_deps`                 |
+| Mock factory      | `create_mock_{domain}_deps` | `create_mock_fs_deps`             |
+| Stub              | `stub_{scope}_deps`         | `stub_password_deps`              |
 
 Files: `deps.ts` (interfaces) + `deps_defaults.ts` (production defaults) + a
 test-side mock module (fuz_css: `src/test/fixtures/mock_deps.ts`) — fuz_css's
-`CacheDeps` / `default_cache_deps` / `create_mock_cache_deps` is the cleanest
-exemplar.
+`FsDeps` / `default_fs_deps` / `create_mock_fs_deps` (over the cache and the
+default `style.css` load) is the cleanest exemplar.
 
 **Legacy `*Operations` (fuz_repos)**: `GitOperations` /
 `default_git_operations` / `create_mock_git_ops` under a `GitopsOperations`
@@ -127,7 +127,7 @@ code.
 **positional params, throw on error**, like `Deno.readTextFile` / `node:fs`.
 Stable, trivially implemented by any runtime.
 
-**L1 — domain wrappers** (`CacheDeps`, git/npm operations): **single
+**L1 — domain wrappers** (`FsDeps`, git/npm operations): **single
 options-object params, uniform `Result` returns with typed errors** — reads,
 writes, and queries all return `Result<{value: T}, FsError>`; no mixing
 `string | null` reads with `Result` writes. Implementations route thrown errors
@@ -154,7 +154,7 @@ interface; don't leak platform types (node's `SpawnOptions`) through an L1 shape
 - **Required first param** for internal/library functions:
   `create_account_route_specs(deps: RouteFactoryDeps, options: AccountRouteOptions)`.
 - **Optional with default** for public API surfaces:
-  `const { deps = default_cache_deps } = options;`.
+  `const { deps = default_fs_deps } = options;`.
 - **Narrow intersection** — exactly the capabilities used:
   `deps: CommandDeps & FsReadDeps & FsRemoveDeps`.
 - **Ad-hoc per-function deps** — a unique combination gets its own co-located
@@ -215,7 +215,7 @@ individual `vi.fn()` for call tracking is fine.
   `Partial<T>` overrides spread last:
   `create_mock_git_deps = (overrides: Partial<GitDeps> = {}): GitDeps => ({ current_branch_name: async () => ({ ok: true, value: 'main' }), …, ...overrides })`.
 - **In-memory state mock** — state object created separately so tests seed and
-  inspect it: `create_mock_cache_deps(state: MockFsState)` reading/writing
+  inspect it: `create_mock_fs_deps(state: MockFsState)` reading/writing
   `state.files` and returning `{ok: false, kind: 'not_found', …}` on a miss.
 - **Tracking mock** — `create_tracking_process_deps()` returns
   `{deps, get_spawned_commands}`: a call log exposed via getters next to the deps.
@@ -281,9 +281,9 @@ solves with injection. Full treatment: ./rust-patterns.md §Dependency Injection
 
 ## Quick Reference
 
-| Flavor                                                                                  | Exemplar           | Injection style                                          |
-| --------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------- |
-| Narrow platform deps + `RuntimeDeps` composite                                          | fuz_app `runtime/` | Required first param; composite at entry points          |
-| App capability bundle (`AppDeps`, `RouteFactoryDeps`, `QueryDeps`, `ActionFactoryDeps`) | fuz_app server     | Required first param; two-step composition root          |
-| Focused domain deps (`CacheDeps`)                                                       | fuz_css            | Optional param with default (`deps = default_cache_deps`) |
-| Grouped legacy `*Operations`                                                            | fuz_repos          | Optional `ops` param — migrating to `*Deps`              |
+| Flavor                                                                                  | Exemplar           | Injection style                                        |
+| --------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------ |
+| Narrow platform deps + `RuntimeDeps` composite                                          | fuz_app `runtime/` | Required first param; composite at entry points        |
+| App capability bundle (`AppDeps`, `RouteFactoryDeps`, `QueryDeps`, `ActionFactoryDeps`) | fuz_app server     | Required first param; two-step composition root        |
+| Focused domain deps (`FsDeps`)                                                          | fuz_css            | Optional param with default (`deps = default_fs_deps`) |
+| Grouped legacy `*Operations`                                                            | fuz_repos          | Optional `ops` param — migrating to `*Deps`            |

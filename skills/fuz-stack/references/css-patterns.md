@@ -27,8 +27,9 @@ classes appear it's one or two, not long strings.
 
 Reach past the defaults for genuine layout (flex rows/columns, grids), intent
 color (`palette_c` for a destructive button), or component-specific behavior.
-Flex containers are the main reason to add classes at all — inside a `.row`,
-child flow margins reset to 0 (`.row > *` → `margin: 0`), so use `gap_*` there.
+Flex containers are the main reason to add classes at all — inside a `.row` or
+`.row_wrap`, child flow margins reset to 0 (`.row > *`, `.row_wrap > *` →
+`margin: 0`), so use `gap_*` there.
 
 ## The Styling Ladder
 
@@ -38,7 +39,8 @@ Stop at the first rung that suffices:
 2. **Built-in class conventions** — `.selected`, `.disabled`,
    `.palette_a`–`.palette_j`, `.inline`, `.unstyled` — state/variant classes
    the semantic styles already recognize.
-3. **Composite classes** — `box`, `row`, `column`, `panel`, `chip`, `ellipsis`.
+3. **Composite classes** — `box`, `row`, `row_wrap`, `column`, `panel`, `chip`,
+   `ellipsis`.
 4. **Token and keyword classes** — `p_md`, `gap_lg`, `color_a_50`; never
    hardcode spacing or color. Keyword classes are bare CSS keywords that name
    their property (`flex`, `sticky`, `uppercase`), plus `hidden`
@@ -197,12 +199,13 @@ Semantic intent knobs alias meaning over the letters — `--hue_accent`,
 `--hue_positive`, `--hue_negative`, `--hue_caution`, `--hue_info`, plus
 `--hue_neutral`/`--neutral_chroma` for surface/text/border tint. Each intent
 derives a 13-stop scale (`--accent_00`–`--accent_100`) with text/background
-token classes (`positive_50`, `bg_caution_10`) — prefer intent tokens over
-palette letters when the color carries meaning. Caveats: intent naming covers
-text/background token classes only (the button/chip rung stays
-`.palette_a`–`.palette_j`; there is no `.negative` button class), and the
-neutral has no `neutral_00`–`neutral_100` family (its scales are
-`shade_*`/`text_*`).
+token classes (`positive_50`, `bg_caution_10`) and the palette letters'
+border, outline, and shadow twins (`border_positive_50`, `outline_accent_60`,
+`shadow_negative_40`) - prefer intent tokens over palette letters when the
+color carries meaning. Caveats: intent naming covers the token classes only
+(the button/chip rung stays `.palette_a`–`.palette_j`; there is no `.negative`
+button class), and the neutral has no `neutral_00`–`neutral_100` family (its
+scales are `shade_*`/`text_*`).
 
 **Intensity scale**: 13 scheme-adaptive stops `00`, `05`, `10`, `20`, `30`,
 `40`, `50`, `60`, `70`, `80`, `90`, `95`, `100`. Variables run
@@ -240,9 +243,9 @@ px); border radii 7 (`xs3`–`xl`); distances 5 (`xs`–`xl`, px absolute widths
 
 ### Additional Variable Families
 
-- `border_color_*` — alpha-based tinted borders (00–100). `outline_color_*` is
-  a class family over the opaque shade scale; there is no `--outline_color_NN`
-  variable
+- `border_color_*` — alpha-based tinted borders (00–100). `outline_shade_*` is
+  a class family over the opaque shade scale (it reads `--shade_NN`); there is
+  no `--outline_shade_NN` variable
 - `shadow_alpha_*` (00–100), `border_width_*` (1–9 px), `duration_*` (1–6,
   0.08s–3s), `hue_*` (`hue_a`–`hue_j` base hues, OKLCH angles)
 
@@ -261,7 +264,8 @@ OKLCH (curve knobs → ramp stops → color stops, computed in pure CSS).
 ### Cascading Variable Pattern
 
 Many token classes set a CSS property **and** a cascading custom property so
-children inherit: `font_size_lg` → `font-size` + `--font_size`; `color_a_50`
+children inherit: `font_size_lg` → `font-size` + `--font_size`; `icon_size_sm`
+→ `font-size` + `--font_size` + `--icon_size`; `color_a_50`
 → `color` + `--text_color`; `border_color_30` → `--border_color`;
 `outline_a_50` → `--outline_color` (focus rings key off it);
 `shadow_color_umbra` → `--shadow_color`.
@@ -277,15 +281,18 @@ children inherit: `font_size_lg` → `font-size` + `--font_size`; `color_a_50`
 
 ### Token Classes
 
-- **Spacing**: `p_md`, `px_lg`, `mt_xl`, `gap_sm`, `mx_auto`, `m_0` — the
-  most-used family
+- **Spacing**: `p_md`, `px_lg`, `mt_xl`, `gap_sm`, `gap_0`, `mx_auto`, `m_0` —
+  the most-used family
 - **Text colors**: `text_70`, `text_min`, `color_a_50`
 - **Backgrounds**: `shade_00`, `darken_30`, `bg_a_50` (opaque)
 - **Typography**: `font_size_lg`, `font_family_mono`, `line_height_md`, `icon_size_sm`
-- **Layout**: `width_md` (space scale), `top_sm`, `inset_md`, and the
-  **distance-scale** sizers `width_atmost_lg`/`width_atleast_sm`/`height_atmost_md`
-  — emit `width: 100%; max-width: var(--distance_*)` (px caps 200–1600)
-- **Borders**: `border_radius_xs`, `border_width_2`, `border_color_30`
+- **Layout**: the **distance-scale** sizers
+  `width_atmost_lg`/`width_atleast_sm`/`height_atmost_md` - emit
+  `width: 100%; max-width: var(--distance_*)` (px caps 200–1600); space-scale
+  sizes and offsets are literals (`width:var(--space_md)`,
+  `top:var(--space_sm)`)
+- **Borders**: `border_radius_xs`, `border_radius_0`, `border_width_2`,
+  `border_color_30`
 - **Shadows**: `shadow_md`, `shadow_top_md`, `shadow_inset_xs`,
   `shadow_alpha_50`, `shadow_color_umbra` (also `_highlight`, `_glow`, `_shroud`)
 
@@ -295,12 +302,20 @@ A CSS value keyword that names its property on its own is a bare class setting
 that one declaration; a keyword shared across properties (`center`, `nowrap`,
 `none`) stays a literal (`align-items:center`).
 
+A class name earns its place by one of: passing that keyword gate, bundling
+declarations (a composite), being token-backed, or completing a token family's
+steps (`gap_0`, `border_radius_0`). A single non-token declaration never gets a
+coined name - the literal is the shorthand (`flex:1`, `width:100%`,
+`border-radius:50%`, `white-space:nowrap`). `hidden` is the one named
+exception: it mirrors the HTML attribute so modifiers can reach it.
+
 - **display**: `flex`, `inline-flex`, `grid`, `inline-grid`, `inline-block`,
   `block`, `flow-root`
 - **position**: `relative`, `absolute`, `fixed`, `sticky`
 - **typography**: `uppercase`, `lowercase`, `capitalize`, `italic`,
   `oblique`, `bold`, `bolder`, `lighter`, `underline`, `overline`,
   `line-through` (the decoration ones set the `text-decoration-line` longhand)
+- **rendering**: `pixelated` (`image-rendering`)
 - **`hidden`**: `display: none`, mirroring the HTML attribute
 
 They order with the token and literal classes and take modifiers like any
@@ -330,25 +345,25 @@ declaration — name local classes in `kebab-case` that no keyword takes.
 
 ### Composite Classes
 
-| Class                    | What it does                                                                                          |
-| ------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `box`                    | Flex column, items centered, justify centered                                                         |
-| `row`                    | Flex row, align-items centered (overrides `box` direction)                                            |
-| `column`                 | Flex column (like `box` but uncentered)                                                               |
-| `panel`                  | Embedded container with tinted background and border-radius                                           |
-| `pane`                   | Floating container with opaque background and shadow                                                  |
-| `ellipsis`               | Block with text truncation (nowrap, overflow hidden, ellipsis)                                        |
-| `chip`                   | Inline label styling (font/padding/bg/radius + `palette_X` hues); display comes from the host element |
-| `menuitem`               | Full-width list item with icon, title, and selected state                                             |
-| `icon_button`            | Square button sized to `--input_height` (flex-shrink: 0)                                              |
-| `selectable`             | Button-like fill with hover/active/selected states                                                    |
-| `clickable`              | Hover/focus/active scale transform effects (includes state styles)                                    |
-| `plain`                  | Transparent border/fill/shadow on unselected elements; fill and shadow return on hover                |
-| `chevron`                | Small right-pointing arrow via CSS border trick                                                       |
-| `circular`               | `border-radius: 50%`                                                                                  |
-| `pixelated`              | Crisp pixel-art image rendering                                                                       |
-| `sized_xs`–`sized_xl`    | **Size composites** — see below                                                                       |
-| `mb_flow`/`mt_flow`      | Flow-aware margin that follows `--flow_margin` (size composites)                                      |
+| Class                 | What it does                                                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `box`                 | Flex column, items centered, justify centered                                                                    |
+| `row`                 | Flex row, align-items centered (overrides `box` direction)                                                       |
+| `column`              | Flex column (like `box` but uncentered)                                                                          |
+| `panel`               | Embedded container with tinted background and border-radius                                                      |
+| `pane`                | Floating container with opaque background and shadow                                                             |
+| `ellipsis`            | Block with text truncation (nowrap, overflow hidden, ellipsis)                                                   |
+| `chip`                | Inline label styling (font/padding/bg/radius + `palette_X` hues); display comes from the host element            |
+| `menuitem`            | Full-width list item with selected state; its children are `menuitem_content`, `menuitem_icon`, `menuitem_title` |
+| `icon_button`         | Square button sized to `--input_height` (flex-shrink: 0)                                                         |
+| `selectable`          | Button-like fill with hover/active/selected states                                                               |
+| `clickable`           | Hover/focus/active scale transform effects (includes state styles)                                               |
+| `plain`               | Transparent border/fill/shadow on unselected elements; fill and shadow return on hover                           |
+| `chevron`             | Small right-pointing arrow via CSS border trick                                                                  |
+| `row_wrap`            | A `row` that wraps; children get the same flow-margin reset                                                      |
+| `sr_only`             | Visually hidden, still read by assistive technology                                                              |
+| `sized_xs`–`sized_xl` | **Size composites** — see below                                                                                  |
+| `mb_flow`/`mt_flow`   | Flow-aware margin that follows `--flow_margin` (size composites)                                                 |
 
 **Size composites cascade to a subtree.** Put one on any **container** (or a
 single element, such as a row of secondary buttons) and it
@@ -364,7 +379,7 @@ make a whole region denser or roomier.
 redundant.
 
 The load-bearing composites are `row`, `column`, `box`, `panel`, `chip`,
-`menuitem`; `circular`, `pixelated`, `pane`, `chevron` see near-zero real use.
+`menuitem`; `pane` and `chevron` see near-zero real use.
 
 ### Literal Classes
 
@@ -446,18 +461,22 @@ shorthand (`style:` is invalid on component tags):
 persistence and system preference live in fuz_ui's `ThemeState` / `ThemeRoot`.
 
 **Themes**: `default_themes` registers `base` and `ledger`; low/high contrast
-are `contrast_modifiers` composed via `compose_themes`; shipped-but-unregistered
-exemplars under `themes/` (`zine`, `pebble`, `parchment`, `phosphor`,
+are `contrast_modifiers.low`/`.high` (a record), composed via
+`compose_themes`; shipped-but-unregistered exemplars under `themes/` (`zine`, `pebble`, `parchment`, `phosphor`,
 `guestbook`, `marquee`, `signage` — phosphor and marquee dark-only via
 `scheme`) show the range. A `Theme` (from `@fuzdev/fuz_css/variable.ts`, a
 strict schema) is a `name`, an optional `summary` for pickers, and
 `StyleVariable` overrides (`variables`). A single-scheme `scheme` stance is
 resolved with `resolve_theme_stance` (`theme_stance.ts`) before runtime
-rendering; the build-time option does that itself. `render_theme_style()`
+rendering. `render_theme_style()`
 renders it into the `fuz.theme` layer, which beats `fuz.base` by layer order
 regardless of specificity. `validate_theme` lints its shape and knobs, and
-`check_theme` gates gamut, ramp monotonicity, and contrast. The generators also take a build-time `theme` option
-that bakes a theme into the bundled CSS with no JS; the runtime `ThemeRoot`
+`check_theme` gates gamut, ramp monotonicity, and contrast at the default caps,
+and `compile_theme` re-runs them with the theme's recomputed caps; either report
+(`ThemeCheckReport`) answers `passed` (every evaluated gate passes) and
+`complete` (nothing left unchecked) separately. The generators also take a build-time `theme`
+option, the authored `Theme`, which derives the mirror and caps itself and
+bakes the theme into the bundled CSS with no JS; the runtime `ThemeRoot`
 path composes on top (runtime wins by layer order).
 
 ## Components

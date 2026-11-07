@@ -467,8 +467,8 @@ are `contrast_modifiers.low`/`.high` (a record), composed via
 `scheme`) show the range. A `Theme` (from `@fuzdev/fuz_css/variable.ts`, a
 strict schema) is a `name`, an optional `summary` for pickers, and
 `StyleVariable` overrides (`variables`). A single-scheme `scheme` stance is
-resolved with `resolve_theme_stance` (`theme_stance.ts`) before runtime
-rendering. `render_theme_style()`
+resolved with `resolve_theme_stance` (`theme_stance.ts`), which returns the
+theme with its stance mirror beside it (`ResolvedTheme`), before runtime rendering. `render_theme_style()`
 renders it into the `fuz.theme` layer, which beats `fuz.base` by layer order
 regardless of specificity. `validate_theme` lints its shape and knobs, and
 `check_theme` gates gamut, ramp monotonicity, and contrast at the default caps,
@@ -478,6 +478,33 @@ and `compile_theme` re-runs them with the theme's recomputed caps; either report
 option, the authored `Theme`, which derives the mirror and caps itself and
 bakes the theme into the bundled CSS with no JS; the runtime `ThemeRoot`
 path composes on top (runtime wins by layer order).
+
+**`ThemeRoot`** (fuz_ui) renders `theme_state.theme` and persists it. Pass the
+app's registry as `themes` (default `default_themes`): a registry theme saves
+by name, a registry theme composed with a contrast modifier as
+`{name, contrast}` - so a load takes the registry's current version,
+recomposed - and any other theme whole, trimmed to its authored fields. The
+matches are by name, so give custom themes names the registry doesn't use. Inject
+`resolve_theme={resolve_theme_stance}` when the app ships a stanced theme
+(`phosphor`, `marquee`): without it `ThemeRoot` throws at creation when
+`themes` or `theme_fallback` holds one, and a stanced theme from elsewhere
+(storage, set at runtime) logs an error and renders without its mirror. The
+storage helpers take the registry too - `save_theme(theme, themes?, key?)`,
+`load_theme(themes?, fallback?, key?)` - and `ThemeRoot` calls its `save_theme`
+prop with the registry on every theme reassignment, undebounced, so an app that
+rethemes live (an editor draft) wraps it to skip what it shouldn't persist
+(`app_themes` and `DRAFT_THEME_NAME` are the app's own):
+
+```svelte
+<ThemeRoot
+	themes={app_themes}
+	resolve_theme={resolve_theme_stance}
+	save_theme={(theme, themes) =>
+		theme?.name === DRAFT_THEME_NAME ? undefined : save_theme(theme, themes)}
+>
+	{@render children()}
+</ThemeRoot>
+```
 
 ## Components
 

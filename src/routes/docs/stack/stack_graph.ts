@@ -130,7 +130,7 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'security-first JS runtime and toolchain on V8',
 		layer: 3,
-		fan_in: 8,
+		fan_in: 9,
 		x: 0,
 		y: 600
 	},
@@ -141,7 +141,7 @@ export const stack_nodes: Array<StackNode> = [
 		description:
 			'a strict markdown dialect built for streaming, web authoring, docs, and untrusted content',
 		layer: 2,
-		fan_in: 9,
+		fan_in: 10,
 		x: 0,
 		y: 720
 	},
@@ -232,7 +232,7 @@ export const stack_edges: Array<StackEdge> = [
 	{
 		from: 'fuz_app',
 		to: 'fuz_ui',
-		kind: 'dev'
+		kind: 'peer'
 	},
 	{
 		from: 'fuz_app',

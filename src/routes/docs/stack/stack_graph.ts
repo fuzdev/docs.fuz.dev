@@ -30,7 +30,7 @@ export const stack_nodes: Array<StackNode> = [
 			'experimental AI-generated docs and skills for Fuz, a zippy stack for human agency',
 		layer: 7,
 		fan_in: 0,
-		x: -375,
+		x: -300,
 		y: 120
 	},
 	{
@@ -40,7 +40,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'fullstack app library',
 		layer: 7,
 		fan_in: 1,
-		x: -225,
+		x: -150,
 		y: 120
 	},
 	{
@@ -49,8 +49,8 @@ export const stack_nodes: Array<StackNode> = [
 		language: 'ts',
 		description: 'blog software from scratch with SvelteKit',
 		layer: 7,
-		fan_in: 0,
-		x: -75,
+		fan_in: 1,
+		x: 0,
 		y: 120
 	},
 	{
@@ -81,7 +81,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'a tool for managing many repos',
 		layer: 7,
 		fan_in: 0,
-		x: 75,
+		x: 150,
 		y: 120
 	},
 	{
@@ -91,7 +91,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'starter template for SvelteKit web apps, Rust native tools, or both',
 		layer: 7,
 		fan_in: 0,
-		x: 225,
+		x: 300,
 		y: 120
 	},
 	{
@@ -119,10 +119,10 @@ export const stack_nodes: Array<StackNode> = [
 		category: 'site',
 		language: 'ts',
 		description: 'homepage for Fuz, free software for human agency',
-		layer: 7,
+		layer: 8,
 		fan_in: 0,
-		x: 375,
-		y: 120
+		x: -75,
+		y: 0
 	},
 	{
 		name: 'gro',
@@ -162,7 +162,7 @@ export const stack_nodes: Array<StackNode> = [
 		description: 'software garage for power users and devs',
 		layer: 8,
 		fan_in: 0,
-		x: 0,
+		x: 75,
 		y: 0
 	}
 ];
@@ -517,6 +517,11 @@ export const stack_edges: Array<StackEdge> = [
 	{
 		from: 'fuz.dev',
 		to: 'blake3',
+		kind: 'dev'
+	},
+	{
+		from: 'fuz.dev',
+		to: 'fuz_blog',
 		kind: 'dev'
 	},
 	{

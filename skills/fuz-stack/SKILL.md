@@ -27,8 +27,9 @@ accessible to anyone with intent and an AI partner. Consistent,
 self-describing patterns let an agent learn once and apply everywhere:
 snake_case aligns TS, Rust, and SQL with zero renaming; schemas are the
 single source of truth for data shape, type, defaults, and validation
-(fuz_schema everywhere except fuz_app's app data and the apps on it, which
-are Zod — fuz_app's env loading is fuz_schema); `fuz_app` is the shared
+(fuz_schema everywhere but the app data of the apps built on fuz_app, which
+is Zod — fuz_app's own schemas are fuz_schema, and its action and route specs
+take either library); `fuz_app` is the shared
 backend spine (auth, sessions, DB, SSE) that zzz and the apps build on.
 
 ## Package Ecosystem
@@ -38,7 +39,7 @@ Each package's `CLAUDE.md` is authoritative for what it actually uses.
 | Package        | Description                                                                     |
 | -------------- | ------------------------------------------------------------------------------- |
 | `fuz_util`     | foundation utilities (zero deps) — hashing, async, schemas, types               |
-| `fuz_schema`   | performance-focused Standard Schema library — all but fuz_app data, `Flavored`  |
+| `fuz_schema`   | performance-focused Standard Schema library — all but app data, `Flavored`      |
 | `gro`          | security-first JS runtime and toolchain on V8 (today a Node task runner)        |
 | `fuz_css`      | semantic-first CSS framework and design system                                  |
 | `mdz`          | minimal markdown dialect — parser, renderer, Svelte preprocessor                |
@@ -339,12 +340,13 @@ See ./references/fuz-util.md.
 
 ## Zod Schemas
 
-Zod schemas are the source of truth for fuz_app's app data and the apps
-built on it — JSON shape, TS type, defaults, metadata, and serialization;
-schema changes cascade through the stack. Everything else is
-`@fuzdev/fuz_schema`: the packages below fuz_app (fuz_util, gro, fuz_css),
-CLI and task args (./references/task-patterns.md), tooling, and
-fuz_app's env loading and testing daemon-info file. Porting from Zod, mind
+Zod schemas are the source of truth for the app data of the apps built on
+fuz_app — JSON shape, TS type, defaults, metadata, and serialization; schema
+changes cascade through the stack. Everything else is `@fuzdev/fuz_schema`:
+the packages below fuz_app (fuz_util, gro, fuz_css), CLI and task args
+(./references/task-patterns.md), tooling, and fuz_app's own schemas (its
+actions, routes, errors, cells, protocol envelopes, and env), whose action and
+route specs take a schema of either library. Porting from Zod, mind
 that a Zod object parse returns a new object in schema key order while
 fuz_schema `object` returns the input itself when no entry changed it
 (`strip_object` copies, in schema order, only when an unknown key is

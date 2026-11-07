@@ -75,14 +75,13 @@ canonical keys; `args_parse` for one that exercises flags.
 ## TaskContext
 
 Fields: `args`, `config: GroConfig`,
-`svelte_config: Promise<ParsedSvelteConfig>`, `graph`, `watcher`, `log`,
-`timings`, `invoke_task`. `svelte_config` is lazy (resolved on first access).
+`svelte_config: Promise<ParsedSvelteConfig>`, `graph`, `log`, `timings`,
+`invoke_task`. `svelte_config` is lazy (resolved on first access).
 `graph` is a `ModuleGraph` (the modules under `src/`, which imports which —
-transitive `dependents` — and content-based change events via `watch`);
-`watcher` is a plain file watch over the same directory. Both load on first
-use, so a task that never touches them starts no watch; `config.watch`
-(`{dir, filter}`, default `src/`) sets what they watch, and an invoked task
-shares its invoker's. `log`/`timings` are task-scoped.
+transitive `dependents` — and content-based change events via `watch`). It
+loads on first use, so a task that never touches it starts no watch;
+`config.watch` (`{dir, filter}`, default `src/`) sets what it watches, and an
+invoked task shares its invoker's. `log`/`timings` are task-scoped.
 
 **`invoke_task(name_or_path, args?, {config?})`** composes tasks by the CLI's
 rule: an input containing a `/` or ending in `.task.ts`/`.task.js` is a task

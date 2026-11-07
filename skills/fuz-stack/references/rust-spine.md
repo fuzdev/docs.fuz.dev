@@ -164,7 +164,7 @@ The daemon-token keeper wiring (`BootstrapKeeperResolved` + boot-time
 `internal_error`, `internal_error_with_source`, `not_found`, `conflict`,
 `forbidden`, `validation_error`, `rate_limited`) and
 `parse_strict_params<T: DeserializeOwned>` (an explicit `null` refused, as a
-`z.strictObject` refuses it, then the serde decode). Consumers import, never
+strict fuz_schema `object` refuses it, then the serde decode). Consumers import, never
 re-declare — the envelope is what parity tests assert byte-for-byte. Prefer
 typed `#[derive(Deserialize)]` input structs + `parse_strict_params` over
 `params.get().and_then(Value::as_str)` chains (the chains are migration debt).
@@ -209,13 +209,15 @@ status; in a `const` that's a compile error.
 - **Browser gates**: `SameSite=Strict` keeps other sites out but not other
   ports on the same host, so the spine's JSON handlers refuse a `POST` with no
   `Content-Type` or a form / text one (415 — a request a browser sends
-  cross-origin with no preflight). A loopback daemon (zzz is the exemplar)
-  also sets `StackOptions::host_gate` (DNS rebinding) and, on groups that
-  take no form uploads, `RouteGroup::refuse_simple_requests`, and lists exact
+  cross-origin with no preflight). The host gate (`StackOptions::host_gate`,
+  DNS rebinding) is on by default: a server answers only to loopback names and
+  the hosts its allowlist names, so a deploy lists the origin it is served
+  from. A loopback daemon (zzz is the exemplar) also sets, on groups that take
+  no form uploads, `RouteGroup::refuse_simple_requests`, and lists exact
   origins — the origin allowlist is the only gate on the never-preflighted
   WebSocket upgrade, so `http://localhost:*` admits every local page.
-- **Booleans** via `fuz_sys::env::parse_stringbool` (the `z.stringbool()`
-  closed set; unknown values error).
+- **Booleans** via `fuz_sys::env::parse_stringbool` (the closed set fuz_app's
+  `EnvStringbool` reads; unknown values error).
 - **Secret-shaped names** carry the `SECRET_*` prefix — one contract across TS
   (`fuz_app` `BaseServerEnv`) and Rust.
 

@@ -132,8 +132,8 @@ import {git_push} from './git.ts';`}
 				<tr>
 					<td>Validation</td>
 					<td>
-						<code>z.strictObject()</code> by default, PascalCase schema naming,
-						<code>.brand()</code> for nominal types
+						<code>object()</code> by default, PascalCase schema naming, <code>brand()</code> for
+						nominal types
 					</td>
 				</tr>
 				<tr>

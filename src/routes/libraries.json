@@ -8844,7 +8844,7 @@
 						{
 							"name": "FACT_HASH_EXACT",
 							"kind": "variable",
-							"docComment": "Anchored pattern for full-string validation: `blake3:` plus exactly 64\nlowercase hex chars. Schemas that validate a fact hash build on it, e.g.\n`z.string().regex(FACT_HASH_EXACT)`.",
+							"docComment": "Anchored pattern for full-string validation: `blake3:` plus exactly 64\nlowercase hex chars. Schemas that validate a fact hash build on it, e.g.\n`pipe(string, regex(FACT_HASH_EXACT))`.",
 							"typeSignature": "RegExp",
 							"sourceLine": 30
 						},
@@ -63864,7 +63864,7 @@
 								{
 									"name": "merged_value",
 									"kind": "variable",
-									"docComment": "Whether the exported name also carries a value meaning — a merged\nvalue+type symbol like `const Foo = z.strictObject({...})` beside\n`type Foo = z.infer<typeof Foo>`, where the type wins the declaration slot.\nPresent on `type` and `interface` kinds.",
+									"docComment": "Whether the exported name also carries a value meaning — a merged\nvalue+type symbol like `const Foo = object({...})` beside\n`type Foo = Infer<typeof Foo>`, where the type wins the declaration slot.\nPresent on `type` and `interface` kinds.",
 									"typeSignature": "boolean | undefined",
 									"modifiers": [
 										"getter"
@@ -133042,240 +133042,240 @@
 						{
 							"name": "ERROR_FORBIDDEN_HOST",
 							"kind": "variable",
-							"docComment": "The request's `Host` names a host the server doesn't answer to — the Rust\nspine's DNS-rebinding gate (`host_gate`), its `FORBIDDEN_HOST_REASON`. The\nTS spine has no host gate; a surface describing a Rust server that mounts\none declares it.",
+							"docComment": "The request's `Host` names a host the server doesn't answer to — the\nDNS-rebinding gate (`http/host.ts`, the Rust spine's `host_gate`, its\n`FORBIDDEN_HOST_REASON`).",
 							"typeSignature": "\"forbidden_host\"",
-							"sourceLine": 128
+							"sourceLine": 127
 						},
 						{
 							"name": "ERROR_UNSUPPORTED_CONTENT_TYPE",
 							"kind": "variable",
 							"docComment": "A `POST` whose `Content-Type` the route refuses: anything but\n`application/json` on a JSON route, a CORS-safelisted type or none on a\n`raw_body` one. See `http/simple_request.ts`.",
 							"typeSignature": "\"unsupported_content_type\"",
-							"sourceLine": 135
+							"sourceLine": 134
 						},
 						{
 							"name": "ERROR_INVALID_TOKEN",
 							"kind": "variable",
 							"docComment": "Bearer token failed validation (missing, malformed, or revoked).",
 							"typeSignature": "\"invalid_token\"",
-							"sourceLine": 138
+							"sourceLine": 137
 						},
 						{
 							"name": "ERROR_ACCOUNT_NOT_FOUND",
 							"kind": "variable",
 							"docComment": "Token references a deleted account.",
 							"typeSignature": "\"account_not_found\"",
-							"sourceLine": 141
+							"sourceLine": 140
 						},
 						{
 							"name": "ERROR_ACTOR_REQUIRED",
 							"kind": "variable",
 							"docComment": "Multi-actor account requires the request to carry an explicit `acting`\nfield naming the actor the request is acting as, so the dispatcher's\nauthorization phase doesn't pick a default actor silently. Returned\nwith the available actors so the client can prompt.",
 							"typeSignature": "\"actor_required\"",
-							"sourceLine": 149
+							"sourceLine": 148
 						},
 						{
 							"name": "ERROR_ACTOR_NOT_ON_ACCOUNT",
 							"kind": "variable",
 							"docComment": "Supplied `acting` field does not name an actor on the authenticated\naccount.",
 							"typeSignature": "\"actor_not_on_account\"",
-							"sourceLine": 155
+							"sourceLine": 154
 						},
 						{
 							"name": "ERROR_NO_ACTORS_ON_ACCOUNT",
 							"kind": "variable",
 							"docComment": "Authenticated account exists but has no actors. Server invariant\nviolation — signup / bootstrap always create an actor in the same\ntransaction. Surfaced from the dispatcher's authorization phase as a\n500 so the operator sees the corruption signal rather than a confusing\n4xx. Distinct from `ERROR_ACCOUNT_VANISHED`: the actor list was\nenumerated successfully and came back empty.",
 							"typeSignature": "\"no_actors_on_account\"",
-							"sourceLine": 165
+							"sourceLine": 164
 						},
 						{
 							"name": "ERROR_ACCOUNT_VANISHED",
 							"kind": "variable",
 							"docComment": "Authentication validated an account, but a follow-up read in the\nauthorization phase came back null — the account or its named actor\nrow was deleted between the credential check and the dispatcher's\n`build_request_context` / `build_account_context` step. Torn read,\nnot a missing-actor invariant violation. Surfaced as 500 so the\noperator sees the race signal; clients can retry. Distinct from\n`ERROR_ACCOUNT_NOT_FOUND` (stale token referencing a long-deleted\naccount, raised at credential validation) and\n`ERROR_NO_ACTORS_ON_ACCOUNT` (the actor list enumerated empty).",
 							"typeSignature": "\"account_vanished\"",
-							"sourceLine": 178
+							"sourceLine": 177
 						},
 						{
 							"name": "ERROR_KEEPER_ACCOUNT_NOT_FOUND",
 							"kind": "variable",
 							"docComment": "Keeper account ID set but account row not found.",
 							"typeSignature": "\"keeper_account_not_found\"",
-							"sourceLine": 183
+							"sourceLine": 182
 						},
 						{
 							"name": "ERROR_ALREADY_BOOTSTRAPPED",
 							"kind": "variable",
 							"docComment": "Bootstrap lock already acquired — system already bootstrapped.",
 							"typeSignature": "\"already_bootstrapped\"",
-							"sourceLine": 188
+							"sourceLine": 187
 						},
 						{
 							"name": "ERROR_TOKEN_FILE_MISSING",
 							"kind": "variable",
 							"docComment": "Bootstrap token file not found on disk.",
 							"typeSignature": "\"token_file_missing\"",
-							"sourceLine": 191
+							"sourceLine": 190
 						},
 						{
 							"name": "ERROR_NO_MATCHING_INVITE",
 							"kind": "variable",
 							"docComment": "No unclaimed invite matches the signup credentials.",
 							"typeSignature": "\"no_matching_invite\"",
-							"sourceLine": 196
+							"sourceLine": 195
 						},
 						{
 							"name": "ERROR_SIGNUP_CONFLICT",
 							"kind": "variable",
 							"docComment": "Signup conflict — username or email already taken (intentionally vague for enumeration prevention).",
 							"typeSignature": "\"signup_conflict\"",
-							"sourceLine": 199
+							"sourceLine": 198
 						},
 						{
 							"name": "ERROR_INVITE_NOT_FOUND",
 							"kind": "variable",
 							"docComment": "Invite not found (for delete operations).",
 							"typeSignature": "\"invite_not_found\"",
-							"sourceLine": 202
+							"sourceLine": 201
 						},
 						{
 							"name": "ERROR_INVITE_DUPLICATE",
 							"kind": "variable",
 							"docComment": "An unclaimed invite already exists for this email or username.",
 							"typeSignature": "\"invite_duplicate\"",
-							"sourceLine": 205
+							"sourceLine": 204
 						},
 						{
 							"name": "ERROR_INVITE_ACCOUNT_EXISTS_USERNAME",
 							"kind": "variable",
 							"docComment": "An account already exists with this invite's username.",
 							"typeSignature": "\"invite_account_exists_username\"",
-							"sourceLine": 208
+							"sourceLine": 207
 						},
 						{
 							"name": "ERROR_INVITE_ACCOUNT_EXISTS_EMAIL",
 							"kind": "variable",
 							"docComment": "An account already exists with this invite's email.",
 							"typeSignature": "\"invite_account_exists_email\"",
-							"sourceLine": 211
+							"sourceLine": 210
 						},
 						{
 							"name": "ERROR_ROLE_NOT_WEB_GRANTABLE",
 							"kind": "variable",
 							"docComment": "Admin tried to grant a role that is not web-grantable.",
 							"typeSignature": "\"role_not_web_grantable\"",
-							"sourceLine": 216
+							"sourceLine": 215
 						},
 						{
 							"name": "ERROR_ROLE_GRANT_NOT_FOUND",
 							"kind": "variable",
 							"docComment": "Role grant ID not found or not owned by the target actor.",
 							"typeSignature": "\"role_grant_not_found\"",
-							"sourceLine": 219
+							"sourceLine": 218
 						},
 						{
 							"name": "ERROR_INVALID_EVENT_TYPE",
 							"kind": "variable",
 							"docComment": "Query parameter `event_type` is not a valid audit event type.",
 							"typeSignature": "\"invalid_event_type\"",
-							"sourceLine": 222
+							"sourceLine": 221
 						},
 						{
 							"name": "ERROR_LIMIT_INVALID",
 							"kind": "variable",
 							"docComment": "`limit` on a paged read refused — out of `[1, max]`, or not an integer.",
 							"typeSignature": "\"limit_invalid\"",
-							"sourceLine": 230
+							"sourceLine": 229
 						},
 						{
 							"name": "ERROR_OFFSET_INVALID",
 							"kind": "variable",
 							"docComment": "`offset` on a paged read refused — negative, or not a safe integer.",
 							"typeSignature": "\"offset_invalid\"",
-							"sourceLine": 233
+							"sourceLine": 232
 						},
 						{
 							"name": "ERROR_SINCE_SEQ_INVALID",
 							"kind": "variable",
 							"docComment": "`audit_log_list`'s `since_seq` cursor refused — negative, or not a safe integer.",
 							"typeSignature": "\"since_seq_invalid\"",
-							"sourceLine": 236
+							"sourceLine": 235
 						},
 						{
 							"name": "ERROR_OUTCOME_INVALID",
 							"kind": "variable",
 							"docComment": "`audit_log_list`'s `outcome` filter refused — not `'success'` or `'failure'`.",
 							"typeSignature": "\"outcome_invalid\"",
-							"sourceLine": 239
+							"sourceLine": 238
 						},
 						{
 							"name": "ERROR_FOREIGN_KEY_VIOLATION",
 							"kind": "variable",
 							"docComment": "DELETE blocked by a foreign key constraint.",
 							"typeSignature": "\"foreign_key_violation\"",
-							"sourceLine": 244
+							"sourceLine": 243
 						},
 						{
 							"name": "ERROR_TABLE_NOT_FOUND",
 							"kind": "variable",
 							"docComment": "Table name not found in `information_schema`.",
 							"typeSignature": "\"table_not_found\"",
-							"sourceLine": 247
+							"sourceLine": 246
 						},
 						{
 							"name": "ERROR_TABLE_NO_PRIMARY_KEY",
 							"kind": "variable",
 							"docComment": "Table has no single-column primary key, so there is no column the row-`DELETE`\ncan target: either no primary key at all, or a composite one (a single-column\n`WHERE` on one member of a composite key over-matches).",
 							"typeSignature": "\"table_no_primary_key\"",
-							"sourceLine": 254
+							"sourceLine": 253
 						},
 						{
 							"name": "ERROR_TABLE_NOT_DELETABLE",
 							"kind": "variable",
 							"docComment": "Table is excluded from row deletion by policy — the audit trail and the\nframework's singleton bookkeeping rows (`bootstrap_lock`, `app_settings`,\n`schema_version`), whose invariants live in the domain layer rather than in\na generic storage endpoint. See `http/db_routes.ts`'s `NON_DELETABLE_TABLES`.",
 							"typeSignature": "\"table_not_deletable\"",
-							"sourceLine": 262
+							"sourceLine": 261
 						},
 						{
 							"name": "ERROR_ROW_NOT_FOUND",
 							"kind": "variable",
 							"docComment": "Row with the given PK value not found.",
 							"typeSignature": "\"row_not_found\"",
-							"sourceLine": 265
+							"sourceLine": 264
 						},
 						{
 							"name": "ERROR_DATABASE_CONNECTION_FAILED",
 							"kind": "variable",
 							"docComment": "Database health-check query failed (connectivity or query error).",
 							"typeSignature": "\"database_connection_failed\"",
-							"sourceLine": 268
+							"sourceLine": 267
 						},
 						{
 							"name": "ERROR_SCHEMA_DRIFT",
 							"kind": "variable",
 							"docComment": "The live database lacks a table or column the deploy expects (`db/schema_ready.ts`).",
 							"typeSignature": "\"schema_drift\"",
-							"sourceLine": 273
+							"sourceLine": 272
 						},
 						{
 							"name": "ERROR_DB_UNREACHABLE",
 							"kind": "variable",
 							"docComment": "The readiness check could not query the database.",
 							"typeSignature": "\"db_unreachable\"",
-							"sourceLine": 276
+							"sourceLine": 275
 						},
 						{
 							"name": "ERROR_INTERNAL_ERROR",
 							"kind": "variable",
 							"docComment": "An unexpected failure — the catch layer's answer to an error no route\ndeclares (`{error: 'internal_error', message?}`, the message DEV-only).",
 							"typeSignature": "\"internal_error\"",
-							"sourceLine": 284
+							"sourceLine": 283
 						},
 						{
 							"name": "RestErrorEntries",
 							"kind": "type",
 							"docComment": "The entries of a definition's body schema: `error`, its code, beside its fields.",
 							"typeSignature": "RestErrorEntries<TCode, TFields>",
-							"sourceLine": 292,
+							"sourceLine": 291,
 							"genericParams": [
 								{
 									"name": "TCode",
@@ -133363,7 +133363,7 @@
 							"kind": "type",
 							"docComment": "The body schema of a definition, `loose_object({error: literal(code), ...fields})`.",
 							"typeSignature": "RestErrorSchema<TCode, TFields>",
-							"sourceLine": 297,
+							"sourceLine": 296,
 							"genericParams": [
 								{
 									"name": "TCode",
@@ -133451,7 +133451,7 @@
 							"kind": "type",
 							"docComment": "The body a definition puts on the wire.",
 							"typeSignature": "{ [K in keyof ({ [K in Exclude<\"error\", OptionalOutputKeys<RestErrorEntries<TCode, TFields>>> | Exclude<keyof TFields, OptionalOutputKeys<...>>]: ReturnType<...>; } & { [K in OptionalOutputKeys<...>]?: ReturnType<...> | undefined; })]: ({ [K in Exclude<...> | Exclude<...>]: ReturnType<...>; } & { [K in OptionalOutpu...",
-							"sourceLine": 305,
+							"sourceLine": 304,
 							"genericParams": [
 								{
 									"name": "TCode",
@@ -133498,7 +133498,7 @@
 							"kind": "interface",
 							"docComment": "A REST error definition: one code at one HTTP status, with the fields its\nbody carries beside `error`. The status lives here and not on the `ERROR_*`\nconstant, which is also a JSON-RPC `data.reason` with no fixed status.\n\nThe same code may have more than one definition, each a shape of its own\n(`REST_AUTHENTICATION_REQUIRED` and `REST_AUTHENTICATION_REQUIRED_BOOTSTRAP`).",
 							"typeSignature": "RestErrorDef<TStatus, TCode, TFields>",
-							"sourceLine": 317,
+							"sourceLine": 316,
 							"genericParams": [
 								{
 									"name": "TStatus",
@@ -133623,14 +133623,14 @@
 							"kind": "variable",
 							"docComment": "The grammar of an `error` code: a lowercase ASCII letter, then lowercase\nletters, digits, and `_` — a code, never prose. Prose goes in `message`.",
 							"typeSignature": "RegExp",
-							"sourceLine": 339
+							"sourceLine": 338
 						},
 						{
 							"name": "is_rest_error_code",
 							"kind": "function",
 							"docComment": "Whether a value is an `error` code, by `REST_ERROR_CODE_PATTERN`.",
 							"typeSignature": "(value: unknown): value is string",
-							"sourceLine": 369,
+							"sourceLine": 368,
 							"parameters": [
 								{
 									"name": "value",
@@ -133645,7 +133645,7 @@
 							"kind": "function",
 							"docComment": "Define a REST error: its status, its code, and the fields its body carries\nbeside `error`.",
 							"typeSignature": "<const TStatus extends number, const TCode extends string, const TFields extends SchemaEntries = Record<never, never>>(status: Exact<TStatus, number>, code: Exact<RestErrorCode<TCode>, string>, fields?: TFields | undefined, headers?: ((body: { [K in keyof ({ [K in Exclude<...> | Exclude<...>]: ReturnType<...>; } & { [K in OptionalOutputKeys<...>]?: ReturnType<...> | undefined; })]: ({ [K in Exclude<...> | Exclude<...>]: ReturnType<...>; } & { [K in OptionalOutputKeys<...>]?: ReturnType<...> | undefined; })[K]; } & Record<...>) => Record<...>) | undefined): RestErrorDef<...>",
-							"sourceLine": 385,
+							"sourceLine": 384,
 							"genericParams": [
 								{
 									"name": "TStatus",
@@ -133717,7 +133717,7 @@
 							"kind": "function",
 							"docComment": "Whether two definitions are the same: one object, or the same status, code,\nand `headers`, with the same schema at every field.",
 							"typeSignature": "(a: RestErrorDef<number, string, SchemaEntries>, b: RestErrorDef<number, string, SchemaEntries>): boolean",
-							"sourceLine": 424,
+							"sourceLine": 423,
 							"parameters": [
 								{
 									"name": "a",
@@ -133773,7 +133773,7 @@
 							"kind": "function",
 							"docComment": "A list of definitions with each repeat after its first left out\n(`same_rest_error`), in list order.",
 							"typeSignature": "(defs: Iterable<RestErrorDef<number, string, SchemaEntries>>): RestErrorDef<number, string, SchemaEntries>[]",
-							"sourceLine": 442,
+							"sourceLine": 441,
 							"parameters": [
 								{
 									"name": "defs",
@@ -133842,7 +133842,7 @@
 							"kind": "function",
 							"docComment": "Build an error-schema map from a list of definitions, grouped by status.\nA status with one definition maps to its schema, and one with more to a\n`union` of their schemas in list order — two shapes of one code included,\neach a branch; a definition listed twice counts once (`dedupe_rest_errors`).",
 							"typeSignature": "(defs: Iterable<RestErrorDef<number, string, SchemaEntries>>): ErrorSchemas",
-							"sourceLine": 459,
+							"sourceLine": 458,
 							"parameters": [
 								{
 									"name": "defs",
@@ -133889,7 +133889,7 @@
 							"name": "REST_INVALID_REQUEST_BODY",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"invalid_request_body\", { readonly issues: Schema<({ kind: string; message: string; path: (string | number)[]; expected: string; received: string; } & Record<string, unknown>)[] | undefined, ({ ...; } & Record<...>)[] | undefined, \"optional\", SchemaWrapperDef<...>>; }>",
-							"sourceLine": 482,
+							"sourceLine": 481,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -133915,7 +133915,7 @@
 							"name": "REST_INVALID_JSON_BODY",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"invalid_json_body\", Record<never, never>>",
-							"sourceLine": 485,
+							"sourceLine": 484,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -133951,7 +133951,7 @@
 							"name": "REST_INVALID_ROUTE_PARAMS",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"invalid_route_params\", { readonly issues: Schema<({ kind: string; message: string; path: (string | number)[]; expected: string; received: string; } & Record<string, unknown>)[] | undefined, ({ ...; } & Record<...>)[] | undefined, \"optional\", SchemaWrapperDef<...>>; }>",
-							"sourceLine": 486,
+							"sourceLine": 485,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -133977,7 +133977,7 @@
 							"name": "REST_INVALID_QUERY_PARAMS",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"invalid_query_params\", { readonly issues: Schema<({ kind: string; message: string; path: (string | number)[]; expected: string; received: string; } & Record<string, unknown>)[] | undefined, ({ ...; } & Record<...>)[] | undefined, \"optional\", SchemaWrapperDef<...>>; }>",
-							"sourceLine": 489,
+							"sourceLine": 488,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134003,7 +134003,7 @@
 							"name": "REST_INVALID_CONTENT_LENGTH",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"invalid_content_length\", Record<never, never>>",
-							"sourceLine": 493,
+							"sourceLine": 492,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134040,7 +134040,7 @@
 							"kind": "variable",
 							"docComment": "No `acting` selector on a multi-actor account; `available` lists the account's actors.",
 							"typeSignature": "RestErrorDef<400, \"actor_required\", { readonly available: Schema<({ id: string; name: string; } & Record<string, unknown>)[], ({ id: string; name: string; } & Record<string, unknown>)[], \"array\", Schema<{ id: string; name: string; } & Record<...>, { ...; } & Record<...>, \"loose_object\", { ...; }>>; }>",
-							"sourceLine": 497,
+							"sourceLine": 496,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134067,7 +134067,7 @@
 							"kind": "variable",
 							"docComment": "The `acting` selector names an actor that isn't the account's.",
 							"typeSignature": "RestErrorDef<400, \"actor_not_on_account\", Record<never, never>>",
-							"sourceLine": 501,
+							"sourceLine": 500,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134103,7 +134103,7 @@
 							"name": "REST_TABLE_NOT_DELETABLE",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"table_not_deletable\", Record<never, never>>",
-							"sourceLine": 503,
+							"sourceLine": 502,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134139,7 +134139,7 @@
 							"name": "REST_TABLE_NO_PRIMARY_KEY",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<400, \"table_no_primary_key\", Record<never, never>>",
-							"sourceLine": 504,
+							"sourceLine": 503,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134175,7 +134175,7 @@
 							"name": "REST_AUTHENTICATION_REQUIRED",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<401, \"authentication_required\", Record<never, never>>",
-							"sourceLine": 507,
+							"sourceLine": 506,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134212,7 +134212,7 @@
 							"kind": "variable",
 							"docComment": "`GET /api/account/status`'s anonymous answer: the same code, with the bootstrap status.",
 							"typeSignature": "RestErrorDef<401, \"authentication_required\", { readonly bootstrap_available: Schema<boolean | undefined, boolean | undefined, \"optional\", SchemaWrapperDef<Schema<boolean, boolean, \"boolean\", undefined>>>; }>",
-							"sourceLine": 509,
+							"sourceLine": 508,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134238,7 +134238,7 @@
 							"name": "REST_INVALID_CREDENTIALS",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<401, \"invalid_credentials\", Record<never, never>>",
-							"sourceLine": 514,
+							"sourceLine": 513,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134275,7 +134275,7 @@
 							"kind": "variable",
 							"docComment": "The bootstrap token didn't match.",
 							"typeSignature": "RestErrorDef<401, \"invalid_token\", Record<never, never>>",
-							"sourceLine": 516,
+							"sourceLine": 515,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134312,7 +134312,7 @@
 							"kind": "variable",
 							"docComment": "The role gate's refusal (`require_role`, and the dispatcher's): the actor\nholds none of the route's `auth.roles`. `required_roles` is the whole\ndisjunction, so a client can say \"requires admin or steward\".",
 							"typeSignature": "RestErrorDef<403, \"insufficient_permissions\", { readonly required_roles: Schema<string[], string[], \"array\", Schema<string, string, \"string\", undefined>>; }>",
-							"sourceLine": 524,
+							"sourceLine": 523,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134339,7 +134339,7 @@
 							"kind": "variable",
 							"docComment": "The credential-type gate's refusal (`require_credential_types`, and the\ndispatcher's): the request's credential type is not in the route's\n`auth.credential_types`, which `required_credential_types` carries.",
 							"typeSignature": "RestErrorDef<403, \"credential_type_required\", { readonly required_credential_types: Schema<string[], string[], \"array\", Schema<string, string, \"string\", undefined>>; }>",
-							"sourceLine": 532,
+							"sourceLine": 531,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134366,7 +134366,7 @@
 							"kind": "variable",
 							"docComment": "The token-scope gate's refusal (`require_token_scope`, and\n`token_scope_surface_denial`): a narrowed api token reaches a capability its\nscope does not admit. `required_scope` is the route's `auth.required_scope`,\nverbatim. See `docs/security.md` §Token scoping.",
 							"typeSignature": "RestErrorDef<403, \"token_scope_required\", { readonly required_scope: Schema<string, string, \"string\", undefined>; }>",
-							"sourceLine": 541,
+							"sourceLine": 540,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134392,7 +134392,7 @@
 							"name": "REST_FORBIDDEN_ORIGIN",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<403, \"forbidden_origin\", Record<never, never>>",
-							"sourceLine": 545,
+							"sourceLine": 544,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134428,7 +134428,7 @@
 							"name": "REST_FORBIDDEN_HOST",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<403, \"forbidden_host\", Record<never, never>>",
-							"sourceLine": 547,
+							"sourceLine": 546,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134464,7 +134464,7 @@
 							"name": "REST_ALREADY_BOOTSTRAPPED",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<403, \"already_bootstrapped\", Record<never, never>>",
-							"sourceLine": 548,
+							"sourceLine": 547,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134500,7 +134500,7 @@
 							"name": "REST_NO_MATCHING_INVITE",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<403, \"no_matching_invite\", Record<never, never>>",
-							"sourceLine": 549,
+							"sourceLine": 548,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134536,7 +134536,7 @@
 							"name": "REST_TOKEN_FILE_MISSING",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<404, \"token_file_missing\", Record<never, never>>",
-							"sourceLine": 552,
+							"sourceLine": 551,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134572,7 +134572,7 @@
 							"name": "REST_TABLE_NOT_FOUND",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<404, \"table_not_found\", Record<never, never>>",
-							"sourceLine": 553,
+							"sourceLine": 552,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134608,7 +134608,7 @@
 							"name": "REST_ROW_NOT_FOUND",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<404, \"row_not_found\", Record<never, never>>",
-							"sourceLine": 554,
+							"sourceLine": 553,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134645,7 +134645,7 @@
 							"kind": "variable",
 							"docComment": "A delete blocked by rows that reference the row.",
 							"typeSignature": "RestErrorDef<409, \"foreign_key_violation\", Record<never, never>>",
-							"sourceLine": 558,
+							"sourceLine": 557,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134681,7 +134681,7 @@
 							"name": "REST_SIGNUP_CONFLICT",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<409, \"signup_conflict\", Record<never, never>>",
-							"sourceLine": 559,
+							"sourceLine": 558,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134718,7 +134718,7 @@
 							"kind": "variable",
 							"docComment": "The body limit's refusal: the request body exceeds the size limit.",
 							"typeSignature": "RestErrorDef<413, \"payload_too_large\", Record<never, never>>",
-							"sourceLine": 563,
+							"sourceLine": 562,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134755,7 +134755,7 @@
 							"kind": "variable",
 							"docComment": "A `POST` route refuses the request's `Content-Type`.",
 							"typeSignature": "RestErrorDef<415, \"unsupported_content_type\", Record<never, never>>",
-							"sourceLine": 565,
+							"sourceLine": 564,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134792,7 +134792,7 @@
 							"kind": "variable",
 							"docComment": "The rate limiter's refusal; `retry_after` is in seconds, `Retry-After` its ceiling.",
 							"typeSignature": "RestErrorDef<429, \"rate_limit_exceeded\", { readonly retry_after: PipeSchema<number, Schema<number, number, \"number\", undefined>>; }>",
-							"sourceLine": 568,
+							"sourceLine": 567,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134819,7 +134819,7 @@
 							"kind": "variable",
 							"docComment": "The account's actors enumerated empty, a signup invariant broken.",
 							"typeSignature": "RestErrorDef<500, \"no_actors_on_account\", Record<never, never>>",
-							"sourceLine": 577,
+							"sourceLine": 576,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134856,7 +134856,7 @@
 							"kind": "variable",
 							"docComment": "The account or actor row was deleted between credential validation and the actor read.",
 							"typeSignature": "RestErrorDef<500, \"account_vanished\", Record<never, never>>",
-							"sourceLine": 579,
+							"sourceLine": 578,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134892,7 +134892,7 @@
 							"name": "REST_INTERNAL_ERROR",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<500, \"internal_error\", Record<never, never>>",
-							"sourceLine": 580,
+							"sourceLine": 579,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134928,7 +134928,7 @@
 							"name": "REST_SERVICE_UNAVAILABLE",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<503, \"service_unavailable\", Record<never, never>>",
-							"sourceLine": 583,
+							"sourceLine": 582,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134965,7 +134965,7 @@
 							"kind": "variable",
 							"docComment": "`GET /health`'s failed check: the database is not connected, and its type.",
 							"typeSignature": "RestErrorDef<503, \"database_connection_failed\", { readonly connected: Schema<false, false, \"literal\", false>; readonly type: Schema<string, string, \"string\", undefined>; }>",
-							"sourceLine": 585,
+							"sourceLine": 584,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -134991,7 +134991,7 @@
 							"name": "REST_SCHEMA_DRIFT",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<503, \"schema_drift\", Record<never, never>>",
-							"sourceLine": 589,
+							"sourceLine": 588,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -135027,7 +135027,7 @@
 							"name": "REST_DB_UNREACHABLE",
 							"kind": "variable",
 							"typeSignature": "RestErrorDef<503, \"db_unreachable\", Record<never, never>>",
-							"sourceLine": 590,
+							"sourceLine": 589,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "RestErrorDef",
@@ -135064,7 +135064,7 @@
 							"kind": "type",
 							"docComment": "Error schema map — an HTTP status to the schema of every body a route\nanswers at it, built from definitions by `to_error_schemas`.",
 							"typeSignature": "ErrorSchemas",
-							"sourceLine": 596,
+							"sourceLine": 595,
 							"members": [
 								{
 									"name": "[key: number]",
@@ -135078,7 +135078,7 @@
 							"kind": "interface",
 							"docComment": "What `derive_route_errors` reads of a route: its method, auth requirement,\nwhich input slots it has, and its rate limit key.",
 							"typeSignature": "DeriveRouteErrorsOptions",
-							"sourceLine": 602,
+							"sourceLine": 601,
 							"members": [
 								{
 									"name": "method",
@@ -135157,7 +135157,7 @@
 							"kind": "function",
 							"docComment": "Derive the error definitions the framework answers a route with, from its\nmethod, auth requirement, input slots, and rate limit — each narrowed to\nwhat the route's own middleware can emit.\n\nRoute handlers declare additional definitions via `RouteSpec.errors`; the\nroute's error map (`resolve_route_error_map`) is the union of these, the\napplying middleware's, and the route's own.\n\nDerivation rules:\n- **A body**, an `input` other than `null` on a method other than `GET`:\n  400 `invalid_request_body` and `invalid_json_body`. A `GET` reads no body.\n- **`params`**: 400 `invalid_route_params`. **`query`**: 400\n  `invalid_query_params`.\n- **`auth.account === 'required'`** or **`auth.actor === 'required'`**: 401\n  `authentication_required` — the pre-authorization gate's refusal when the\n  credential isn't there. `'optional'` does not derive 401.\n- **`auth.required_scope`**: 403 `token_scope_required` (carrying\n  `required_scope`). **`auth.credential_types?.length`**: 403\n  `credential_type_required` (carrying `required_credential_types`).\n  **`auth.roles?.length`**: 403 `insufficient_permissions` (carrying\n  `required_roles`). In the order the gates fire; a route with more than\n  one has each.\n- **`auth.actor !== 'none'`**: 400 `actor_required` and\n  `actor_not_on_account`, and 500 `no_actors_on_account` and\n  `account_vanished` — what the dispatcher's authorization phase emits\n  when it resolves an actor.\n- **`rate_limit`**: 429 `rate_limit_exceeded` (with `retry_after`).\n- **`POST`**: 415 `unsupported_content_type` (see\n  `is_post_content_type_refused` in `http/simple_request.ts`).",
 							"typeSignature": "({ method, auth, has_input, has_params, has_query, rate_limit }: DeriveRouteErrorsOptions): RestErrorDef<number, string, SchemaEntries>[]",
-							"sourceLine": 646,
+							"sourceLine": 645,
 							"parameters": [
 								{
 									"name": "__0",
@@ -135217,6 +135217,7 @@
 						"http/body_limit_schema.ts",
 						"http/common_routes.ts",
 						"http/db_routes.ts",
+						"http/host.ts",
 						"http/middleware_spec.ts",
 						"http/origin.ts",
 						"http/route_error_check.ts",
@@ -135240,7 +135241,6 @@
 						"testing/cross_backend/origin_scope.ts",
 						"testing/cross_backend/query_shape.ts",
 						"testing/cross_backend/role_grant_role_grammar.ts",
-						"testing/cross_backend/rust_spine_consumer_surface.ts",
 						"testing/cross_backend/session_cookie_codec.ts",
 						"testing/cross_backend/simple_request.ts",
 						"testing/cross_backend/testing_backdoor.ts",
@@ -135285,6 +135285,264 @@
 					"dependents": [
 						"http/common_routes.ts",
 						"ui/backend_probe.svelte.ts"
+					]
+				},
+				{
+					"path": "http/host.ts",
+					"declarations": [
+						{
+							"name": "HOST_MIDDLEWARE_PATH",
+							"kind": "variable",
+							"docComment": "Where the host gate mounts — every path, as the Rust stack mounts it in every group.",
+							"typeSignature": "\"*\"",
+							"sourceLine": 46
+						},
+						{
+							"name": "HOST_REFUSAL_WARN_INTERVAL_MS",
+							"kind": "variable",
+							"docComment": "The shortest gap between two refusal warnings, in milliseconds; the\nrefusals between are counted and reported with the next one.",
+							"typeSignature": "60000",
+							"sourceLine": 52
+						},
+						{
+							"name": "is_loopback_host",
+							"kind": "function",
+							"docComment": "True when `host` (a `Host` header value, `name[:port]`) names a loopback\naddress: `localhost`, an IPv4 address in `127.0.0.0/8`, or `[::1]`.\n\nAnything after the name but a `:` and a port (decimal digits, at most 65535)\nmakes it not loopback: `[::1]junk`, `localhost:abc`, and `localhost: 1` are\nrefused. Twin of the Rust `is_loopback_host`.",
+							"typeSignature": "(host: string): boolean",
+							"sourceLine": 71,
+							"parameters": [
+								{
+									"name": "host",
+									"type": "string",
+									"description": "one `Host` header value"
+								}
+							],
+							"returnType": "boolean",
+							"returnDescription": "whether it names a loopback address"
+						},
+						{
+							"name": "allows_host",
+							"kind": "function",
+							"docComment": "Check one `Host` value: loopback, or named by an allowed origin on either\nscheme. Twin of the Rust `AllowedOrigins::allows_host`.",
+							"typeSignature": "(host: string, allowed_patterns: readonly RegExp[]): boolean",
+							"sourceLine": 103,
+							"parameters": [
+								{
+									"name": "host",
+									"type": "string",
+									"description": "one `Host` header value"
+								},
+								{
+									"name": "allowed_patterns",
+									"type": "readonly RegExp[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "RegExp"
+										},
+										"readonly": true
+									},
+									"description": "the matchers `parse_allowed_origins` built"
+								}
+							],
+							"returnType": "boolean",
+							"returnDescription": "whether the server answers to it"
+						},
+						{
+							"name": "allows_request_hosts",
+							"kind": "function",
+							"docComment": "Host check for a request's `Host` header values — true when there are none\nor one that passes `allows_host`. A value that isn't visible ASCII (a tab\nand the space allowed, as in a header value) is refused, and so is more than\none `Host` (RFC 9112 §3.2). Twin of the Rust\n`AllowedOrigins::allows_request_hosts`.",
+							"typeSignature": "(hosts: readonly string[], allowed_patterns: readonly RegExp[]): boolean",
+							"sourceLine": 127,
+							"parameters": [
+								{
+									"name": "hosts",
+									"type": "readonly string[]",
+									"description": "the request's `Host` values, `[]` for none"
+								},
+								{
+									"name": "allowed_patterns",
+									"type": "readonly RegExp[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "RegExp"
+										},
+										"readonly": true
+									},
+									"description": "the matchers `parse_allowed_origins` built"
+								}
+							],
+							"returnType": "boolean",
+							"returnDescription": "whether the request passes the host gate"
+						},
+						{
+							"name": "format_host_refusal_warning",
+							"kind": "function",
+							"docComment": "The refusal warning's text. Twin of the Rust `format_host_refusal_warning`.",
+							"typeSignature": "(host: string, allowed_origins_var: string, held_back: number): string",
+							"sourceLine": 145,
+							"parameters": [
+								{
+									"name": "host",
+									"type": "string",
+									"description": "the refused `Host` as the request carried it"
+								},
+								{
+									"name": "allowed_origins_var",
+									"type": "string",
+									"description": "the env var the allowlist was read from"
+								},
+								{
+									"name": "held_back",
+									"type": "number",
+									"description": "the refusals held back since the last warning"
+								}
+							],
+							"returnType": "string",
+							"returnDescription": "one log line"
+						},
+						{
+							"name": "HostRefusalWarnings",
+							"kind": "interface",
+							"docComment": "Counts refusals between warnings, so a flood of foreign `Host`s writes one\nline per `HOST_REFUSAL_WARN_INTERVAL_MS` and holds no per-host state.",
+							"typeSignature": "HostRefusalWarnings",
+							"sourceLine": 163,
+							"members": [
+								{
+									"name": "note",
+									"kind": "function",
+									"docComment": "Record a refusal at `now_ms`: the refusals held back since the last\nwarning when this one is warned, `null` when it is held back itself.",
+									"typeSignature": "(now_ms: number): number | null",
+									"parameters": [
+										{
+											"name": "now_ms",
+											"type": "number"
+										}
+									],
+									"returnType": "number | null",
+									"returnTypeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "number"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "create_host_refusal_warnings",
+							"kind": "function",
+							"docComment": "Create the refusal warning's rate limit.",
+							"typeSignature": "(): HostRefusalWarnings",
+							"sourceLine": 172,
+							"returnType": "HostRefusalWarnings"
+						},
+						{
+							"name": "HostGateOptions",
+							"kind": "interface",
+							"docComment": "Options for `create_host_gate_middleware`.",
+							"typeSignature": "HostGateOptions",
+							"sourceLine": 190,
+							"members": [
+								{
+									"name": "allowed_origins",
+									"kind": "variable",
+									"docComment": "The matchers `parse_allowed_origins` built — the server's allowlist.",
+									"typeSignature": "readonly RegExp[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "RegExp"
+										},
+										"readonly": true
+									}
+								},
+								{
+									"name": "log",
+									"kind": "variable",
+									"docComment": "Where the refusal warning goes.",
+									"typeSignature": "Logger"
+								},
+								{
+									"name": "allowed_origins_var",
+									"kind": "variable",
+									"docComment": "The env var the allowlist was read from, named in the warning. Defaults to `ALLOWED_ORIGINS_VAR`.",
+									"typeSignature": "string",
+									"optional": true
+								},
+								{
+									"name": "now",
+									"kind": "function",
+									"docComment": "The clock the warning's rate limit reads, in milliseconds. Defaults to `Date.now`.",
+									"typeSignature": "(): number",
+									"returnType": "number",
+									"optional": true
+								}
+							]
+						},
+						{
+							"name": "create_host_gate_middleware",
+							"kind": "function",
+							"docComment": "Middleware enforcing `allows_request_hosts`, refusing with `403`\n`{\"error\": \"forbidden_host\"}` and warning (rate-limited, module doc).",
+							"typeSignature": "(options: HostGateOptions): MiddlewareHandler",
+							"sourceLine": 208,
+							"parameters": [
+								{
+									"name": "options",
+									"type": "HostGateOptions",
+									"description": "the allowlist, the log, and the warning's clock"
+								}
+							],
+							"returnType": "MiddlewareHandler",
+							"returnDescription": "the Hono middleware"
+						},
+						{
+							"name": "host_gate_middleware_shape",
+							"kind": "variable",
+							"docComment": "The host gate's spec without its handler — what the surface and each\nroute's error map read, so a stub surface (`create_test_app_surface_spec`)\nlists the same layer.",
+							"typeSignature": "{ readonly name: \"host\"; readonly path: \"*\"; readonly errors: readonly [RestErrorDef<403, \"forbidden_host\", Record<never, never>>]; }",
+							"sourceLine": 231
+						},
+						{
+							"name": "create_host_gate_middleware_spec",
+							"kind": "function",
+							"docComment": "The host gate as a middleware spec on every path (`HOST_MIDDLEWARE_PATH`),\ndeclaring its `403`, so the surface and each route's error map carry it.",
+							"typeSignature": "(options: HostGateOptions): MiddlewareSpec",
+							"sourceLine": 244,
+							"parameters": [
+								{
+									"name": "options",
+									"type": "HostGateOptions",
+									"description": "the allowlist, the log, and the warning's clock"
+								}
+							],
+							"returnType": "MiddlewareSpec",
+							"returnDescription": "the spec"
+						}
+					],
+					"moduleComment": "Host verification — refusing requests addressed to a name the server\ndoesn't answer to, which is how DNS rebinding reaches a loopback server.\n\nIn a rebinding attack, a page on an attacker's domain re-resolves that\ndomain to `127.0.0.1` and talks to the local server **same-origin**: its\nGETs carry no `Origin` header, so the origin allowlist (`http/origin.ts`)\ndoesn't apply. The `Host` header gives it away — the browser sets it from\nthe URL, so it names the attacker's domain, never `localhost`.\n\nA host is allowed when its name is loopback (`localhost`, `127.0.0.0/8`,\n`[::1]`), at any port — a rebinding page can't put one of those in `Host`\n— or when an allowed origin names it (the allowlist is where the server's\nUI is served from, so its hosts are the server's own names). Matching\nreuses the origin matchers, so `http://localhost:*` or `https://*.fuz.dev`\nadmit the hosts they'd admit as origins.\n\nA request without a `Host` header passes: browsers always send one, so its\nabsence means a non-browser client, which the auth stack governs. A request\nwith more than one `Host` is refused (RFC 9112 §3.2) — the runtimes join a\nrepeated header into one value (`a, b`), which names no host.\n\nThe gate is on by default (`AppServerOptions.host_gate`). A refusal is said\nin the log as well as answered: the first in each\n`HOST_REFUSAL_WARN_INTERVAL_MS` is a warning naming the refused `Host`\n(quoted ASCII-only and truncated, since the client wrote it) and the env var\nthat lists the server's names, with a count of the refusals the interval\nheld back. The response says neither, so a client learns nothing about the\nallowlist.\n\nTwin of the Rust spine's `fuz_http::host`.",
+					"dependencies": [
+						"http/error_schemas.ts",
+						"http/ip_canonical.ts",
+						"http/middleware_spec.ts",
+						"http/origin.ts",
+						"http/origin_wildcard.ts"
+					],
+					"dependents": [
+						"server/app_server.ts",
+						"testing/cross_backend/testing_origin_check.ts",
+						"testing/stubs.ts"
 					]
 				},
 				{
@@ -135415,6 +135673,7 @@
 						"auth/account_routes.ts",
 						"auth/bootstrap_routes.ts",
 						"auth/signup_routes.ts",
+						"http/host.ts",
 						"http/proxy.ts"
 					]
 				},
@@ -137998,13 +138257,13 @@
 						"auth/middleware.ts",
 						"http/body_limit.ts",
 						"http/body_limit_schema.ts",
+						"http/host.ts",
 						"http/origin.ts",
 						"http/proxy.ts",
 						"http/route_errors.ts",
 						"http/route_spec.ts",
 						"http/surface.ts",
 						"server/app_server.ts",
-						"testing/cross_backend/rust_spine_consumer_surface.ts",
 						"testing/stubs.ts"
 					]
 				},
@@ -138319,11 +138578,27 @@
 							"returnDescription": "the reason as one line"
 						},
 						{
+							"name": "quote_ascii",
+							"kind": "function",
+							"docComment": "`value` in double quotes, ASCII-only: `\"` and `\\` backslash-escaped, every\nother UTF-16 code unit outside `\\x20-\\x7e` as `\\uXXXX` — for a client- or\nenv-written value shown in a log line. Twin of the Rust `fuz_sys::text::quoted`.",
+							"typeSignature": "(value: string): string",
+							"sourceLine": 150,
+							"parameters": [
+								{
+									"name": "value",
+									"type": "string",
+									"description": "the text to quote"
+								}
+							],
+							"returnType": "string",
+							"returnDescription": "the quoted text"
+						},
+						{
 							"name": "parse_allowed_origins",
 							"kind": "function",
 							"docComment": "Parses an allowlist value (conventionally the `FUZ_ALLOWED_ORIGINS` env var)\ninto regex matchers for request source verification.\nOrigin allowlisting for locally-running services — not the CSRF layer\n(that's `SameSite: strict` on session cookies plus `http/simple_request.ts`).\n\nEntries are comma-separated and trimmed of ASCII whitespace. Each is written\nthe way a browser writes an `Origin` — `scheme://host[:port]` — where a whole\nhost label or the port may be `*`:\n- Exact origins: `https://api.fuz.dev`, `http://localhost:3000`\n- Wildcard labels: `https://*.fuz.dev` (each `*` is exactly one label, in any\n  position — `api.fuz.dev` matches, `fuz.dev` and `a.b.fuz.dev` don't)\n- Wildcard ports: `http://localhost:*` (any port or none)\n- IPv6 addresses: `http://[::1]:3000`, `https://[2001:db8::1]` (exact)\n- Combined: `https://*.fuz.dev:*`\n\nRefused, nothing normalized: anything but printable ASCII (punycode an\ninternational hostname), a scheme other than http or https (`null`,\n`file://`, `chrome-extension://`), a path, query, fragment or trailing\nslash, userinfo, a character no hostname holds, a partial wildcard, an IPv4\naddress not written as four canonical decimal numbers (`127.1`), an IPv6\naddress not in the form a browser sends, a port outside `1..=65535` or with\nleading zeros, the scheme's default port, and an empty entry. Every refused\nentry is reported, not just the first.",
 							"typeSignature": "(raw: string): Result<{ origins: RegExp[]; patterns: OriginPattern[]; }, { errors: AllowedOriginsError[]; }>",
-							"sourceLine": 190,
+							"sourceLine": 194,
 							"parameters": [
 								{
 									"name": "raw",
@@ -138371,7 +138646,7 @@
 							"kind": "interface",
 							"docComment": "One validated allowlist entry, as `parse_allowed_origins` parsed it — the\ntwin of the Rust `fuz_http::OriginPattern`.",
 							"typeSignature": "OriginPattern",
-							"sourceLine": 221,
+							"sourceLine": 225,
 							"members": [
 								{
 									"name": "entry",
@@ -138462,7 +138737,7 @@
 							"kind": "function",
 							"docComment": "The pattern `regexp` was parsed from, when `parse_allowed_origins` (of any\nfuz_app copy) built it.",
 							"typeSignature": "(regexp: RegExp): OriginPattern | undefined",
-							"sourceLine": 253,
+							"sourceLine": 257,
 							"parameters": [
 								{
 									"name": "regexp",
@@ -138491,7 +138766,7 @@
 							"kind": "function",
 							"docComment": "Tests if an `Origin` value matches any of the allowed patterns.\nPattern matching is case-insensitive (web hosts and schemes are). A value\nthat isn't visible ASCII matches nothing — a browser never sends one.",
 							"typeSignature": "(origin: string, allowed_patterns: readonly RegExp[]): boolean",
-							"sourceLine": 263,
+							"sourceLine": 267,
 							"parameters": [
 								{
 									"name": "origin",
@@ -138517,7 +138792,7 @@
 							"kind": "function",
 							"docComment": "Middleware that verifies the request source against an allowlist.\n\nOrigin allowlisting (not the CSRF layer — that's `SameSite: strict` cookies\nplus `http/simple_request.ts`):\n- Checks the `Origin` header (if present) against the allowlist\n- Allows requests without an `Origin` header (direct access, curl, etc.)\n- Refuses an `Origin` that isn't visible ASCII, and a duplicated one — the\n  runtimes join a repeated header into one value (`a, b`), which carries a\n  space and so matches nothing\n\nOrigin-only by design — Fetch spec mandates `Origin` on every unsafe\nmethod (POST / PUT / DELETE / PATCH) regardless of `Referrer-Policy`,\nso every real browser request on the state-changing surface carries it.\nNon-browser clients (curl, server-to-server, CLI) don't ship auto-\nattached session cookies, so CSRF isn't the relevant threat there —\nauth (bearer / daemon token) is the actual control. A Referer fallback\nwould only widen the accepted-shape envelope without closing a real\nCSRF hole. The Rust spine's `origin_layer` is the twin.\n\n`create_app_server` mounts it on every path (`ORIGIN_MIDDLEWARE_PATH`); a\nrequest whose path a `carve_outs` entry matches passes unchecked — the named,\nexplicit exception, each with its reason, as the Rust stack's\n`origin_carve_out` is.",
 							"typeSignature": "(allowed_patterns: readonly RegExp[], carve_outs?: readonly MiddlewareCarveOut[]): Handler",
-							"sourceLine": 296,
+							"sourceLine": 300,
 							"parameters": [
 								{
 									"name": "allowed_patterns",
@@ -138562,6 +138837,7 @@
 						"auth/bearer_auth.ts",
 						"auth/daemon_token_middleware.ts",
 						"auth/middleware.ts",
+						"http/host.ts",
 						"http/origin_wildcard.ts",
 						"server/env.ts",
 						"testing/app_server.ts",
@@ -138677,16 +138953,48 @@
 							"returnDescription": "its wildcard shape, or `null`"
 						},
 						{
+							"name": "OriginWildcardOptions",
+							"kind": "interface",
+							"docComment": "What the server adds to a wildcard entry's text. The TS spine adds no\nnote of its own, so only the host gate shapes it — the Rust\n`OriginWildcardOptions` without its notes.",
+							"typeSignature": "OriginWildcardOptions",
+							"sourceLine": 77,
+							"members": [
+								{
+									"name": "host_gate",
+									"kind": "variable",
+									"docComment": "The server mounts the `Host` check (`http/host.ts`), which the same\nentries widen. On by default, as the gate is.",
+									"typeSignature": "boolean",
+									"modifiers": [
+										"readonly"
+									]
+								}
+							]
+						},
+						{
+							"name": "ORIGIN_WILDCARD_OPTIONS_DEFAULT",
+							"kind": "variable",
+							"docComment": "The host gate on, as `create_app_server` mounts it by default.",
+							"typeSignature": "OriginWildcardOptions",
+							"sourceLine": 86
+						},
+						{
 							"name": "origin_wildcard_warning",
 							"kind": "function",
-							"docComment": "What a wildcard in `pattern` admits — the text `admit_origin_wildcards`\nwarns or refuses with; `null` for an exact entry. The TS spine mounts no\n`Host` check and adds no note, so this is the Rust text with\n`OriginWildcardOptions::DEFAULT`.",
-							"typeSignature": "(pattern: OriginPattern): string | null",
-							"sourceLine": 81,
+							"docComment": "What a wildcard in `pattern` admits — the text `admit_origin_wildcards`\nwarns or refuses with; `null` for an exact entry. The Rust\n`origin_wildcard_warning` text word for word, with no notes.",
+							"typeSignature": "(pattern: OriginPattern, options?: OriginWildcardOptions): string | null",
+							"sourceLine": 97,
 							"parameters": [
 								{
 									"name": "pattern",
 									"type": "OriginPattern",
 									"description": "a parsed allowlist entry"
+								},
+								{
+									"name": "options",
+									"type": "OriginWildcardOptions",
+									"optional": true,
+									"description": "whether the server mounts the host gate",
+									"defaultValue": "ORIGIN_WILDCARD_OPTIONS_DEFAULT"
 								}
 							],
 							"returnType": "string | null",
@@ -138710,7 +139018,7 @@
 							"kind": "interface",
 							"docComment": "One wildcard entry an allowlist holds, with what it admits.",
 							"typeSignature": "OriginWildcardEntry",
-							"sourceLine": 118,
+							"sourceLine": 146,
 							"members": [
 								{
 									"name": "entry",
@@ -138734,8 +139042,8 @@
 							"name": "admit_origin_wildcards",
 							"kind": "function",
 							"docComment": "Admit `origins`' wildcard entries when `allowed`, returning what each admits\nfor the caller to warn with; an exact list passes either way with none.\nClassifies the matchers `parse_allowed_origins` built (`origin_pattern_of`,\nread through a realm-global brand, so a second fuz_app copy's matchers\nclassify too). A matcher built any other way can't be classified, so it is\nrefused whatever `allowed` says — build the list with\n`parse_allowed_origins`.",
-							"typeSignature": "(origins: readonly RegExp[], allowed: boolean, origins_var?: string): Result<{ wildcards: OriginWildcardEntry[]; }, { message: string; }>",
-							"sourceLine": 140,
+							"typeSignature": "(origins: readonly RegExp[], allowed: boolean, origins_var?: string, options?: OriginWildcardOptions): Result<{ wildcards: OriginWildcardEntry[]; }, { ...; }>",
+							"sourceLine": 169,
 							"parameters": [
 								{
 									"name": "origins",
@@ -138761,6 +139069,13 @@
 									"optional": true,
 									"description": "what the list is called in the refusal: the env var it\nwas read from, or the option that carried it",
 									"defaultValue": "ALLOWED_ORIGINS_VAR"
+								},
+								{
+									"name": "options",
+									"type": "OriginWildcardOptions",
+									"optional": true,
+									"description": "whether the server mounts the host gate, which the text names",
+									"defaultValue": "ORIGIN_WILDCARD_OPTIONS_DEFAULT"
 								}
 							],
 							"returnType": "Result<{ wildcards: OriginWildcardEntry[]; }, { message: string; }>",
@@ -138804,6 +139119,7 @@
 						"http/origin.ts"
 					],
 					"dependents": [
+						"http/host.ts",
 						"server/app_server.ts",
 						"server/env.ts"
 					]
@@ -150499,7 +150815,7 @@
 							"kind": "type",
 							"docComment": "Bootstrap configuration for `AppServerOptions.bootstrap`.\n\nDiscriminated union over three deployment intents. Distinct from\n`BootstrapRouteOptions` in `auth/bootstrap_routes.ts` — that one is\nper-factory runtime state (mutable `bootstrap_status` ref, rate\nlimiter); this one is the consumer-facing server option that\n`create_app_server` reads at startup to decide whether to mount the\nroutes and where.\n\nThree modes:\n- `disabled` — no route mounted, nothing in `/api/surface`.\n  Equivalent to omitting `bootstrap` entirely; the explicit mode is\n  for documentation and reviewable intent at the wiring layer.\n- `surface_only` — route present, permanent 403 via\n  `check_bootstrap_status`. For tests asserting on the\n  disabled-but-present wire shape.\n- `live` — route mounted, real token verification. Success path\n  reachable. `token_path` is required (non-nullable).",
 							"typeSignature": "BootstrapServerOptions",
-							"sourceLine": 114,
+							"sourceLine": 115,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "BootstrapServerOptions",
@@ -150523,7 +150839,7 @@
 							"name": "BootstrapDisabledOptions",
 							"kind": "interface",
 							"typeSignature": "BootstrapDisabledOptions",
-							"sourceLine": 117,
+							"sourceLine": 118,
 							"members": [
 								{
 									"name": "mode",
@@ -150536,7 +150852,7 @@
 							"name": "BootstrapSurfaceOnlyOptions",
 							"kind": "interface",
 							"typeSignature": "BootstrapSurfaceOnlyOptions",
-							"sourceLine": 121,
+							"sourceLine": 122,
 							"members": [
 								{
 									"name": "mode",
@@ -150556,7 +150872,7 @@
 							"name": "BootstrapLiveOptions",
 							"kind": "interface",
 							"typeSignature": "BootstrapLiveOptions",
-							"sourceLine": 127,
+							"sourceLine": 128,
 							"members": [
 								{
 									"name": "mode",
@@ -150628,7 +150944,7 @@
 							"kind": "interface",
 							"docComment": "Configuration for `create_app_server()`.\n\nRequires a pre-initialized `AppBackend` from `create_app_backend()`.\nTwo explicit steps: init backend then assemble server.",
 							"typeSignature": "AppServerOptions",
-							"sourceLine": 145,
+							"sourceLine": 146,
 							"members": [
 								{
 									"name": "backend",
@@ -150669,6 +150985,13 @@
 									"name": "allow_origin_wildcards",
 									"kind": "variable",
 									"docComment": "Admit a wildcard `allowed_origins` entry (`:*`, a `*` label) — the\noperator's `FUZ_ALLOW_ORIGIN_WILDCARDS=true`, as `validate_server_env`\nreads it. Without it assembly throws on one, naming each entry and what it\nadmits; with it each is logged at `warn`, on every assembly. Covers each\n`ws_endpoints` spec's own `allowed_origins` too. Classifies the matchers\n`parse_allowed_origins` built (`http/origin_wildcard.ts`); assembly throws\non any other matcher, flag or not. Defaults to `false`.",
+									"typeSignature": "boolean",
+									"optional": true
+								},
+								{
+									"name": "host_gate",
+									"kind": "variable",
+									"docComment": "Mount the `Host` check (`http/host.ts`), the DNS-rebinding gate, on every\npath ahead of the origin check: a request whose `Host` is neither a\nloopback name nor a host `allowed_origins` names is refused `403`\n`forbidden_host`, and logged at `warn` (rate-limited). Defaults to `true`;\n`false` is for a server reached by names its allowlist doesn't hold, which\nthen accepts the rebinding exposure. Twin of the Rust spine's\n`StackOptions::host_gate`.",
 									"typeSignature": "boolean",
 									"optional": true
 								},
@@ -151203,7 +151526,7 @@
 							"kind": "interface",
 							"docComment": "Result of `create_app_server()`.",
 							"typeSignature": "AppServer",
-							"sourceLine": 510,
+							"sourceLine": 521,
 							"members": [
 								{
 									"name": "app",
@@ -151323,7 +151646,7 @@
 							"kind": "function",
 							"docComment": "Assert that `audit_sse` was wired by `create_app_server` and return it\nas a non-null `AuditLogSse`. Throws a labelled error when the\n`audit_log_sse` option was not passed to `create_app_server`.\n\nUse in route factories that depend on factory-managed audit SSE:\n\n```ts\ncreate_route_specs: (ctx) => create_audit_log_route_specs({\n  stream: require_audit_sse(ctx),\n}),\n```\n\nPreferred over `ctx.audit_sse!` — `!` lies to the type system and\nproduces a downstream cannot-read-property crash if a consumer wires\nthe route without enabling the option.",
 							"typeSignature": "(source: { audit_sse: AuditLogSse | null; }): AuditLogSse",
-							"sourceLine": 590,
+							"sourceLine": 601,
 							"parameters": [
 								{
 									"name": "source",
@@ -151337,14 +151660,14 @@
 							"kind": "variable",
 							"docComment": "Default maximum request body size: 1 MiB. Twin of the Rust spine's\n`fuz_http` `DEFAULT_BODY_LIMIT_BYTES`.",
 							"typeSignature": "number",
-							"sourceLine": 603
+							"sourceLine": 614
 						},
 						{
 							"name": "AppServerRateLimiterKey",
 							"kind": "type",
 							"docComment": "Name of an `AppServerOptions` rate-limiter field — also the\n`AppServerContext` field its resolved limiter lands on.",
 							"typeSignature": "\"login_ip_rate_limiter\" | \"signup_ip_rate_limiter\" | \"bootstrap_ip_rate_limiter\" | \"login_account_rate_limiter\" | \"signup_account_rate_limiter\" | \"action_ip_rate_limiter\" | \"action_account_rate_limiter\"",
-							"sourceLine": 636,
+							"sourceLine": 647,
 							"internalMessage": "",
 							"typeInfo": {
 								"kind": "union",
@@ -151392,7 +151715,7 @@
 							"kind": "variable",
 							"docComment": "Every `AppServerOptions` rate-limiter field, in build order.",
 							"typeSignature": "readonly (\"login_ip_rate_limiter\" | \"signup_ip_rate_limiter\" | \"bootstrap_ip_rate_limiter\" | \"login_account_rate_limiter\" | \"signup_account_rate_limiter\" | \"action_ip_rate_limiter\" | \"action_account_rate_limiter\")[]",
-							"sourceLine": 643,
+							"sourceLine": 654,
 							"internalMessage": "",
 							"typeInfo": {
 								"kind": "array",
@@ -151444,7 +151767,7 @@
 							"kind": "interface",
 							"docComment": "The rate limiters `create_app_server` resolved from its options.",
 							"typeSignature": "ResolvedRateLimiters",
-							"sourceLine": 652,
+							"sourceLine": 663,
 							"internalMessage": "",
 							"members": [
 								{
@@ -151518,7 +151841,7 @@
 							"kind": "function",
 							"docComment": "Resolve each rate-limiter option: an explicit option (instance or `null`)\nwins; an omitted one is a default instance under `'enforced'` and `null`\nunder `'disabled_for_testing'`, which also announces the mode on stderr\n(`announce_rate_limiters_disabled`). One instance per surface — see\n`AppServerOptions.login_ip_rate_limiter` for why these are not a single\nshared bucket.",
 							"typeSignature": "(options: Pick<AppServerOptions, \"login_ip_rate_limiter\" | \"signup_ip_rate_limiter\" | \"bootstrap_ip_rate_limiter\" | \"login_account_rate_limiter\" | \"signup_account_rate_limiter\" | \"action_ip_rate_limiter\" | \"action_account_rate_limiter\" | \"rate_limiters\">): ResolvedRateLimiters",
-							"sourceLine": 675,
+							"sourceLine": 686,
 							"internalMessage": "",
 							"parameters": [
 								{
@@ -151558,7 +151881,7 @@
 							"kind": "interface",
 							"docComment": "Inputs to `collect_config_diagnostics`.",
 							"typeSignature": "ConfigDiagnosticsInput",
-							"sourceLine": 702,
+							"sourceLine": 713,
 							"internalMessage": "",
 							"members": [
 								{
@@ -151667,7 +151990,7 @@
 							"kind": "function",
 							"docComment": "The config-level diagnostics `create_app_server` appends to the surface's\nspec-level ones: a weakened session cookie, and an open rate-limited\nsurface — one warning for `'disabled_for_testing'`, otherwise one per\nexplicitly-null limiter, so a deployment that disables login's limiter but\nkeeps signup's reads differently from one that disables both — and a\ndisabled request body size limit (`max_body_size: null`).",
 							"typeSignature": "(input: ConfigDiagnosticsInput): AppSurfaceDiagnostic[]",
-							"sourceLine": 723,
+							"sourceLine": 734,
 							"internalMessage": "",
 							"parameters": [
 								{
@@ -151689,7 +152012,7 @@
 							"kind": "function",
 							"docComment": "Create a fully assembled Hono app with auth, middleware, and routes.\n\nHandles the assembly lifecycle: rate limiters → audit SSE → proxy\nmiddleware → auth middleware → bootstrap status → route specs (consumer,\nbootstrap, RPC endpoints, surface) → surface generation → Hono app assembly\n(routes, then WS endpoints) → post-route middleware → static serving → the\nauth cleanup schedule. Database migrations belong to the backend lifecycle —\npass `migration_namespaces` to `create_app_backend`.\n\nWhen `audit_log_sse` is set, the SSE registry's listener is registered via\n`backend.deps.audit.add_listener` — no shallow-copy of `AppDeps`. That\nregistry and every WebSocket connection registry mounted from `ws_endpoints` are added\nto `backend.deps.connection_closer`, so the revocation handlers built from\n`ctx.deps` close their connections with no further wiring, and — when the\nserver mounts either — one `create_revocation_guard` listener on that closer\nrepeats each close on the audit row.\nThe\n`audit_sse` field on the returned `AppServer` (and the\n`AppServerContext` passed to `create_route_specs`) is non-null in that\ncase; consumers can call `require_audit_sse(ctx)` / `require_audit_sse(server)`\nto assert the invariant.\n\nAssembly acquires a few things that outlive it — the rate limiters it\nbuilds, the listeners it registers on `deps.audit`, the members it adds to\n`deps.connection_closer` — and records a release for each as it goes. When\nassembly throws, every release recorded so far runs, last acquired first\n(one that throws is logged and the rest still run), and the original error\nis rethrown: a failed assembly leaves the backend's emitter and closer as\nit found them and no limiter timer running. When `auth_cleanup` is set, the\nauth cleanup schedule starts as the last step of assembly — nothing after\nit can throw, so an assembly that throws leaves no schedule running.\n\nThe returned `close` owns shutdown: it stops that schedule, closes every\nlive connection on the backend's closer, runs the same releases, and\ncloses the database (`AppServer.close`).",
 							"typeSignature": "(options: AppServerOptions): Promise<AppServer>",
-							"sourceLine": 826,
+							"sourceLine": 837,
 							"throws": [
 								{
 									"type": "Error",
@@ -151735,6 +152058,7 @@
 						"hono_context.ts",
 						"http/body_limit.ts",
 						"http/dev_route_error_check.ts",
+						"http/host.ts",
 						"http/middleware_spec.ts",
 						"http/origin_wildcard.ts",
 						"http/pending_effects.ts",
@@ -154217,6 +154541,13 @@
 									"name": "allow_origin_wildcards",
 									"kind": "variable",
 									"docComment": "Admit a wildcard `allowed_origins` entry (`:*`, a `*` label) — the\noperator's `FUZ_ALLOW_ORIGIN_WILDCARDS=true`, as `validate_server_env`\nreads it. Without it assembly throws on one, naming each entry and what it\nadmits; with it each is logged at `warn`, on every assembly. Covers each\n`ws_endpoints` spec's own `allowed_origins` too. Classifies the matchers\n`parse_allowed_origins` built (`http/origin_wildcard.ts`); assembly throws\non any other matcher, flag or not. Defaults to `false`.",
+									"typeSignature": "boolean",
+									"optional": true
+								},
+								{
+									"name": "host_gate",
+									"kind": "variable",
+									"docComment": "Mount the `Host` check (`http/host.ts`), the DNS-rebinding gate, on every\npath ahead of the origin check: a request whose `Host` is neither a\nloopback name nor a host `allowed_origins` names is refused `403`\n`forbidden_host`, and logged at `warn` (rate-limited). Defaults to `true`;\n`false` is for a server reached by names its allowlist doesn't hold, which\nthen accepts the rebinding exposure. Twin of the Rust spine's\n`StackOptions::host_gate`.",
 									"typeSignature": "boolean",
 									"optional": true
 								},
@@ -163971,7 +164302,7 @@
 						{
 							"name": "default_in_process_suite_options",
 							"kind": "function",
-							"docComment": "Build the full in-process suite bundle in a single helper invocation.\nOutput covers `{setup_test, surface_source, capabilities}` plus every\nfactory input the Tier 1 suites read at their top level\n(`session_options`, `create_route_specs`, `rpc_endpoints`), and the\nintegration suite's `base_url` (`null`, no socket) and `max_body_bytes`\n(`app_options.max_body_size`) — so the call site spreads once and adds\nonly suite-specific extras (`roles`, `skip_routes`, `input_overrides`,\n`db_factories`, ...).\n\n```ts\n// Suite-extras-free call: helper output is the entire options bag.\ndescribe_round_trip_validation(default_in_process_suite_options({\n  session_options,\n  create_route_specs,\n  rpc_endpoints: [rpc_endpoint_spec],\n}));\n\n// With suite-specific extras: spread and add.\ndescribe_standard_admin_integration_tests({\n  ...default_in_process_suite_options({\n    session_options, create_route_specs, rpc_endpoints,\n    extra_keeper_roles: [ROLE_ADMIN],\n  }),\n  roles,\n});\n```\n\nSuites that don't read `session_options` / `rpc_endpoints` at their\ntop level (`round_trip`, `data_exposure`) accept the spread anyway —\nexcess properties on spread sources aren't checked by TS, and the\nuniform shape keeps consumer call sites mechanical.",
+							"docComment": "Build the full in-process suite bundle in a single helper invocation.\nOutput covers `{setup_test, surface_source, capabilities}` plus every\nfactory input the Tier 1 suites read at their top level\n(`session_options`, `create_route_specs`, `rpc_endpoints`), and the\nintegration suite's `base_url` (`null`, no socket) and `max_body_bytes`\n(`app_options.max_body_size`, `app_options.host_gate`) — so the call site spreads once and adds\nonly suite-specific extras (`roles`, `skip_routes`, `input_overrides`,\n`db_factories`, ...).\n\n```ts\n// Suite-extras-free call: helper output is the entire options bag.\ndescribe_round_trip_validation(default_in_process_suite_options({\n  session_options,\n  create_route_specs,\n  rpc_endpoints: [rpc_endpoint_spec],\n}));\n\n// With suite-specific extras: spread and add.\ndescribe_standard_admin_integration_tests({\n  ...default_in_process_suite_options({\n    session_options, create_route_specs, rpc_endpoints,\n    extra_keeper_roles: [ROLE_ADMIN],\n  }),\n  roles,\n});\n```\n\nSuites that don't read `session_options` / `rpc_endpoints` at their\ntop level (`round_trip`, `data_exposure`) accept the spread anyway —\nexcess properties on spread sources aren't checked by TS, and the\nuniform shape keeps consumer call sites mechanical.",
 							"typeSignature": "<const O extends DefaultInProcessSuiteOptions>(options: O): { setup_test: SetupTest; surface_source: AppSurfaceSpec; capabilities: BackendCapabilities; ... 4 more ...; max_body_bytes: number | undefined; }",
 							"sourceLine": 285,
 							"genericParams": [
@@ -164698,7 +165029,7 @@
 							"kind": "type",
 							"docComment": "One expected refusal of a parse row.",
 							"typeSignature": "{ kind: \"empty_entry\" | \"not_printable_ascii\" | \"missing_scheme\" | \"unsupported_scheme\" | \"has_path\" | \"has_userinfo\" | \"missing_host\" | \"invalid_host_char\" | \"unbracketed_ipv6\" | ... 7 more ... | \"no_origins\"; index?: number | undefined; }",
-							"sourceLine": 61,
+							"sourceLine": 64,
 							"members": [
 								{
 									"name": "kind",
@@ -164809,7 +165140,7 @@
 							"kind": "type",
 							"docComment": "A parse row: the value parses (`ok: true`), or is refused with `errors`.",
 							"typeSignature": "{ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | \"not_printable_ascii\" | \"missing_scheme\" | \"unsupported_scheme\" | \"has_path\" | \"has_userinfo\" | ... 10 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; }",
-							"sourceLine": 72,
+							"sourceLine": 75,
 							"typeInfo": {
 								"kind": "union",
 								"members": [
@@ -164830,7 +165161,7 @@
 							"kind": "type",
 							"docComment": "A match row: a valid allowlist, one `Origin` value or `null`, and the answer.",
 							"typeSignature": "{ patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }",
-							"sourceLine": 81,
+							"sourceLine": 84,
 							"members": [
 								{
 									"name": "patterns",
@@ -164870,11 +165201,42 @@
 							"mergedValue": true
 						},
 						{
+							"name": "OriginConformanceHostRow",
+							"kind": "type",
+							"docComment": "A host row: a valid allowlist, the request's `Host` values, and the host gate's answer.",
+							"typeSignature": "{ patterns: string; allowed: boolean; hosts: string[]; note?: string | undefined; }",
+							"sourceLine": 93,
+							"members": [
+								{
+									"name": "patterns",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "allowed",
+									"kind": "variable",
+									"typeSignature": "boolean"
+								},
+								{
+									"name": "hosts",
+									"kind": "variable",
+									"typeSignature": "string[]"
+								},
+								{
+									"name": "note",
+									"kind": "variable",
+									"typeSignature": "string",
+									"optional": true
+								}
+							],
+							"mergedValue": true
+						},
+						{
 							"name": "OriginConformance",
 							"kind": "type",
 							"docComment": "The conformance table, a `@fuzdev/fuz_schema` `object`.",
-							"typeSignature": "{ match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; }",
-							"sourceLine": 88,
+							"typeSignature": "{ match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; host: ...",
+							"sourceLine": 101,
 							"members": [
 								{
 									"name": "match",
@@ -164901,6 +165263,19 @@
 											"module": "testing/cross_backend/origin_conformance.ts"
 										}
 									}
+								},
+								{
+									"name": "host",
+									"kind": "variable",
+									"typeSignature": "{ patterns: string; allowed: boolean; hosts: string[]; note?: string | undefined; }[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "OriginConformanceHostRow",
+											"module": "testing/cross_backend/origin_conformance.ts"
+										}
+									}
 								}
 							],
 							"mergedValue": true
@@ -164910,21 +165285,21 @@
 							"kind": "variable",
 							"docComment": "The committed table, resolved relative to this module.",
 							"typeSignature": "URL",
-							"sourceLine": 91
+							"sourceLine": 104
 						},
 						{
 							"name": "load_origin_conformance",
 							"kind": "function",
 							"docComment": "Read and validate the committed conformance table.",
-							"typeSignature": "(): { match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; }",
-							"sourceLine": 99,
+							"typeSignature": "(): { match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; host: { ...; }[]; }",
+							"sourceLine": 112,
 							"throws": [
 								{
 									"type": "Error",
 									"description": "when the file doesn't match `OriginConformance`"
 								}
 							],
-							"returnType": "{ match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; }",
+							"returnType": "{ match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; host: ...",
 							"returnTypeInfo": {
 								"kind": "reference",
 								"name": "OriginConformance"
@@ -164936,7 +165311,7 @@
 							"kind": "interface",
 							"docComment": "One table row as the action input that checks it.",
 							"typeSignature": "OriginConformanceCheck",
-							"sourceLine": 103,
+							"sourceLine": 116,
 							"members": [
 								{
 									"name": "label",
@@ -164950,7 +165325,7 @@
 								{
 									"name": "input",
 									"kind": "variable",
-									"typeSignature": "{ patterns: string; origin: string | null; }",
+									"typeSignature": "{ patterns: string; origin: string | null; hosts?: string[] | undefined; }",
 									"modifiers": [
 										"readonly"
 									],
@@ -164977,12 +165352,12 @@
 							"name": "to_origin_conformance_checks",
 							"kind": "function",
 							"docComment": "Flatten the table into action inputs and the answers they must get. A parse\nrow sends a `null` origin, so a value that parses answers\n`{ok: true, allowed: true}`.",
-							"typeSignature": "(table: { match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; }): OriginConformanceCheck[]",
-							"sourceLine": 118,
+							"typeSignature": "(table: { match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; host: { ...; }[]; }): OriginConformanceCheck[]",
+							"sourceLine": 131,
 							"parameters": [
 								{
 									"name": "table",
-									"type": "{ match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; }",
+									"type": "{ match: { patterns: string; origin: string | null; allowed: boolean; note?: string | undefined; }[]; parse: ({ ok: true; raw: string; note?: string | undefined; } | { raw: string; errors: { kind: \"empty_entry\" | ... 15 more ... | \"no_origins\"; index?: number | undefined; }[]; note?: string | undefined; })[]; host: ...",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "OriginConformance"
@@ -164998,14 +165373,14 @@
 									"name": "OriginConformanceCheck"
 								}
 							},
-							"returnDescription": "one check per row, parse rows first"
+							"returnDescription": "one check per row: parse rows, then match rows, then host rows"
 						},
 						{
 							"name": "assert_origin_conformance",
 							"kind": "function",
 							"docComment": "Compare each check's answer with its expectation and fail once, listing\nevery row that disagrees.",
 							"typeSignature": "(checks: readonly OriginConformanceCheck[], answer: readonly unknown[], backend: string): void",
-							"sourceLine": 144,
+							"sourceLine": 162,
 							"parameters": [
 								{
 									"name": "checks",
@@ -165038,7 +165413,7 @@
 							"kind": "type",
 							"docComment": "Options for `describe_origin_conformance_cross_tests`.",
 							"typeSignature": "RpcPathCrossSuiteOptions",
-							"sourceLine": 168,
+							"sourceLine": 186,
 							"members": [
 								{
 									"name": "rpc_path",
@@ -165077,7 +165452,7 @@
 							"kind": "function",
 							"docComment": "Register the origin conformance suite: every row of the committed table,\nsent to the backend's `_testing_origin_check` action over the keeper's\ndaemon-token channel, must get the answer the table names. The action is on\nevery spine test binary, so the suite is ungated.",
 							"typeSignature": "(options: RpcPathCrossSuiteOptions): void",
-							"sourceLine": 176,
+							"sourceLine": 194,
 							"parameters": [
 								{
 									"name": "options",
@@ -165087,7 +165462,7 @@
 							"returnType": "void"
 						}
 					],
-					"moduleComment": "The origin allowlist conformance table, and the cross-backend suite that\nruns it against each backend over the wire.\n\n`origin_conformance.json` (beside this module) is the one statement of the\nallowlist grammar and matcher both spines implement. It holds two tables:\n\n- **parse** rows — `{raw, ok: true}` or `{raw, errors: [{index?, kind}]}`:\n  an allowlist value (as `FUZ_ALLOWED_ORIGINS` would carry it) and whether\n  it parses, or every refusal with its 1-based entry position (absent for a\n  list-level refusal) and its `AllowedOriginsErrorKind`.\n- **match** rows — `{patterns, origin, allowed}`: a valid allowlist, one\n  `Origin` value (`null` for none), and the request-level answer.\n\nA row may carry a `note` for the reader. The TS unit test reads the table\ndirectly; `describe_origin_conformance_cross_tests` sends every row to a\nbackend's `_testing_origin_check` action and compares the answer, so the\nRust spine is held to the same rows without reading this file.",
+					"moduleComment": "The origin allowlist conformance table, and the cross-backend suite that\nruns it against each backend over the wire.\n\n`origin_conformance.json` (beside this module) is the one statement of the\nallowlist grammar and matcher, and of the host gate's check over them, both\nspines implement. It holds three tables:\n\n- **parse** rows — `{raw, ok: true}` or `{raw, errors: [{index?, kind}]}`:\n  an allowlist value (as `FUZ_ALLOWED_ORIGINS` would carry it) and whether\n  it parses, or every refusal with its 1-based entry position (absent for a\n  list-level refusal) and its `AllowedOriginsErrorKind`.\n- **match** rows — `{patterns, origin, allowed}`: a valid allowlist, one\n  `Origin` value (`null` for none), and the request-level answer.\n- **host** rows — `{patterns, hosts, allowed}`: a valid allowlist, the\n  request's `Host` values (`[]` for none), and the host gate's answer.\n\nA row may carry a `note` for the reader. The TS unit test reads the table\ndirectly; `describe_origin_conformance_cross_tests` sends every row to a\nbackend's `_testing_origin_check` action and compares the answer, so the\nRust spine is held to the same rows without reading this file.",
 					"dependencies": [
 						"http/origin.ts",
 						"testing/assert_dev_env.ts",
@@ -166796,14 +167171,14 @@
 							"kind": "variable",
 							"docComment": "The routes `fuz_auth::account_router` mounts, relative to `/api/account`. An\nallowlist rather than every account route shape: `/verify` is a TS-only\nroute the Rust router doesn't serve, so declaring it would have the suites\nprobe a 404. A shape fuz_app renames or drops fails the surface build; one\nit adds stays off the surface until the Rust router mounts it and this list\nnames it.",
 							"typeSignature": "readonly [\"/status\", \"/login\", \"/logout\", \"/password\"]",
-							"sourceLine": 53
+							"sourceLine": 51
 						},
 						{
 							"name": "RustSpineConsumerRpcEndpointsOptions",
 							"kind": "interface",
 							"docComment": "Options for `create_rust_spine_consumer_rpc_endpoints`.",
 							"typeSignature": "RustSpineConsumerRpcEndpointsOptions",
-							"sourceLine": 59,
+							"sourceLine": 57,
 							"members": [
 								{
 									"name": "domain_action_specs",
@@ -166897,7 +167272,7 @@
 							"kind": "interface",
 							"docComment": "Options for `create_rust_spine_consumer_surface_spec`.",
 							"typeSignature": "RustSpineConsumerSurfaceSpecOptions",
-							"sourceLine": 86,
+							"sourceLine": 84,
 							"extends": [
 								"RustSpineConsumerRpcEndpointsOptions"
 							],
@@ -166924,13 +167299,13 @@
 								{
 									"name": "host_gate",
 									"kind": "variable",
-									"docComment": "Whether the server turns on the spine's opt-in host gate\n(`fuz_http::StackOptions::host_gate`), declared as a `host_validation`\nlayer at the head of the middleware list.",
+									"docComment": "Whether the server mounts the spine's host gate\n(`fuz_http::StackOptions::host_gate`, on by default), declared as the\n`host` layer `create_test_app_surface_spec` lists.",
 									"typeSignature": "boolean",
 									"modifiers": [
 										"readonly"
 									],
 									"optional": true,
-									"defaultValue": "false"
+									"defaultValue": "true"
 								}
 							]
 						},
@@ -166939,7 +167314,7 @@
 							"kind": "function",
 							"docComment": "The RPC endpoints a Rust spine consumer mounts: the standard admin /\nrole-grant-offer / account actions, the extra families, then the domain\nspecs — what `describe_spine_cross_suites` takes as `rpc_endpoints`.",
 							"typeSignature": "(options: RustSpineConsumerRpcEndpointsOptions): (ctx: AppServerContext) => RpcEndpointSpec[]",
-							"sourceLine": 108,
+							"sourceLine": 106,
 							"throws": [
 								{
 									"type": "Error",
@@ -166959,9 +167334,9 @@
 						{
 							"name": "create_rust_spine_consumer_surface_spec",
 							"kind": "function",
-							"docComment": "Build the declared surface of a Rust spine consumer for its cross suites,\non `create_test_app_surface_spec`: the spine routes (health, the account\nrouter's paths, signup, and bootstrap as a `surface_only` shape), the RPC\nendpoint from `create_rust_spine_consumer_rpc_endpoints`, the daemon-token\nlayer every consumer test binary wires, and — with `host_gate` — the\n`host_validation` layer at the head of the middleware list.",
+							"docComment": "Build the declared surface of a Rust spine consumer for its cross suites,\non `create_test_app_surface_spec`: the spine routes (health, the account\nrouter's paths, signup, and bootstrap as a `surface_only` shape), the RPC\nendpoint from `create_rust_spine_consumer_rpc_endpoints`, the daemon-token\nlayer every consumer test binary wires, and — unless `host_gate` is\n`false` — the host gate's `host` layer.",
 							"typeSignature": "(options: RustSpineConsumerSurfaceSpecOptions): AppSurfaceSpec",
-							"sourceLine": 187,
+							"sourceLine": 185,
 							"throws": [
 								{
 									"type": "Error",
@@ -166990,8 +167365,6 @@
 						"auth/signup_route_schema.ts",
 						"auth/standard_rpc_actions.ts",
 						"http/common_routes.ts",
-						"http/error_schemas.ts",
-						"http/middleware_spec.ts",
 						"http/route_spec.ts",
 						"http/surface.ts",
 						"server/app_server_context.ts",
@@ -174413,8 +174786,8 @@
 							"name": "TestingOriginCheckInput",
 							"kind": "type",
 							"docComment": "Input of `_testing_origin_check`, a `@fuzdev/fuz_schema` `object`.",
-							"typeSignature": "{ patterns: string; origin: string | null; }",
-							"sourceLine": 48,
+							"typeSignature": "{ patterns: string; origin: string | null; hosts?: string[] | undefined; }",
+							"sourceLine": 54,
 							"members": [
 								{
 									"name": "patterns",
@@ -174438,6 +174811,12 @@
 											}
 										]
 									}
+								},
+								{
+									"name": "hosts",
+									"kind": "variable",
+									"typeSignature": "string[]",
+									"optional": true
 								}
 							],
 							"mergedValue": true
@@ -174447,7 +174826,7 @@
 							"kind": "type",
 							"docComment": "Output of `_testing_origin_check`, a `@fuzdev/fuz_schema` `union`: the\nrequest-level answer when the list parses, else every refusal — `index` the\n1-based entry position, absent for a list-level refusal.",
 							"typeSignature": "{ ok: true; allowed: boolean; } | { ok: false; errors: { kind: \"empty_entry\" | \"not_printable_ascii\" | \"missing_scheme\" | \"unsupported_scheme\" | \"has_path\" | \"has_userinfo\" | \"missing_host\" | ... 9 more ... | \"no_origins\"; index?: number | undefined; }[]; }",
-							"sourceLine": 67,
+							"sourceLine": 73,
 							"typeInfo": {
 								"kind": "union",
 								"members": [
@@ -174466,13 +174845,13 @@
 						{
 							"name": "run_testing_origin_check",
 							"kind": "function",
-							"docComment": "Answer one `_testing_origin_check` input: parse `patterns` with\n`parse_allowed_origins`, then run the request-level check for one `Origin`\ncarrying `origin` (`null` — no `Origin` — passes). The action handler and\nthe conformance table's unit test both call this, so the table checks the\nsame function the wire serves.",
-							"typeSignature": "(input: { patterns: string; origin: string | null; }): { ok: true; allowed: boolean; } | { ok: false; errors: { kind: \"empty_entry\" | \"not_printable_ascii\" | \"missing_scheme\" | \"unsupported_scheme\" | ... 12 more ... | \"no_origins\"; index?: number | undefined; }[]; }",
-							"sourceLine": 79,
+							"docComment": "Answer one `_testing_origin_check` input: parse `patterns` with\n`parse_allowed_origins`, then run the request-level check for one `Origin`\ncarrying `origin` (`null` — no `Origin` — passes), and with `hosts` the host\ngate's check of those `Host` values too. The action handler and\nthe conformance table's unit test both call this, so the table checks the\nsame function the wire serves.",
+							"typeSignature": "(input: { patterns: string; origin: string | null; hosts?: string[] | undefined; }): { ok: true; allowed: boolean; } | { ok: false; errors: { kind: \"empty_entry\" | \"not_printable_ascii\" | \"missing_scheme\" | ... 13 more ... | \"no_origins\"; index?: number | undefined; }[]; }",
+							"sourceLine": 86,
 							"parameters": [
 								{
 									"name": "input",
-									"type": "{ patterns: string; origin: string | null; }",
+									"type": "{ patterns: string; origin: string | null; hosts?: string[] | undefined; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "TestingOriginCheckInput"
@@ -174492,14 +174871,14 @@
 							"kind": "variable",
 							"docComment": "`_testing_origin_check` — run the origin allowlist's parse and request\ncheck for one `{patterns, origin}` pair, so the shared conformance table\n(`origin_conformance.json`) checks each backend's grammar and matcher over\nthe wire, row by row. Pure: no database, no state. The Rust mirror is\n`fuz_testing::create_testing_origin_check_action_spec`.\n\nLike `_testing_action_manifest`, it is **not** bundled by\n`create_testing_actions`: a consumer whose Rust binary doesn't mount the\nmirror would fail its action-manifest parity gate. The spine test binary\nappends it at the full-mount layer (`build_full_spine_rpc_actions`).\n\n`auth` gates on the daemon-token credential, matching `_testing_reset`.",
 							"typeSignature": "{ readonly method: \"_testing_origin_check\"; readonly kind: \"request_response\"; readonly initiator: \"frontend\"; readonly auth: { readonly account: \"required\"; readonly actor: \"none\"; readonly credential_types: readonly [...]; }; ... 4 more ...; readonly description: string; }",
-							"sourceLine": 111
+							"sourceLine": 120
 						},
 						{
 							"name": "create_testing_origin_check_action",
 							"kind": "function",
 							"docComment": "Build the standalone `_testing_origin_check` action (see the spec doc).",
 							"typeSignature": "(): RpcAction",
-							"sourceLine": 126,
+							"sourceLine": 135,
 							"returnType": "RpcAction"
 						}
 					],
@@ -174507,6 +174886,7 @@
 					"dependencies": [
 						"actions/action_spec.ts",
 						"actions/action_types.ts",
+						"http/host.ts",
 						"http/origin.ts",
 						"testing/assert_dev_env.ts",
 						"testing/cross_backend/spine_surface_constants.ts"
@@ -175246,7 +175626,7 @@
 							]
 						},
 						{
-							"name": "is_loopback_host",
+							"name": "is_loopback_bind_host",
 							"kind": "function",
 							"docComment": "Loopback bind hosts — the only ones the test binary may serve on. It ships\ndeterministic dev secrets (fixed cookie keys + bootstrap token in\n`default_secrets.ts`), so binding any network-reachable interface would let\nanyone who knows those fixed keys forge cookies against it. An allowlist\n(not an `0.0.0.0`/`::` blocklist) closes the gap a concrete LAN/public\ninterface IP — e.g. `--host 192.168.1.50` — would otherwise slip through.\nCovers `localhost`, the IPv4 loopback `127.0.0.0/8`, and IPv6 `::1`.",
 							"typeSignature": "(host: string): boolean",
@@ -175262,7 +175642,7 @@
 						{
 							"name": "start_testing_server",
 							"kind": "function",
-							"docComment": "Boot a test-mode server using the supplied runtime adapter.\n\nMirrors a production `start_server` at the surface level — stale-daemon\ncheck, daemon-info write, bind, graceful shutdown — but the app is the\ncaller's no-domain (or domain) `StartTestingServerOptions.build_app`\nand the runtime boundary is the `TestingServerAdapter`. Refuses any\nnon-loopback bind host (the test binary must stay on loopback — see\n`is_loopback_host`).",
+							"docComment": "Boot a test-mode server using the supplied runtime adapter.\n\nMirrors a production `start_server` at the surface level — stale-daemon\ncheck, daemon-info write, bind, graceful shutdown — but the app is the\ncaller's no-domain (or domain) `StartTestingServerOptions.build_app`\nand the runtime boundary is the `TestingServerAdapter`. Refuses any\nnon-loopback bind host (the test binary must stay on loopback — see\n`is_loopback_bind_host`).",
 							"typeSignature": "(options: StartTestingServerOptions): Promise<void>",
 							"sourceLine": 198,
 							"parameters": [
@@ -188233,7 +188613,7 @@
 							"kind": "function",
 							"docComment": "Create a Proxy that throws descriptive errors on any property access or method call.\n\nUse for deps that should never be reached during a test. If a test accidentally\ncalls through to a throwing stub, the error message identifies exactly which stub\nwas hit, catching test bugs that would silently pass with `{} as any`.\n\nJS-internal probes (`Symbol`, `then`, `constructor`, `$$typeof`) return\n`undefined` so the proxy doesn't crash framework-level identity checks;\n`toJSON` returns `\"[throwing_stub:label]\"` so accidental serialization\nsurfaces the stub's identity in console output rather than silent `\"{}\"`.",
 							"typeSignature": "<T = any>(label: string): T",
-							"sourceLine": 74,
+							"sourceLine": 75,
 							"genericParams": [
 								{
 									"name": "T",
@@ -188260,7 +188640,7 @@
 							"kind": "function",
 							"docComment": "Create a Proxy where every method access returns a no-op async function.\n\nUse for deps that may be reached during \"correct auth passes guard\" tests\nbut whose return values don't matter. Unlike the explicit method listing,\nthis auto-updates when interfaces change.",
 							"typeSignature": "<T = any>(_label: string, overrides?: Record<string, unknown> | undefined): T",
-							"sourceLine": 107,
+							"sourceLine": 108,
 							"genericParams": [
 								{
 									"name": "T",
@@ -188300,14 +188680,14 @@
 							"kind": "variable",
 							"docComment": "Throwing stub — use for deps that should never be reached.",
 							"typeSignature": "any",
-							"sourceLine": 117
+							"sourceLine": 118
 						},
 						{
 							"name": "create_stub_db",
 							"kind": "function",
 							"docComment": "Create a stub `Db` for handler tests that use `apply_route_specs` with declarative transactions.\n\nReturns a real `Db` instance with:\n- `query` returns empty rows (safety net for unmocked query functions)\n- `query_one` returns undefined\n- `transaction(fn)` calls `fn(db)` synchronously (no real transaction)",
 							"typeSignature": "(): Db",
-							"sourceLine": 127,
+							"sourceLine": 128,
 							"returnType": "Db"
 						},
 						{
@@ -188315,7 +188695,7 @@
 							"kind": "function",
 							"docComment": "Stub handler that answers a 200 `stub` text response, as a raw result.",
 							"typeSignature": "(): RouteRaw",
-							"sourceLine": 134,
+							"sourceLine": 135,
 							"returnType": "RouteRaw"
 						},
 						{
@@ -188323,7 +188703,7 @@
 							"kind": "function",
 							"docComment": "A route spec for a surface that is described and never served — a\nbackend's routes declared from their shapes: `shape` with a handler that\nthrows when it is run. Its handler is checked against nothing, as it\nreturns nothing.",
 							"typeSignature": "(shape: RouteShape): RouteSpec",
-							"sourceLine": 145,
+							"sourceLine": 146,
 							"parameters": [
 								{
 									"name": "shape",
@@ -188353,7 +188733,7 @@
 							"kind": "function",
 							"docComment": "Stub middleware that passes through.",
 							"typeSignature": "(_c: any, next: any): Promise<void>",
-							"sourceLine": 154,
+							"sourceLine": 155,
 							"parameters": [
 								{
 									"name": "_c",
@@ -188381,7 +188761,7 @@
 							"kind": "function",
 							"docComment": "Build a no-op `AuditEmitter` for tests that don't assert on audit fan-out.\n\n`emit` / `emit_role_grant_target` are no-ops; `emit_pool` resolves\nimmediately; `notify` is a no-op; `add_listener` throws, so a test that\nwires a listener fails loudly instead of silently never firing\n(`create_recording_audit_emitter` accepts listeners); `listener_count`\nreturns 0; `drain_inflight` resolves immediately, since nothing is ever\nwritten, and `is_tracking_inflight` answers `false`. Tests asserting on\nreal audit-row persistence (or on listener fan-out) build a real emitter\nvia `create_audit_emitter` against a stub or real DB — `create_test_app`\nalready does this on the test backend.",
 							"typeSignature": "(): AuditEmitter",
-							"sourceLine": 171,
+							"sourceLine": 172,
 							"returnType": "AuditEmitter"
 						},
 						{
@@ -188389,7 +188769,7 @@
 							"kind": "function",
 							"docComment": "Build a no-op `AuditLogSse` for tests that wire `audit_sse` into the\nsurface helper but don't assert on SSE fan-out or subscriber state.\n\n`on_audit_event` is a no-op, so nothing is broadcast; the\n`registry` is a fresh `SseRegistry` instance (call sites that\ninspect `.size` or call `.close_*` see a real registry, so writes are\nisolated per test). Tests that need real SSE plumbing build it via\n`create_audit_log_sse` against `create_test_app`.",
 							"typeSignature": "(): AuditLogSse",
-							"sourceLine": 196,
+							"sourceLine": 197,
 							"returnType": "AuditLogSse"
 						},
 						{
@@ -188397,7 +188777,7 @@
 							"kind": "function",
 							"docComment": "Create no-op `AppDeps` for auth surface testing.",
 							"typeSignature": "(): AppDeps",
-							"sourceLine": 211,
+							"sourceLine": 212,
 							"returnType": "AppDeps"
 						},
 						{
@@ -188405,7 +188785,7 @@
 							"kind": "interface",
 							"docComment": "Options for `create_stub_app_backend`.",
 							"typeSignature": "CreateStubAppBackendOptions",
-							"sourceLine": 225,
+							"sourceLine": 226,
 							"members": [
 								{
 									"name": "deps",
@@ -188439,7 +188819,7 @@
 							"kind": "function",
 							"docComment": "Create a stub `AppBackend` with no database behind it — no migration\nresults, and a `close` that does nothing unless one is passed. For\nassembling a server (`create_app_server`) in tests that never reach the\ndatabase; one whose `close` does nothing can host server after server.",
 							"typeSignature": "(options?: CreateStubAppBackendOptions | undefined): AppBackend",
-							"sourceLine": 240,
+							"sourceLine": 241,
 							"parameters": [
 								{
 									"name": "options",
@@ -188455,7 +188835,7 @@
 							"kind": "function",
 							"docComment": "Create the API middleware stub array matching `create_auth_middleware_specs`\noutput — the same names, paths, order, and declared `errors` (the surface\nmerges middleware errors into every route under the path, so a stub that\ndeclared more than the real stack would widen the test surface). Like the\nreal factory's, each spec gets its own pass-through handler, so\n`assert_middleware_stack_mounted` can tell the layers apart by identity.",
 							"typeSignature": "(options?: { include_daemon_token?: boolean | undefined; origin_carve_outs?: readonly MiddlewareCarveOut[] | undefined; } | undefined): MiddlewareSpec[]",
-							"sourceLine": 259,
+							"sourceLine": 260,
 							"parameters": [
 								{
 									"name": "options",
@@ -188477,7 +188857,7 @@
 							"kind": "function",
 							"docComment": "Create a stub `AppServerContext` for attack surface testing.\n\nProvides sensible defaults for all fields. Pass `session_options` since\nit varies per consumer; other fields use stubs/nulls.",
 							"typeSignature": "(session_options: SessionOptions<string>): AppServerContext",
-							"sourceLine": 305,
+							"sourceLine": 306,
 							"parameters": [
 								{
 									"name": "session_options",
@@ -188502,7 +188882,7 @@
 							"kind": "interface",
 							"docComment": "Options for `create_test_app_surface_spec`.",
 							"typeSignature": "CreateTestAppSurfaceSpecOptions",
-							"sourceLine": 326,
+							"sourceLine": 327,
 							"members": [
 								{
 									"name": "session_options",
@@ -188725,6 +189105,13 @@
 											}
 										]
 									}
+								},
+								{
+									"name": "host_gate",
+									"kind": "variable",
+									"docComment": "Symmetric with `AppServerOptions.host_gate` — `false` leaves out the host\ngate's spec, so the stub surface matches a server built without it.\nDefaults to `true`.",
+									"typeSignature": "boolean",
+									"optional": true
 								}
 							]
 						},
@@ -188733,7 +189120,7 @@
 							"kind": "function",
 							"docComment": "Create an `AppSurfaceSpec` for the standard testing suites.\n\nUsed by both in-process and cross-process tests as the schema source —\nthe cross-process-ness lives in the transport + per-test fixture, not\nhere. The on-disk `*_attack_surface.json` snapshot is observability\n(gen-time drift detection via `assert_surface_matches_snapshot`); the\nsuites consume the spec object this function returns, not the JSON\nfile.\n\nMirrors `create_app_server`'s route assembly, in its order: consumer\nroutes, then the factory-managed bootstrap routes, RPC endpoint routes, and\n`GET /api/surface` (with `surface_route: true`), then surface\ngeneration — including its\nrefusal of an `rpc_endpoints` or `ws_endpoints` path outside the auth\nmiddleware's scope (`assert_endpoint_in_auth_scope`), of a route that\nreads or mints a credential outside it\n(`assert_credential_routes_in_auth_scope`), and of a\n`transform_middleware` that doesn't keep the proxy and auth stack mounted\n(`assert_middleware_stack_mounted`). The middleware list mirrors the real\none: a stub `trusted_proxy` spec at `'*'`, then the stub auth stack (with\n`daemon_token` when `options.daemon_token` is set). If\n`create_app_server` changes how it wires routes, update this helper\nto stay in sync (single source of truth for all consumers). The body\nlimit's spec heads the list unless `max_body_size` is `null`, as it does on\nthe live server.",
 							"typeSignature": "(options: CreateTestAppSurfaceSpecOptions): AppSurfaceSpec",
-							"sourceLine": 470,
+							"sourceLine": 477,
 							"throws": [
 								{
 									"type": "Error",
@@ -188765,6 +189152,7 @@
 						"db/db.ts",
 						"http/body_limit_schema.ts",
 						"http/error_schemas.ts",
+						"http/host.ts",
 						"http/middleware_spec.ts",
 						"http/route_result.ts",
 						"http/route_spec.ts",

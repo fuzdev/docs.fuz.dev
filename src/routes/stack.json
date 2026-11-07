@@ -159,9 +159,9 @@
 			"glyph": "🗝",
 			"homepage_url": "https://app.fuz.dev/",
 			"published": true,
-			"module_count": 411,
-			"exported_module_count": 408,
-			"export_count": 2641,
+			"module_count": 412,
+			"exported_module_count": 409,
+			"export_count": 2657,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_css",

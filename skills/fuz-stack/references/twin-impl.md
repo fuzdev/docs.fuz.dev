@@ -106,7 +106,7 @@ idiom (often the Rust name; TS tends wordier) — wire- and schema-visible forms
 must already match, so internal renames are cleanup.
 
 **Utility twins** follow the same discipline at micro scale —
-`fuz_sys::env::parse_stringbool` ↔ `z.stringbool()`, the `DaemonInfo` schema
+`fuz_sys::env::parse_stringbool` ↔ fuz_app's `EnvStringbool`, the `DaemonInfo` schema
 shared between zzz's Rust CLI and `fuz_app`, the `lru`-backed `RateLimiter`
 twinning `fuz_app`'s `LruMap`, `fuz_sys::periodic::spawn_periodic` ↔
 `fuz_app`'s `start_periodic` (same schedule; shutdown differs because a promise

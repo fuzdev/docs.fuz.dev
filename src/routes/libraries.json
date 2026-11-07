@@ -33083,7 +33083,7 @@
 	"fuz_css": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_css",
-			"version": "0.76.1",
+			"version": "0.76.2",
 			"description": "semantic-first CSS framework and design system: styled HTML defaults, themes derived from a few knobs, and utility classes generated from what you use",
 			"tagline": "CSS with more utility",
 			"glyph": "🪴",
@@ -42042,14 +42042,14 @@
 							"kind": "variable",
 							"docComment": "The theme-space axes in editor display order, with display titles.",
 							"typeSignature": "readonly { axis: KnobAxis; title: string; }[]",
-							"sourceLine": 613
+							"sourceLine": 617
 						},
 						{
 							"name": "theme_knob_by_name",
 							"kind": "variable",
 							"docComment": "The catalog indexed by variable name.",
 							"typeSignature": "ReadonlyMap<string, ThemeKnob>",
-							"sourceLine": 626,
+							"sourceLine": 630,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "ReadonlyMap",
@@ -42070,7 +42070,7 @@
 							"kind": "variable",
 							"docComment": "Names of hook knobs - consumed by `style.css` via fallbacks, not declared\nin `default_variables`. Theme validation unions these with the declared\nvariable names.",
 							"typeSignature": "ReadonlySet<string>",
-							"sourceLine": 635,
+							"sourceLine": 639,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "ReadonlySet",
@@ -42749,9 +42749,9 @@
 						{
 							"name": "SHADE_LIGHTNESS_KNOBS",
 							"kind": "variable",
-							"docComment": "Fitted lightness knobs for the shade (surface) ramps.",
+							"docComment": "Lightness knobs for the shade (surface) ramps. The endpoints are fitted;\nthe curves sit above the fit, holding the near-ground stops - the\nsurfaces raised off the page - close to the ground in both schemes.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", Readonly<LightnessRampKnobs>>>",
-							"sourceLine": 111,
+							"sourceLine": 115,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -42784,7 +42784,7 @@
 							"kind": "variable",
 							"docComment": "Fitted lightness knobs for the text ramps.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", Readonly<LightnessRampKnobs>>>",
-							"sourceLine": 117,
+							"sourceLine": 121,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -42817,7 +42817,7 @@
 							"kind": "variable",
 							"docComment": "The lightness ramp knobs by family, for lookups keyed on a `RampFamily`.",
 							"typeSignature": "Readonly<Record<RampFamily, Readonly<Record<\"light\" | \"dark\", Readonly<LightnessRampKnobs>>>>>",
-							"sourceLine": 123,
+							"sourceLine": 127,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -42883,7 +42883,7 @@
 							"kind": "variable",
 							"docComment": "Fitted chroma-curve knobs for the palette ramps. `curve` renders as the\nsingle `--chroma_curve`, which the neutral scales share; `chroma_min` and\n`chroma_max` are the palette's own.\n\nFitted so the requested curve hugs the effective post-clamp chroma instead\nof sitting above the caps through the mid-range - turning the knobs down\nresponds immediately. Turning `chroma_max` up remains cap-clamped by\ndesign; `--chroma_scale` is the push-past-the-gamut knob. The residual vs\nthe HSL palette this fit ports is small (mean ΔEOK ≈ 0.005 light / 0.003\ndark) except light stop 30 (−0.028 C): the symmetric mid-peaked model\ncan't reach the light cap envelope's peak there - recovering it would\ntake an asymmetric shape (a peak-position knob).",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", Readonly<ChromaRampKnobs>>>",
-							"sourceLine": 145,
+							"sourceLine": 149,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -42916,7 +42916,7 @@
 							"kind": "variable",
 							"docComment": "Peak chroma of the neutral (shade/text) scales. The neutral rides the\npalette's chroma shape scaled to this peak: strong tint at mid lightness,\nnearly untinted near white and black.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", number>>",
-							"sourceLine": 162,
+							"sourceLine": 166,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -42943,21 +42943,21 @@
 							"kind": "variable",
 							"docComment": "The ground's own chroma (`--shade_chroma_00`), added to the near-ground\nstops of the shade ramp by `neutral_ground_chroma_weight`. The chroma shape is 0 at the\nendpoints, so without it the page ground is untinted whatever\n`neutral_chroma` says; a theme whose identity is a tinted page (paper, a\nlit night) sets it. 0 keeps the default ground neutral. The knob is the\ntint requested: the stops render `shade_ground_chroma`, the request held\nto sRGB at the ground's lightness, so a tint past what the ground can carry\nclamps rather than clipping.",
 							"typeSignature": "0",
-							"sourceLine": 177
+							"sourceLine": 181
 						},
 						{
 							"name": "SHADE_GROUND_CHROMA_REACH",
 							"kind": "variable",
 							"docComment": "How far up the shade ramp the ground's chroma reaches, as a ramp position\n(0 is the ground, 1 the far end): the tint is whole at `shade_00` and gone\nby this stop. The near-ground stops are the surfaces raised off the page -\nsidebars, fills, wells - and the shared chroma shape is near 0 there too, so\nwithout the reach they read gray beside a tinted ground.",
 							"typeSignature": "0.5",
-							"sourceLine": 186
+							"sourceLine": 190
 						},
 						{
 							"name": "neutral_ground_chroma_weight",
 							"kind": "function",
 							"docComment": "The share of `--shade_chroma_00` a neutral stop carries: 1 at the ground\n(`shade_00`), easing quadratically to 0 at `SHADE_GROUND_CHROMA_REACH`, and\n0 for every text stop. Rounded to four places, so the emitted CSS\nmultiplier and the numeric twins use the same number. Shared by the\nemitter, both numeric twins, and `check_theme`.",
 							"typeSignature": "(family: \"text\" | \"shade\", stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): number",
-							"sourceLine": 199,
+							"sourceLine": 203,
 							"parameters": [
 								{
 									"name": "family",
@@ -42997,7 +42997,7 @@
 							"kind": "variable",
 							"docComment": "Worst-hue sRGB chroma slopes toward the two lightness ends, bounding the\nground tint (`shade_ground_chroma`). Each term holds where it binds: every\nhue holds at least `light_end * (1 - L)` chroma for L above about 0.730,\nand at least `dark_end * L` for L up to about 0.75, and the two cross near\nL 0.731 - so the tent `min(light_end * (1 - L), dark_end * L)` is in gamut\nat every lightness and hue. Fitted against `oklch_max_srgb_chroma` over\nevery hue: the light-end envelope is about 0.4627 of the distance to white\nnear L 1 and the dark end is 0.170 of the distance to black, each rounded\ndown for a margin. The crossover sits about 0.001 above where the light\nterm starts to hold, so raising `dark_end` moves it into the region the\nlight term doesn't cover - a `dark_end` past the dark envelope fails the\ngamut property test in the dark band first.",
 							"typeSignature": "Readonly<{ light_end: number; dark_end: number; }>",
-							"sourceLine": 223,
+							"sourceLine": 227,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43014,7 +43014,7 @@
 							"kind": "function",
 							"docComment": "The ground tint a ground can carry: the requested `--shade_chroma_00`,\nheld to sRGB at the ground's lightness by `SHADE_GROUND_CHROMA_SLOPES`,\nworst hue. The numeric twin of `render_shade_ground_chroma_css`, which the\nnear-ground shade stops read in place of the knob.",
 							"typeSignature": "(chroma_00: number, lightness_00: number): number",
-							"sourceLine": 240,
+							"sourceLine": 244,
 							"parameters": [
 								{
 									"name": "chroma_00",
@@ -43035,28 +43035,59 @@
 							"kind": "variable",
 							"docComment": "The default of the `--contrast` knob: the theme's own ramps, unmoved.",
 							"typeSignature": "0",
-							"sourceLine": 250
+							"sourceLine": 254
 						},
 						{
 							"name": "HIGH_CONTRAST",
 							"kind": "variable",
 							"docComment": "The value the high-contrast modifier gives the `--contrast` knob, and the\nvalue the `prefers-contrast: more` mapping gives the preference input\n(`--_contrast_preference`), so the modifier and the OS preference render\nthe same derivation. Tuned against the floors the shipped themes hold under\nit: body text at 12:1 and the control border at 3:1 against the ground.",
 							"typeSignature": "0.5",
-							"sourceLine": 259
+							"sourceLine": 263
 						},
 						{
 							"name": "CONTRAST_CURVE_BEND",
 							"kind": "variable",
-							"docComment": "How far full contrast bends the shade and text lightness curves: the\neffective curve is `curve * (1 - CONTRAST_CURVE_BEND * c)`. Bending the\nshade curve separates the near-ground surfaces (and carries the control\nborders that sit on them), and bending the text curve pulls the text stops\ntoward the contrast end.",
-							"typeSignature": "0.66",
-							"sourceLine": 268
+							"docComment": "How far full contrast bends each neutral lightness curve: the effective\ncurve is `curve * (1 - CONTRAST_CURVE_BEND[family] * c)`. The text bend\npulls the text stops toward the contrast end. The shade bend is the\nsmaller one, so the near-ground surfaces keep close to the stretched\nground rather than moving toward the text on them - which would lower\nbody text on `shade_10` as contrast rises. The control border strengthens\non its own instead (`BORDER_CONTRAST_STOPS`).",
+							"typeSignature": "Readonly<Record<\"text\" | \"shade\", number>>",
+							"sourceLine": 274,
+							"typeInfo": {
+								"kind": "reference",
+								"name": "Readonly",
+								"typeArgs": [
+									{
+										"kind": "reference",
+										"name": "Record",
+										"typeArgs": [
+											{
+												"kind": "union",
+												"members": [
+													{
+														"kind": "literal",
+														"value": "text",
+														"text": "\"text\""
+													},
+													{
+														"kind": "literal",
+														"value": "shade",
+														"text": "\"shade\""
+													}
+												]
+											},
+											{
+												"kind": "intrinsic",
+												"text": "number"
+											}
+										]
+									}
+								]
+							}
 						},
 						{
 							"name": "CONTRAST_GROUND_END",
 							"kind": "variable",
 							"docComment": "The ground lightness full contrast reaches, per scheme: the effective\nground (`--_shade_lightness_00`) moves the fraction `c` of the way from the\ntheme's own `--shade_lightness_00` to this end. The dark end stops short of\nblack, since the bottom of the lightness range carries almost no luminance.\nThe end is clamped to the ground (`contrast_ground_end`), so the stretch only\nmoves toward the scheme's extreme: a ground already past the end doesn't\nmove, though the shade and text curves still bend.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", number>>",
-							"sourceLine": 279,
+							"sourceLine": 288,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43083,7 +43114,7 @@
 							"kind": "function",
 							"docComment": "The ground end a scheme stretches toward, clamped to the ground: the larger\nof `CONTRAST_GROUND_END.light` and the ground in light, the smaller of\n`CONTRAST_GROUND_END.dark` and the ground in dark, so a ground already past\nthe end stays put. The numeric twin of `render_contrast_ground_end_css`.",
 							"typeSignature": "(scheme: \"light\" | \"dark\", lightness_00: number): number",
-							"sourceLine": 293,
+							"sourceLine": 302,
 							"parameters": [
 								{
 									"name": "scheme",
@@ -43107,7 +43138,7 @@
 							"kind": "function",
 							"docComment": "The effective contrast: the larger of the theme's `--contrast` and the OS\npreference input, so a theme can author a baseline the OS raises but never\nlowers. The numeric twin of `render_contrast_css`.",
 							"typeSignature": "(contrast: number, preference: number): number",
-							"sourceLine": 306,
+							"sourceLine": 315,
 							"parameters": [
 								{
 									"name": "contrast",
@@ -43125,9 +43156,9 @@
 						{
 							"name": "contrast_lightness_knobs",
 							"kind": "function",
-							"docComment": "The lightness knobs a ramp renders at an effective contrast `c`: the shade\nground moves the fraction `c` of the way to its end (`contrast_ground_end`,\nwhich never lies behind the ground), and the\nshade and text curves bend by `CONTRAST_CURVE_BEND`; the palette is\nuntouched, as are the text endpoints and the shade's far end. At `c = 0`\nevery knob comes back exactly as given. The numeric twin of the\n`--_shade_lightness_00`, `--_shade_lightness_curve`, and\n`--_text_lightness_curve` intermediates.",
+							"docComment": "The lightness knobs a ramp renders at an effective contrast `c`: the shade\nground moves the fraction `c` of the way to its end (`contrast_ground_end`,\nwhich never lies behind the ground), and the\nshade and text curves bend by their `CONTRAST_CURVE_BEND`; the palette is\nuntouched, as are the text endpoints and the shade's far end. At `c = 0`\nevery knob comes back exactly as given. The numeric twin of the\n`--_shade_lightness_00`, `--_shade_lightness_curve`, and\n`--_text_lightness_curve` intermediates.",
 							"typeSignature": "(family: RampFamily, knobs: LightnessRampKnobs, contrast: number, scheme: \"light\" | \"dark\"): LightnessRampKnobs",
-							"sourceLine": 325,
+							"sourceLine": 334,
 							"parameters": [
 								{
 									"name": "family",
@@ -43183,7 +43214,7 @@
 							"kind": "function",
 							"docComment": "The effective ground lightness: `lightness_00` moved the fraction\n`contrast` of the way to `end`. The numeric twin of\n`render_contrast_ground_lightness_css`.",
 							"typeSignature": "(lightness_00: number, end: number, contrast: number): number",
-							"sourceLine": 350,
+							"sourceLine": 359,
 							"parameters": [
 								{
 									"name": "lightness_00",
@@ -43203,17 +43234,39 @@
 						{
 							"name": "contrast_lightness_curve",
 							"kind": "function",
-							"docComment": "The effective shade or text curve: `curve` bent by `CONTRAST_CURVE_BEND`\nat `contrast`. The numeric twin of `render_contrast_curve_css`.",
-							"typeSignature": "(curve: number, contrast: number): number",
-							"sourceLine": 360,
+							"docComment": "The effective shade or text curve: `curve` bent by the family's\n`CONTRAST_CURVE_BEND` at `contrast`. The numeric twin of\n`render_contrast_curve_css`.",
+							"typeSignature": "(family: \"text\" | \"shade\", curve: number, contrast: number): number",
+							"sourceLine": 374,
 							"parameters": [
 								{
+									"name": "family",
+									"type": "\"text\" | \"shade\"",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "literal",
+												"value": "text",
+												"text": "\"text\""
+											},
+											{
+												"kind": "literal",
+												"value": "shade",
+												"text": "\"shade\""
+											}
+										]
+									},
+									"description": "the neutral ramp, which picks the bend"
+								},
+								{
 									"name": "curve",
-									"type": "number"
+									"type": "number",
+									"description": "the ramp's curve knob"
 								},
 								{
 									"name": "contrast",
-									"type": "number"
+									"type": "number",
+									"description": "the effective contrast (`effective_contrast`)"
 								}
 							],
 							"returnType": "number"
@@ -43222,7 +43275,7 @@
 							"name": "ShadowTint",
 							"kind": "type",
 							"typeSignature": "ShadowTint",
-							"sourceLine": 363,
+							"sourceLine": 380,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "ShadowTint",
@@ -43245,7 +43298,7 @@
 							"kind": "variable",
 							"docComment": "Fitted neutral-hued tints for the shadow color endpoints: `bright` is the\nlight-scheme highlight and glow, `dim` the dark-scheme umbra and glow. Each\nrenders on `--hue_neutral`, so a retinted neutral recolors shadows with\nthe surfaces.",
 							"typeSignature": "Readonly<Record<ShadowTint, Readonly<{ lightness: number; chroma: number; }>>>",
-							"sourceLine": 371,
+							"sourceLine": 388,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43290,7 +43343,7 @@
 							"kind": "function",
 							"docComment": "Renders a `SHADOW_TINTS` entry as `oklch()` on the neutral hue.",
 							"typeSignature": "(tint: ShadowTint): string",
-							"sourceLine": 379,
+							"sourceLine": 396,
 							"parameters": [
 								{
 									"name": "tint",
@@ -43320,7 +43373,7 @@
 							"kind": "variable",
 							"docComment": "OKLCH lightness of the border color family (`--border_color_lightness`),\nfitted from the HSL palette. Sits mid-ramp so borders read against both\nthe page background and fills.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", number>>",
-							"sourceLine": 389,
+							"sourceLine": 406,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43347,7 +43400,7 @@
 							"kind": "variable",
 							"docComment": "The border family's chroma as a multiple of `--neutral_chroma` - borders\ncarry a stronger tint than surfaces so they read at low alpha. In CSS this\nis `--border_color_chroma: calc(var(--neutral_chroma) * <multiple>)`.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", number>>",
-							"sourceLine": 399,
+							"sourceLine": 416,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43374,7 +43427,7 @@
 							"kind": "variable",
 							"docComment": "Alpha (in %) of each border color stop. A perceptually-uniform curve -\nsmall gaps at the low end, large at the high end - boosted at the low end\nin dark mode where borders are less visible against dark backgrounds.\nStop 00 renders `transparent` and stop 100 opaque.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", Readonly<Record<\"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", number>>>>",
-							"sourceLine": 410,
+							"sourceLine": 427,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43413,11 +43466,58 @@
 							}
 						},
 						{
+							"name": "BORDER_CONTRAST_STOPS",
+							"kind": "variable",
+							"docComment": "The shade stops the default control border (`--border_color`) mixes\nbetween: `rest` at no contrast, moving toward `reach` as the effective\ncontrast rises (`BORDER_CONTRAST_GAIN`). The shade bend stays small so the\nsurfaces hold near the ground under contrast, which leaves the border to\nstrengthen on its own - toward WCAG 1.4.11's 3:1 against the ground at\n`HIGH_CONTRAST`, while borders at no contrast stay deliberately softer.",
+							"typeSignature": "Readonly<{ rest: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"; reach: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"; }>",
+							"sourceLine": 470,
+							"typeInfo": {
+								"kind": "reference",
+								"name": "Readonly",
+								"typeArgs": [
+									{
+										"kind": "object",
+										"text": "{ rest: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"; reach: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"; }"
+									}
+								]
+							}
+						},
+						{
+							"name": "BORDER_CONTRAST_GAIN",
+							"kind": "variable",
+							"docComment": "How fast the default control border moves from its `rest` stop toward its\n`reach` stop: the share of `reach` in the mix is\n`min(1, BORDER_CONTRAST_GAIN * c)` at effective contrast `c`, so the\nborder sits wholly at `reach` from `1 / BORDER_CONTRAST_GAIN` up. Tuned so\nevery shipped theme's default border clears 3:1 against the ground at\n`HIGH_CONTRAST` with a little margin, three quarters of the way to `reach`.",
+							"typeSignature": "1.5",
+							"sourceLine": 483
+						},
+						{
+							"name": "border_contrast_share",
+							"kind": "function",
+							"docComment": "The share of the `reach` stop in the default control border at an\neffective contrast, from 0 to 1. The numeric twin of the percentage in\n`render_border_color_css`.",
+							"typeSignature": "(contrast: number): number",
+							"sourceLine": 492,
+							"parameters": [
+								{
+									"name": "contrast",
+									"type": "number",
+									"description": "the effective contrast (`effective_contrast`)"
+								}
+							],
+							"returnType": "number"
+						},
+						{
+							"name": "render_border_color_css",
+							"kind": "function",
+							"docComment": "Renders the default of the control border role (`--border_color`): the\n`rest` shade stop mixed in oklab toward the `reach` stop by\n`border_contrast_share` of the effective contrast - exactly the `rest`\nstop at no contrast.",
+							"typeSignature": "(): string",
+							"sourceLine": 501,
+							"returnType": "string"
+						},
+						{
 							"name": "border_color_oklch",
 							"kind": "function",
 							"docComment": "Computes the default OKLCH color of the border family (without alpha).",
 							"typeSignature": "(scheme: \"light\" | \"dark\"): Oklch",
-							"sourceLine": 448,
+							"sourceLine": 507,
 							"parameters": [
 								{
 									"name": "scheme",
@@ -43435,7 +43535,7 @@
 							"kind": "variable",
 							"docComment": "Worst-hue safe chroma caps per stop: the largest chroma at that stop's\ndefault lightness that stays inside sRGB for every default hue (see `oklch_max_srgb_chroma` for the non-convexity caveat). Computed\nat design time from `PALETTE_HUES` + `PALETTE_LIGHTNESS_KNOBS`, floored to\nstay conservative; a drift test recomputes them from the color math.",
 							"typeSignature": "Readonly<Record<\"light\" | \"dark\", Readonly<Record<\"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", number>>>>",
-							"sourceLine": 460,
+							"sourceLine": 519,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Readonly",
@@ -43478,7 +43578,7 @@
 							"kind": "function",
 							"docComment": "Evaluates a lightness ramp at a stop.",
 							"typeSignature": "(knobs: LightnessRampKnobs, stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): number",
-							"sourceLine": 498,
+							"sourceLine": 557,
 							"parameters": [
 								{
 									"name": "knobs",
@@ -43500,7 +43600,7 @@
 							"kind": "function",
 							"docComment": "Evaluates the normalized chroma shape `pow(4t(1-t), curve)` at a stop -\n0 at the endpoints, 1 at the midpoint. The endpoint/midpoint guards mirror\n`render_chroma_shape_css`'s exact-literal short-circuits, keeping the twins\ntotal for any curve (JS would otherwise yield `0 ** 0 === 1`).",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", curve: number): number",
-							"sourceLine": 509,
+							"sourceLine": 568,
 							"parameters": [
 								{
 									"name": "stop",
@@ -43522,7 +43622,7 @@
 							"kind": "function",
 							"docComment": "Evaluates the palette chroma at a stop: the knob curve clamped by that\nstop's worst-hue cap. The `--chroma_scale` multipliers apply above the\nclamp, in `ramp_color_oklch`. Defaults for a scheme come from\n`PALETTE_CHROMA_KNOBS[scheme]` and `PALETTE_CHROMA_CAPS[scheme][stop]`.",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", knobs: ChromaRampKnobs, cap: number): number",
-							"sourceLine": 523,
+							"sourceLine": 582,
 							"parameters": [
 								{
 									"name": "stop",
@@ -43548,7 +43648,7 @@
 							"kind": "function",
 							"docComment": "The palette chroma for a resolved chroma shape: the knob range at that\nshape, clamped by the stop's cap - the arithmetic `ramp_chroma` and\n`ThemeResolver` share, the resolver supplying the shape from a theme's\nresolved `--chroma_curve`.",
 							"typeSignature": "(shape: number, chroma_min: number, chroma_max: number, cap: number): number",
-							"sourceLine": 541,
+							"sourceLine": 600,
 							"parameters": [
 								{
 									"name": "shape",
@@ -43574,7 +43674,7 @@
 							"kind": "function",
 							"docComment": "Combines resolved palette-ramp inputs into a color stop's OKLCH - the one\nformula behind `--palette_X_NN`/`--<intent>_NN` (`chroma * chroma_scale *\nslot multiplier` at the ramp lightness), shared by the default twins below\nand `check_theme`'s theme-resolved gates so the two can't drift. Clamped\nas the browser clamps the `oklch()` it renders.",
 							"typeSignature": "(lightness: number, chroma: number, hue: number, chroma_scale?: number, slot_chroma_scale?: number): Oklch",
-							"sourceLine": 555,
+							"sourceLine": 614,
 							"parameters": [
 								{
 									"name": "lightness",
@@ -43608,7 +43708,7 @@
 							"kind": "function",
 							"docComment": "Combines resolved neutral-scale inputs into a shade/text stop's OKLCH: the\npeak `neutral_chroma` scaled by the shared chroma shape, plus the stop's\nshare of the ground's own chroma (`ground_chroma`, already weighted by\n`neutral_ground_chroma_weight`; 0 past its reach and on text). The neutral twin\nof `ramp_color_oklch`, shared with `check_theme` for the same reason.",
 							"typeSignature": "(lightness: number, neutral_chroma: number, chroma_shape: number, hue: number, ground_chroma?: number): Oklch",
-							"sourceLine": 570,
+							"sourceLine": 629,
 							"parameters": [
 								{
 									"name": "lightness",
@@ -43640,7 +43740,7 @@
 							"kind": "function",
 							"docComment": "Computes the default OKLCH color of a palette stop (`--palette_X_NN`).",
 							"typeSignature": "(letter: \"a\" | \"b\" | \"c\" | \"d\" | \"e\" | \"f\" | \"g\" | \"h\" | \"i\" | \"j\", stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", scheme: \"light\" | \"dark\"): Oklch",
-							"sourceLine": 581,
+							"sourceLine": 640,
 							"parameters": [
 								{
 									"name": "letter",
@@ -43674,7 +43774,7 @@
 							"kind": "function",
 							"docComment": "Computes the default OKLCH color of a shade stop (`--shade_NN`).",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", scheme: \"light\" | \"dark\"): Oklch",
-							"sourceLine": 597,
+							"sourceLine": 656,
 							"parameters": [
 								{
 									"name": "stop",
@@ -43700,7 +43800,7 @@
 							"kind": "function",
 							"docComment": "Computes the default OKLCH color of a text stop (`--text_NN`).",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", scheme: \"light\" | \"dark\"): Oklch",
-							"sourceLine": 612,
+							"sourceLine": 671,
 							"parameters": [
 								{
 									"name": "stop",
@@ -43726,7 +43826,7 @@
 							"kind": "function",
 							"docComment": "Computes the worst-hue safe chroma cap at one lightness: the minimum\n`oklch_max_srgb_chroma` across the hues, floored to 4 decimals to stay\nconservative (the browser clips anything past it). The generalization of\nthe baked `PALETTE_CHROMA_CAPS` to an arbitrary hue set and lightness - a\ntheme's compile step calls it with each stop's own resolved lightness to\ndetect where the baked worst-hue envelope no longer fits.",
 							"typeSignature": "(hues: readonly number[], lightness: number): number",
-							"sourceLine": 634,
+							"sourceLine": 693,
 							"parameters": [
 								{
 									"name": "hues",
@@ -43746,7 +43846,7 @@
 							"kind": "type",
 							"docComment": "The lightness ramp families and their CSS variable name prefixes.",
 							"typeSignature": "RampFamily",
-							"sourceLine": 655,
+							"sourceLine": 714,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "RampFamily",
@@ -43774,7 +43874,7 @@
 							"kind": "function",
 							"docComment": "The variable a lightness ramp stop renders through: the endpoint knob\nitself at 00/100 (`palette_lightness_00`), else the private derived\nintermediate (`_palette_lightness_30`). The shade ground is the exception:\nits 00 stop is the contrast-adjusted intermediate `_shade_lightness_00`,\nsince the effective contrast moves it off the knob.",
 							"typeSignature": "(family: RampFamily, stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): string",
-							"sourceLine": 684,
+							"sourceLine": 743,
 							"parameters": [
 								{
 									"name": "family",
@@ -43817,7 +43917,7 @@
 							"kind": "function",
 							"docComment": "The variable a lightness ramp's curve renders through: the palette's knob\n(`palette_lightness_curve`), or for the neutral ramps the contrast-bent\nintermediate (`_shade_lightness_curve`, `_text_lightness_curve`).",
 							"typeSignature": "(family: RampFamily): string",
-							"sourceLine": 694,
+							"sourceLine": 753,
 							"parameters": [
 								{
 									"name": "family",
@@ -43852,28 +43952,28 @@
 							"kind": "variable",
 							"docComment": "The private variable holding the effective contrast (`effective_contrast`).",
 							"typeSignature": "\"_contrast\"",
-							"sourceLine": 698
+							"sourceLine": 757
 						},
 						{
 							"name": "CONTRAST_PREFERENCE_NAME",
 							"kind": "variable",
 							"docComment": "The private input the `prefers-contrast: more` mapping sets in\n`fuz.preferences`, declared 0 in the defaults. The one private variable\nthat is an input rather than derived: the private spelling keeps a theme\nfrom setting it (the `Theme` schema rejects it and the renderer drops it),\nso a theme's `--contrast` can't silence the OS preference.",
 							"typeSignature": "\"_contrast_preference\"",
-							"sourceLine": 707
+							"sourceLine": 766
 						},
 						{
 							"name": "CONTRAST_GROUND_END_NAME",
 							"kind": "variable",
 							"docComment": "The private two-slot variable holding the ground's contrast end, clamped to\nthe ground (`contrast_ground_end`).",
 							"typeSignature": "\"_contrast_ground_end\"",
-							"sourceLine": 713
+							"sourceLine": 772
 						},
 						{
 							"name": "to_chroma_shape_name",
 							"kind": "function",
 							"docComment": "The private variable holding a stop's normalized chroma shape (`_chroma_shape_50`).",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): string",
-							"sourceLine": 716,
+							"sourceLine": 775,
 							"parameters": [
 								{
 									"name": "stop",
@@ -43891,7 +43991,7 @@
 							"kind": "function",
 							"docComment": "The private variable holding a stop's capped palette chroma (`_palette_chroma_50`).",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): string",
-							"sourceLine": 719,
+							"sourceLine": 778,
 							"parameters": [
 								{
 									"name": "stop",
@@ -43909,14 +44009,14 @@
 							"kind": "variable",
 							"docComment": "The private variable holding the ground tint the ground can carry (`shade_ground_chroma`).",
 							"typeSignature": "\"_shade_ground_chroma\"",
-							"sourceLine": 723
+							"sourceLine": 782
 						},
 						{
 							"name": "CSS_NUMBER_PATTERN",
 							"kind": "variable",
 							"docComment": "A CSS `<number>` as a pattern source, stricter than what `Number()`\naccepts - no hex, binary, `Infinity`, or empty string.",
 							"typeSignature": "string",
-							"sourceLine": 731,
+							"sourceLine": 790,
 							"internalMessage": "Shared by `variable.ts` and the theme modules - not stable API."
 						},
 						{
@@ -43924,7 +44024,7 @@
 							"kind": "function",
 							"docComment": "Renders the derived default of an intermediate lightness ramp stop, e.g.\n`--_palette_lightness_30: calc(var(--palette_lightness_00) + (var(--palette_lightness_100) - var(--palette_lightness_00)) * pow(0.3, var(--palette_lightness_curve)))`.\nStops 00/100 have no derived form here. The neutral ramps read their\ncontrast intermediates (`to_lightness_stop_name`, `to_lightness_curve_name`)\nin place of the shade ground and the curves.",
 							"typeSignature": "(family: RampFamily, stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): string",
-							"sourceLine": 742,
+							"sourceLine": 801,
 							"parameters": [
 								{
 									"name": "family",
@@ -43967,7 +44067,7 @@
 							"kind": "function",
 							"docComment": "Renders the default of the effective contrast (`--_contrast`): the larger\nof the `--contrast` knob and the OS preference input. The CSS twin of\n`effective_contrast`.",
 							"typeSignature": "(): string",
-							"sourceLine": 758,
+							"sourceLine": 817,
 							"returnType": "string"
 						},
 						{
@@ -43975,7 +44075,7 @@
 							"kind": "function",
 							"docComment": "Renders a scheme's slot of the ground end (`--_contrast_ground_end`):\n`CONTRAST_GROUND_END` clamped to the ground, `max()` in light and `min()` in\ndark. The CSS twin of `contrast_ground_end`.",
 							"typeSignature": "(scheme: \"light\" | \"dark\"): string",
-							"sourceLine": 766,
+							"sourceLine": 825,
 							"parameters": [
 								{
 									"name": "scheme",
@@ -43993,15 +44093,15 @@
 							"kind": "function",
 							"docComment": "Renders the default of the effective ground lightness\n(`--_shade_lightness_00`): the knob moved the effective contrast's fraction\nof the way to the ground end. The CSS twin of `contrast_ground_lightness`.",
 							"typeSignature": "(): string",
-							"sourceLine": 774,
+							"sourceLine": 833,
 							"returnType": "string"
 						},
 						{
 							"name": "render_contrast_curve_css",
 							"kind": "function",
-							"docComment": "Renders the default of a neutral ramp's effective curve\n(`--_shade_lightness_curve`, `--_text_lightness_curve`): the knob bent by\n`CONTRAST_CURVE_BEND` at the effective contrast. The CSS twin of\n`contrast_lightness_curve`.",
+							"docComment": "Renders the default of a neutral ramp's effective curve\n(`--_shade_lightness_curve`, `--_text_lightness_curve`): the knob bent by\nthe family's `CONTRAST_CURVE_BEND` at the effective contrast. The CSS twin\nof `contrast_lightness_curve`.",
 							"typeSignature": "(family: \"text\" | \"shade\"): string",
-							"sourceLine": 783,
+							"sourceLine": 842,
 							"parameters": [
 								{
 									"name": "family",
@@ -44030,7 +44130,7 @@
 							"kind": "function",
 							"docComment": "Renders the normalized chroma shape of a stop, shared by the palette chroma\nramp and the neutral scales: `pow(4t(1-t), --chroma_curve)`.\nExactly 0 at the endpoints and 1 at the midpoint.",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): string",
-							"sourceLine": 791,
+							"sourceLine": 850,
 							"parameters": [
 								{
 									"name": "stop",
@@ -44048,7 +44148,7 @@
 							"kind": "function",
 							"docComment": "Renders the capped default of a palette chroma ramp stop: the knob curve\nclamped by a worst-hue gamut cap - the baked per-scheme\n`PALETTE_CHROMA_CAPS` for the defaults, or one the theme compile step\nrecomputed. `--chroma_scale` multiplies outside this clamp, at the color\nstops.",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", cap: number): string",
-							"sourceLine": 807,
+							"sourceLine": 866,
 							"parameters": [
 								{
 									"name": "stop",
@@ -44070,7 +44170,7 @@
 							"kind": "variable",
 							"docComment": "Matches the capped form `render_chroma_stop_css` emits, capturing the stop\nand the cap - how the resolver reads a compiled cap back, and how the\n`Theme` schema admits the one intermediate a theme can carry (see\n`StyleVariable`). It admits CSS whitespace only, around the value and\ninside it, so a match needs no `trim()` (which, like `\\s`, takes U+00A0).",
 							"typeSignature": "RegExp",
-							"sourceLine": 827,
+							"sourceLine": 886,
 							"internalMessage": "Shared by `variable.ts` and `theme_resolver.ts` - not stable API."
 						},
 						{
@@ -44078,7 +44178,7 @@
 							"kind": "function",
 							"docComment": "Renders a color derived from the palette ramps at a stop for a hue slot -\nthe shared template behind palette stops and intent stops (`--accent_50`\nrenders with `var(--hue_accent)`). Both slot references are built from the\nslot name, so the hue (`--hue_<slot>`) and its chroma-character multiplier\n(`--palette_X_chroma_scale`/`--<intent>_chroma_scale`) stay paired in the\nemitted CSS by construction.",
 							"typeSignature": "(slot: \"a\" | \"b\" | \"c\" | \"d\" | \"e\" | \"f\" | \"g\" | \"h\" | \"i\" | \"j\" | \"accent\" | \"positive\" | \"negative\" | \"caution\" | \"info\", stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | ... 4 more ... | \"100\", alpha?: string | undefined): string",
-							"sourceLine": 843,
+							"sourceLine": 902,
 							"parameters": [
 								{
 									"name": "slot",
@@ -44120,7 +44220,7 @@
 							"kind": "function",
 							"docComment": "Renders the derived default of a neutral (shade/text) stop. The neutral\nrides the palette's chroma shape scaled by the `--neutral_chroma` peak;\nthe near-ground shade stops add their share of the ground's own tint,\n`--_shade_ground_chroma` (see `neutral_ground_chroma_weight` and\n`shade_ground_chroma`), since the shape is near 0 there.",
 							"typeSignature": "(family: \"text\" | \"shade\", stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\"): string",
-							"sourceLine": 863,
+							"sourceLine": 922,
 							"parameters": [
 								{
 									"name": "family",
@@ -44157,7 +44257,7 @@
 							"kind": "function",
 							"docComment": "Renders the default of the private ground tint (`--_shade_ground_chroma`):\n`--shade_chroma_00` held to sRGB at the effective ground's lightness\n(`--_shade_lightness_00`). The CSS twin of\n`shade_ground_chroma`.",
 							"typeSignature": "(): string",
-							"sourceLine": 884,
+							"sourceLine": 943,
 							"returnType": "string"
 						},
 						{
@@ -44165,7 +44265,7 @@
 							"kind": "function",
 							"docComment": "Renders the derived default of a border color stop (`--border_color_NN`):\nthe border family's color at the stop's alpha from `BORDER_COLOR_ALPHAS`.\nThe color part is scheme-agnostic - the flip lives in the referenced knobs\n- so stops whose alpha matches across schemes render identically and\n`variables.ts` declares them single-slot.",
 							"typeSignature": "(stop: \"00\" | \"05\" | \"10\" | \"20\" | \"30\" | \"40\" | \"50\" | \"60\" | \"70\" | \"80\" | \"90\" | \"95\" | \"100\", scheme: \"light\" | \"dark\"): string",
-							"sourceLine": 896,
+							"sourceLine": 955,
 							"parameters": [
 								{
 									"name": "stop",
@@ -45576,77 +45676,84 @@
 							"kind": "variable",
 							"docComment": "AAA body text: `--text_color` (`text_80` by default) on `shade_00`/`05`/`10`.",
 							"typeSignature": "7",
-							"sourceLine": 62
+							"sourceLine": 67
 						},
 						{
 							"name": "GATE_SUBTLE_TEXT",
 							"kind": "variable",
 							"docComment": "Disabled/secondary floor: `--text_disabled` (`text_50` by default) on `shade_00`.",
 							"typeSignature": "3",
-							"sourceLine": 64
+							"sourceLine": 69
 						},
 						{
 							"name": "GATE_LINK",
 							"kind": "variable",
 							"docComment": "AA links: `--link_color` (the accent at stop 60 by default) on `shade_00`,\nplus that stop itself when a theme repoints the role, since\n`label.selected` paints it directly, and an authored `--link_color_selected`.",
 							"typeSignature": "4.5",
-							"sourceLine": 70
+							"sourceLine": 75
 						},
 						{
 							"name": "GATE_UI",
 							"kind": "variable",
 							"docComment": "WCAG 1.4.11 non-text: every hue at stop 50 vs `shade_00`, and an authored\n`--outline_color` (the focus ring, the accent at stop 50 by default).",
 							"typeSignature": "3",
-							"sourceLine": 75
+							"sourceLine": 80
 						},
 						{
 							"name": "GATE_FILL_TEXT",
 							"kind": "variable",
 							"docComment": "Large-text floor: `text_max` on every stop-50 fill.",
 							"typeSignature": "3",
-							"sourceLine": 77
+							"sourceLine": 82
 						},
 						{
 							"name": "GATE_SELECTED_TEXT",
 							"kind": "variable",
-							"docComment": "AA selected-control inverse text: `text_00` on `shade_60` and on every\nstop-60 fill - the selected-button pairings in `style.css` (`.selected`\nfills with `shade_60`, `.palette_X.selected` with `palette_X_60`). The\nendpoint stop is immune to `text_lightness_curve` bends, so this gate moves\nonly when a theme moves the endpoints, the fill ramps, or the hues.",
+							"docComment": "AA selected-control inverse text: `text_00` on `shade_70` and on every\nstop-60 fill - the selected-button pairings in `style.css` (`.selected`\nfills with `shade_70`, `.palette_X.selected` with `palette_X_60`). The\nendpoint stop is immune to `text_lightness_curve` bends, so this gate moves\nonly when a theme moves the endpoints, the fill ramps, or the hues.",
 							"typeSignature": "4.5",
-							"sourceLine": 85
+							"sourceLine": 90
 						},
 						{
 							"name": "GATE_PALETTE_TEXT",
 							"kind": "variable",
 							"docComment": "AA colored labels: every palette hue at stop 60 on `shade_00` (colored\ntext) and on its own stop-10 tint (the chip), and the `.palette_X` button\nlabel - the hue at stop 70 - on each of the button's fills. The\nfills follow the `style.css` recipe: the hue at stop 60 at 8% alpha at\nrest (and focused), 16% hovered, and 24% pressed, composited over\n`shade_00` in gamma-encoded sRGB. A hovered label mixes 10% toward\n`shade_max` in oklab, so a mouse press pairs that label with the pressed\nfill, and a keyboard press, which doesn't hover, pairs the plain label with\nit. An 8-bit raster quantizes both colors, so a rendered measurement lands\nwithin about 0.15 of the ratio, and the gate reads it low more often than\nhigh.",
 							"typeSignature": "4.5",
-							"sourceLine": 99
+							"sourceLine": 104
 						},
 						{
 							"name": "GATE_BORDER",
 							"kind": "variable",
-							"docComment": "Control borders: `--border_color` (`shade_30` by default) vs `shade_00`.\nA regression floor for the shipped design, not a WCAG level - 1.4.11's 3:1\napplies to required component boundaries, and fuz borders sit deliberately\nsofter - so a theme can't silently wash control borders out.",
+							"docComment": "Control borders: `--border_color` (by default `shade_30`, moving toward\n`shade_50` with contrast - `BORDER_CONTRAST_STOPS`) vs `shade_00`, below\n`HIGH_CONTRAST`. A regression floor for the shipped design, not a WCAG\nlevel - 1.4.11's 3:1 applies to required component boundaries, and fuz\nborders sit deliberately softer - so a theme can't silently wash control\nborders out.",
 							"typeSignature": "1.5",
-							"sourceLine": 106
+							"sourceLine": 113
+						},
+						{
+							"name": "GATE_BORDER_HIGH_CONTRAST",
+							"kind": "variable",
+							"docComment": "Control borders at an effective contrast of `HIGH_CONTRAST` or more:\nWCAG 1.4.11's 3:1, the floor a theme that asks for contrast (or that the OS\npreference raises) holds its control boundaries to, replacing\n`GATE_BORDER`.",
+							"typeSignature": "3",
+							"sourceLine": 120
 						},
 						{
 							"name": "GATE_BORDER_DIVIDER",
 							"kind": "variable",
 							"docComment": "Divider borders: the `border_color_30` alpha color composited over\n`shade_00` (the `hr` pairing in `style.css`). A regression floor like\n`GATE_BORDER`.",
 							"typeSignature": "1.3",
-							"sourceLine": 112
+							"sourceLine": 126
 						},
 						{
 							"name": "GATE_GAMUT_TOLERANCE",
 							"kind": "variable",
 							"docComment": "Gamut gate: how far outside sRGB (the largest channel excess) a stop may sit and\nstill pass - float noise, not visible clipping.",
 							"typeSignature": "0.0001",
-							"sourceLine": 118
+							"sourceLine": 132
 						},
 						{
 							"name": "ThemeGateId",
 							"kind": "type",
 							"docComment": "Which accessibility gate an entry belongs to.",
 							"typeSignature": "ThemeGateId",
-							"sourceLine": 125,
+							"sourceLine": 139,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "ThemeGateId",
@@ -45674,7 +45781,7 @@
 							"kind": "interface",
 							"docComment": "A single gate measurement against a theme. The `value`/`threshold`\ncomparison direction depends on the gate: `contrast` passes at\n`value >= threshold` (a WCAG ratio floor), `monotonicity` at\n`value > threshold` (the minimum ramp step must exceed 0), and `gamut` at\n`value <= threshold` (sRGB channel excess stays within tolerance). `pass`\nis authoritative; renderers formatting the comparison switch on `gate`.",
 							"typeSignature": "ThemeGateEntry",
-							"sourceLine": 135,
+							"sourceLine": 149,
 							"members": [
 								{
 									"name": "gate",
@@ -45738,7 +45845,7 @@
 							"kind": "interface",
 							"docComment": "A gate input the checker couldn't evaluate, so the gates reading it were\nskipped: a knob or derived stop that doesn't resolve to a number, or a\npinned color in a form the gates don't read.",
 							"typeSignature": "ThemeUncheckedEntry",
-							"sourceLine": 149,
+							"sourceLine": 163,
 							"members": [
 								{
 									"name": "variable",
@@ -45762,7 +45869,7 @@
 							"kind": "interface",
 							"docComment": "The result of `check_theme`. The two verdicts are separate questions:\nwhether what was measured holds, and whether everything was measured - a\ntheme that passes every gate it could evaluate may still have inputs the\ngates couldn't read.",
 							"typeSignature": "ThemeCheckReport",
-							"sourceLine": 161,
+							"sourceLine": 175,
 							"members": [
 								{
 									"name": "passed",
@@ -45805,16 +45912,16 @@
 						{
 							"name": "theme_gate_role_names",
 							"kind": "variable",
-							"docComment": "The role variables the contrast gates follow - each aliases a color stop or\nanother role by default (`text_color` is `var(--text_80)`), and\n`check_theme` measures\nwhatever a theme points it at instead of the stop it left.",
+							"docComment": "The role variables the contrast gates follow - each aliases a color stop or\nanother role by default (`text_color` is `var(--text_80)`), except the\ncontrol border, which mixes two shade stops by the effective contrast - and\n`check_theme` measures whatever a theme points it at instead of the\ndefault it left.",
 							"typeSignature": "readonly string[]",
-							"sourceLine": 336
+							"sourceLine": 369
 						},
 						{
 							"name": "CheckThemeOptions",
 							"kind": "interface",
 							"docComment": "Options for `check_theme`. The stance mirror needs no passing, since the\ngates derive it from the theme's stance.",
 							"typeSignature": "CheckThemeOptions",
-							"sourceLine": 346,
+							"sourceLine": 379,
 							"members": [
 								{
 									"name": "caps",
@@ -45837,7 +45944,7 @@
 							"kind": "function",
 							"docComment": "Runs the gamut, monotonicity, and contrast gates against a theme, resolving\nits authored CSS back to numbers through the resolution core. Report-only:\nfailures land in `entries` (with `pass: false`), inputs that can't be\nevaluated land in `unchecked`; `passed` says every entry passes and\n`complete` that nothing is unchecked. Never throws.\n\nEvery color a gate reads is looked up by its variable name, so a theme that\nauthors one directly - a stop (`palette_a_50`, `shade_00`, `text_max`,\n`border_color_30`) or a role (`text_color`, `link_color`, `border_color`) -\nis measured at the authored color when it is an `oklch(L C H)` numeric\nliteral or an exact `var()` reference to another color the gates evaluate,\nand recorded in `unchecked` otherwise. An authored color a gate depends on\nnever passes unread, and one no gate reads stays out of the report.\n\nA contrast subject names what was measured: the default stop while a role\nis at its default (`text_80 on shade_00`), the role once the theme authors\nit (`text_color on shade_00`).\n\nAn intent stop that renders the same color as a palette letter's (the\ndefault for every intent) folds into that letter's gamut entry rather than\nduplicating it, so reports for letter-bound themes list fewer subjects than\nthe full letters × intents grid.",
 							"typeSignature": "(theme: { name: string; variables: { name: string; dark?: string | undefined; base?: string | undefined; summary?: string | undefined; }[]; summary?: string | undefined; scheme?: \"light\" | \"dark\" | \"dual\" | undefined; }, options?: CheckThemeOptions): ThemeCheckReport",
-							"sourceLine": 382,
+							"sourceLine": 415,
 							"parameters": [
 								{
 									"name": "theme",
@@ -45863,7 +45970,7 @@
 							"kind": "function",
 							"docComment": "Recomputes a theme's per-stop worst-hue chroma caps from its own hues and\nthe palette lightness each stop resolves to, then returns\n`_palette_chroma_NN` caps wherever the baked ones no longer fit - the fix\nfor a theme (rotated hues, a monochrome collapse, a moved lightness ramp)\nwhose gamut headroom the baked worst-hue table misjudges. The caps are\nderived data beside the theme, never in it: a theme can't set an internal\nvariable, so they render through `render_theme_style`'s `caps` option and\nrecomputing them for the same theme gives the same caps.\n\nEach stop's cap is computed at the lightness the resolution core resolves\nfor the stop in that scheme - the theme's endpoint-and-curve ramp - so the\ncaps describe the same colors `check_theme` gates.\n\nA stop is emitted when either scheme's recomputed cap is tighter than the\nbaked value, or looser by more than the emit epsilon. Nothing is emitted\nwhen a hue fails to resolve to a number, since caps computed without it\ncould overshoot its gamut, and a stop whose lightness fails to resolve is\nskipped. An override emits both slots together, so a\none-scheme override can't silently kill the base default's other slot by\ncascade-layer order, collapsing to a single slot in the base position when\nthe two rendered values coincide.\n\nA stanced theme's two schemes resolve to the stanced appearance through the\nmirror, so its caps are baselined against the stanced scheme's baked table -\nthe values the mirror already re-slots - and a stance alone (hues and\nlightness unmoved) emits nothing. Its overrides coincide across schemes and\nemit single-slot unless the theme authors a dark slot that splits them.\n\nThe caps bound the requested chroma only: `chroma_scale` and the per-slot\n`*_chroma_scale` multipliers apply above the clamp. A theme that raises one\npast 1 clips by design - its gamut failures survive the compile, and a cap\nthe compile loosens can add to them, since the multiplier then pushes more\nstops past the looser cap. Gate the theme with them through\n`check_theme(theme, {caps})`.",
 							"typeSignature": "(theme: { name: string; variables: { name: string; dark?: string | undefined; base?: string | undefined; summary?: string | undefined; }[]; summary?: string | undefined; scheme?: \"light\" | \"dark\" | \"dual\" | undefined; }): { ...; }[]",
-							"sourceLine": 861,
+							"sourceLine": 914,
 							"parameters": [
 								{
 									"name": "theme",
@@ -46054,7 +46161,7 @@
 							"kind": "variable",
 							"docComment": "Equality slack for resolved hue angles and chroma multipliers.",
 							"typeSignature": "1e-9",
-							"sourceLine": 120,
+							"sourceLine": 122,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API."
 						},
 						{
@@ -46062,7 +46169,7 @@
 							"kind": "type",
 							"docComment": "A resolved numeric value, or the offending variable/value/reason on failure.",
 							"typeSignature": "Resolved",
-							"sourceLine": 131,
+							"sourceLine": 133,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API.",
 							"typeInfo": {
 								"kind": "union",
@@ -46084,7 +46191,7 @@
 							"kind": "variable",
 							"docComment": "Intent and neutral hues default to a palette-letter binding - derived by\ninverting `palette_glosses` so rebinding an intent there flows through.",
 							"typeSignature": "Record<string, string>",
-							"sourceLine": 140,
+							"sourceLine": 142,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API.",
 							"typeInfo": {
 								"kind": "reference",
@@ -46106,7 +46213,7 @@
 							"kind": "function",
 							"docComment": "Parses text as a CSS `<number>`, or `null` when it isn't one.",
 							"typeSignature": "(text: string): number | null",
-							"sourceLine": 153,
+							"sourceLine": 155,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API.",
 							"parameters": [
 								{
@@ -46134,7 +46241,7 @@
 							"kind": "variable",
 							"docComment": "Matches a palette letter's hue name, capturing the letter.",
 							"typeSignature": "RegExp",
-							"sourceLine": 161,
+							"sourceLine": 163,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API."
 						},
 						{
@@ -46142,7 +46249,7 @@
 							"kind": "variable",
 							"docComment": "The stop alternation as a pattern source, built from the variant list so a\nscale change can't strand a matcher.",
 							"typeSignature": "string",
-							"sourceLine": 171,
+							"sourceLine": 173,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API."
 						},
 						{
@@ -46150,7 +46257,7 @@
 							"kind": "variable",
 							"docComment": "Matches exactly `var(--x)`, capturing the name - the reference form the\nresolver follows.",
 							"typeSignature": "RegExp",
-							"sourceLine": 186,
+							"sourceLine": 188,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API."
 						},
 						{
@@ -46158,7 +46265,7 @@
 							"kind": "variable",
 							"docComment": "Matches the scaled-reference form emitted for `border_color_chroma`\n(`calc(var(--neutral_chroma) * 2.12)`), also useful for authored\nmultipliers, capturing the name and the factor.",
 							"typeSignature": "RegExp",
-							"sourceLine": 194,
+							"sourceLine": 196,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API."
 						},
 						{
@@ -46166,7 +46273,7 @@
 							"kind": "type",
 							"docComment": "The derived data a resolver reads beside its theme: the compiled `caps`\nfrom `compile_theme`. The stance mirror needs no passing, since the\nresolver derives it from the theme's stance.",
 							"typeSignature": "ThemeResolverOptions",
-							"sourceLine": 204,
+							"sourceLine": 206,
 							"members": [
 								{
 									"name": "caps",
@@ -46188,7 +46295,7 @@
 							"name": "ThemeResolver",
 							"kind": "class",
 							"docComment": "Resolves knob-tier and derived-stop variables of a single theme to numbers,\nmirroring the renderer's effective-value merge and the `ramps.ts` formulas.\n`create_theme_resolver` is the public surface over it.",
-							"sourceLine": 213,
+							"sourceLine": 215,
 							"internalMessage": "Shared by `theme_validate.ts` and `theme_check.ts` - not stable API.",
 							"members": [
 								{
@@ -46301,7 +46408,7 @@
 							"kind": "interface",
 							"docComment": "A reusable numeric resolver over one theme - the memoized query surface for\nUI display (the theme editor's derived-knob readouts) and tests.",
 							"typeSignature": "ThemeKnobResolver",
-							"sourceLine": 529,
+							"sourceLine": 531,
 							"members": [
 								{
 									"name": "resolve",
@@ -46357,7 +46464,7 @@
 							"kind": "function",
 							"docComment": "Creates a `ThemeKnobResolver` for `theme`, sharing the resolution core used\nby `validate_theme`/`check_theme`/`compile_theme`. The instance memoizes per\nname+scheme, so repeated lookups (a UI rendering every knob) stay cheap -\ncreate one per theme value and discard when the theme changes.",
 							"typeSignature": "(theme: { name: string; variables: { name: string; dark?: string | undefined; base?: string | undefined; summary?: string | undefined; }[]; summary?: string | undefined; scheme?: \"light\" | \"dark\" | \"dual\" | undefined; }, options?: ThemeResolverOptions): ThemeKnobResolver",
-							"sourceLine": 545,
+							"sourceLine": 547,
 							"parameters": [
 								{
 									"name": "theme",
@@ -46379,7 +46486,7 @@
 							"returnType": "ThemeKnobResolver"
 						}
 					],
-					"moduleComment": "The numeric resolution core under `theme_validate.ts` and `theme_check.ts`:\nit turns the CSS strings themes author back into numbers so the lint and\nthe gates can run. `create_theme_resolver` exposes it for UI lookups; the\nrest of the module's exports are the internals the two modules share.\n\nIts contract:\n\n- Knob-tier defaults come from the numeric-twin constants in `ramps.ts`, not\n  from parsing `default_variables`; intent and neutral hues default to their\n  palette-letter binding (`hue_accent` → `hue_a`, `hue_neutral` → `hue_f`,\n  and so on) so they follow an overridden letter.\n- Theme-authored values parse as a CSS `<number>` literal, an exact\n  `var(--x)` reference (recursed through the same effective-value merge,\n  with a visited-set cycle guard), a scaled reference\n  `calc(var(--x) * <number>)`. Anything else is unresolvable and is\n  recorded with its variable, value, and reason. A derived color is\n  clamped as the browser clamps the `oklch()` it renders.\n- The private ramp intermediates (`_palette_lightness_NN` and its\n  shade/text twins, `_chroma_shape_NN`, `_palette_chroma_NN`,\n  `_shade_ground_chroma`, and the contrast intermediates `_contrast`,\n  `_contrast_ground_end`, `_shade_lightness_00`, `_shade_lightness_curve`,\n  and `_text_lightness_curve`) always derive through the `ramps.ts`\n  formulas from the resolved knobs - the `Theme` schema keeps a theme from\n  setting one, and the resolver ignores one in `variables` as the renderer\n  drops it. The ground end takes its slot from the theme's stance, or the\n  requested scheme for a dual-scheme theme - the information its mirrored\n  slot carries. The exception is a `_palette_chroma_NN` from the derived\n  data beside the theme, in the machine-emitted capped form\n  (`min(calc(...), <number>)`): a compiled cap passed as `caps`, or a\n  stanced theme's mirror re-slotting the defaults' caps, whose cap the\n  resolver reads. The OS preference input `_contrast_preference` resolves\n  to 0: the gates measure the theme, and the preference only ever raises\n  the effective contrast past it.\n- The color variables the gates read (the palette, intent, shade, and text\n  stops, `text_max`, and `border_color_30`) derive from those numbers\n  unless the theme authors one directly. An authored color is measured as\n  written when it is an `oklch(L C H)` literal with plain numeric\n  components (an optional `/ alpha` composites where the gate measures a\n  color over its ground) or an exact `var()` reference to another color\n  the gates evaluate; any other form is recorded in `unchecked` and its\n  gates are skipped. The gates look every color up by variable name, so\n  this covers exactly the variables a gate reads and no others.\n- The gates measure what the default styles paint, so they follow the\n  roles those styles paint through: `text_color`, `text_disabled`,\n  `link_color`, `link_color_selected`, `border_color`, and `outline_color`\n  (`theme_gate_role_names`). Each aliases a stop or another role by\n  default, read from the shipped declarations, and a theme that repoints\n  one is gated at the color it points to - same rule, same `unchecked`\n  fallback. One table of\n  pairing gates names each role beside its grounds and threshold, so the\n  gate definitions and the following can't drift.\n- Outside the gates: the micro-surface colors no pairing models\n  (`caret_color`, `selection_color`, `scrollbar_thumb_color`,\n  `backdrop_color`), the `input_fill` behind field text, the `panel_fill`\n  behind a panel's text, a\n  `background_image` painted over the `shade_00` ground, and the stronger\n  button tints of the hover, focus, and pressed states.\n\nThe effective-value merge mirrors the renderer's cascade-layer semantics\n(`theme.ts` `render_theme_style`): light = `theme.base`; dark =\n`theme.dark ?? theme.base`, falling back to the numeric-twin default for\nthe scheme. A single-scheme\nstance (`Theme.scheme`) resolves through the same `compute_scheme_mirror`\nmirror `resolve_theme_stance` computes, so the gates evaluate the stanced\nreality in both schemes, and `caps` apply over everything, as they render\nlast.",
+					"moduleComment": "The numeric resolution core under `theme_validate.ts` and `theme_check.ts`:\nit turns the CSS strings themes author back into numbers so the lint and\nthe gates can run. `create_theme_resolver` exposes it for UI lookups; the\nrest of the module's exports are the internals the two modules share.\n\nIts contract:\n\n- Knob-tier defaults come from the numeric-twin constants in `ramps.ts`, not\n  from parsing `default_variables`; intent and neutral hues default to their\n  palette-letter binding (`hue_accent` → `hue_a`, `hue_neutral` → `hue_f`,\n  and so on) so they follow an overridden letter.\n- Theme-authored values parse as a CSS `<number>` literal, an exact\n  `var(--x)` reference (recursed through the same effective-value merge,\n  with a visited-set cycle guard), a scaled reference\n  `calc(var(--x) * <number>)`. Anything else is unresolvable and is\n  recorded with its variable, value, and reason. A derived color is\n  clamped as the browser clamps the `oklch()` it renders.\n- The private ramp intermediates (`_palette_lightness_NN` and its\n  shade/text twins, `_chroma_shape_NN`, `_palette_chroma_NN`,\n  `_shade_ground_chroma`, and the contrast intermediates `_contrast`,\n  `_contrast_ground_end`, `_shade_lightness_00`, `_shade_lightness_curve`,\n  and `_text_lightness_curve`) always derive through the `ramps.ts`\n  formulas from the resolved knobs - the `Theme` schema keeps a theme from\n  setting one, and the resolver ignores one in `variables` as the renderer\n  drops it. The ground end takes its slot from the theme's stance, or the\n  requested scheme for a dual-scheme theme - the information its mirrored\n  slot carries. The exception is a `_palette_chroma_NN` from the derived\n  data beside the theme, in the machine-emitted capped form\n  (`min(calc(...), <number>)`): a compiled cap passed as `caps`, or a\n  stanced theme's mirror re-slotting the defaults' caps, whose cap the\n  resolver reads. The OS preference input `_contrast_preference` resolves\n  to 0: the gates measure the theme, and the preference only ever raises\n  the effective contrast past it.\n- The color variables the gates read (the palette, intent, shade, and text\n  stops, `text_max`, and `border_color_30`) derive from those numbers\n  unless the theme authors one directly. An authored color is measured as\n  written when it is an `oklch(L C H)` literal with plain numeric\n  components (an optional `/ alpha` composites where the gate measures a\n  color over its ground) or an exact `var()` reference to another color\n  the gates evaluate; any other form is recorded in `unchecked` and its\n  gates are skipped. The gates look every color up by variable name, so\n  this covers exactly the variables a gate reads and no others.\n- The gates measure what the default styles paint, so they follow the\n  roles those styles paint through: `text_color`, `text_disabled`,\n  `link_color`, `link_color_selected`, `border_color`, and `outline_color`\n  (`theme_gate_role_names`). Each aliases a stop or another role by\n  default, read from the shipped declarations - except `border_color`,\n  whose default mixes two shade stops by the effective contrast\n  (`render_border_color_css`), which the gates evaluate as derived - and a\n  theme that repoints one is gated at the color it points to - same rule,\n  same `unchecked` fallback. One table of\n  pairing gates names each role beside its grounds and threshold, so the\n  gate definitions and the following can't drift.\n- Outside the gates: the micro-surface colors no pairing models\n  (`caret_color`, `selection_color`, `scrollbar_thumb_color`,\n  `backdrop_color`), the `input_fill` behind field text, the `panel_fill`\n  behind a panel's text, a\n  `background_image` painted over the `shade_00` ground, and the stronger\n  button tints of the hover, focus, and pressed states.\n\nThe effective-value merge mirrors the renderer's cascade-layer semantics\n(`theme.ts` `render_theme_style`): light = `theme.base`; dark =\n`theme.dark ?? theme.base`, falling back to the numeric-twin default for\nthe scheme. A single-scheme\nstance (`Theme.scheme`) resolves through the same `compute_scheme_mirror`\nmirror `resolve_theme_stance` computes, so the gates evaluate the stanced\nreality in both schemes, and `caps` apply over everything, as they render\nlast.",
 					"dependencies": [
 						"ramps.ts",
 						"theme.ts",
@@ -46618,7 +46725,7 @@
 								{
 									"name": "high",
 									"kind": "variable",
-									"docComment": "Strengthens the ground-to-text range and separates the surfaces.",
+									"docComment": "Strengthens the ground-to-text range and the control borders.",
 									"typeSignature": "{ name: string; variables: { name: string; dark?: string | undefined; base?: string | undefined; summary?: string | undefined; }[]; summary?: string | undefined; scheme?: \"light\" | \"dark\" | \"dual\" | undefined; }",
 									"typeInfo": {
 										"kind": "reference",
@@ -46685,9 +46792,9 @@
 						{
 							"name": "high_contrast_theme",
 							"kind": "variable",
-							"docComment": "Strengthened contrast: the theme it composes over, with its `--contrast`\nknob at `HIGH_CONTRAST`. The ground stretches halfway from its own\nlightness toward the contrast end, the bent shade curve separates the\nsurfaces - which carries the control borders past 3:1 against the ground\nwithout pinning a border color - and the bent text curve pulls the text\nstops toward the end. The theme's ground, cast, palette, and roles stay\nits own, only strengthened: the ground moves only part way to the end, so\na tinted ground keeps part of its tint.\n\nPicking the modifier sets `contrast` to `HIGH_CONTRAST`, as picking a\ntheme sets its knobs: composition is last-wins, so it replaces a theme's\nown `contrast`, a higher one included. The OS `prefers-contrast: more`\npreference reaches the same derivation through its own input\n(`--_contrast_preference`, set in `style.css`), and the effective contrast\nis the larger of the two - so the preference renders what the modifier\ndoes over a theme at the default, only ever raises a theme's own contrast,\nand no theme can silence it.",
+							"docComment": "Strengthened contrast: the theme it composes over, with its `--contrast`\nknob at `HIGH_CONTRAST`. The ground stretches halfway from its own\nlightness toward the contrast end, the shade curve bends a little so the\nsurfaces stay close to it, the default control border moves toward a\nstronger shade stop - past 3:1 against the ground without pinning a border\ncolor - and the bent text curve pulls the text stops toward the end. The\ntheme's ground, cast, palette, and roles stay its own, only strengthened:\nthe ground moves only part way to the end, so a tinted ground keeps part of\nits tint.\n\nPicking the modifier sets `contrast` to `HIGH_CONTRAST`, as picking a\ntheme sets its knobs: composition is last-wins, so it replaces a theme's\nown `contrast`, a higher one included. The OS `prefers-contrast: more`\npreference reaches the same derivation through its own input\n(`--_contrast_preference`, set in `style.css`), and the effective contrast\nis the larger of the two - so the preference renders what the modifier\ndoes over a theme at the default, only ever raises a theme's own contrast,\nand no theme can silence it.",
 							"typeSignature": "{ name: string; variables: { name: string; dark?: string | undefined; base?: string | undefined; summary?: string | undefined; }[]; summary?: string | undefined; scheme?: \"light\" | \"dark\" | \"dual\" | undefined; }",
-							"sourceLine": 23,
+							"sourceLine": 24,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "Theme"
@@ -49213,7 +49320,7 @@
 							"kind": "variable",
 							"docComment": "These are implicitly the variables for the `base` theme.\nSee also the empty `variables` array of the `base` theme in `themes/base.ts`.",
 							"typeSignature": "{ name: string; dark?: string | undefined; base?: string | undefined; summary?: string | undefined; }[]",
-							"sourceLine": 278,
+							"sourceLine": 279,
 							"typeInfo": {
 								"kind": "array",
 								"element": {

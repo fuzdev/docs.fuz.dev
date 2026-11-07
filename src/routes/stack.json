@@ -70,7 +70,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_css",
-			"version": "0.76.1",
+			"version": "0.76.2",
 			"path": "fuz_css",
 			"description": "semantic-first CSS framework and design system: styled HTML defaults, themes derived from a few knobs, and utility classes generated from what you use",
 			"glyph": "🪴",
@@ -78,7 +78,7 @@
 			"published": true,
 			"module_count": 63,
 			"exported_module_count": 59,
-			"export_count": 458,
+			"export_count": 463,
 			"peer_dependencies": [
 				"@fuzdev/fuz_schema",
 				"@fuzdev/fuz_util"

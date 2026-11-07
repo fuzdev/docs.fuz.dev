@@ -1,0 +1,1 @@
+import{E as e,M as t,N as n,ft as r,pt as i,tt as a}from"./CKoNd_8S.js";import{a as o,i as s,n as c,o as l,r as u,s as d}from"./Ci1pAjAo.js";function f(f,p){i(p,!0),d(c,()=>p.base),d(o,()=>p.components),d(l,()=>p.elements),d(u,()=>p.code),d(s,()=>p.codeblock);var m=n(),h=a(m);e(h,()=>p.children),t(f,m),r()}export{f as t};

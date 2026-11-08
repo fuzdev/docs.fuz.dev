@@ -132,7 +132,7 @@ resolves them.
 - **Route-tree generation** — docs.fuz.dev's `skill_docs.gen.ts` discovers skills
   and returns a manifest, per-skill data files, and `+page.svelte` routes from
   one gen.
-- **Task registry** — a `src/gro_tasks.gen.ts` exporting gro's
-  `gen_task_registry` writes the `ProjectTasks` augmentation that types
+- **Task registry** — a `src/gro_tasks.gen.ts` exporting the `gen` that gro's
+  `gen_task_registry(create_fs_paths(fs))` factory returns writes the `ProjectTasks` augmentation that types
   `invoke_task` for the project's own tasks (./task-patterns.md); svelte-docinfo
   is the exemplar.

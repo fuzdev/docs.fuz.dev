@@ -111,7 +111,8 @@ apart — each is the language-appropriate shape.)
 Files: `deps.ts` (interfaces) + `deps_defaults.ts` (production defaults) + a
 test-side mock module (fuz_css: `src/test/fixtures/mock_deps.ts`) — fuz_css's
 `FsDeps` / `default_fs_deps` / `create_mock_fs_deps` (over the cache and the
-default `style.css` load) is the cleanest exemplar.
+default `style.css` load) is the cleanest exemplar; `FsSearchDeps` covers the
+dev pre-scan's file search.
 
 **Legacy `*Operations` (fuz_repos)**: `GitOperations` /
 `default_git_operations` / `create_mock_git_ops` under a `GitopsOperations`
@@ -131,7 +132,8 @@ Stable, trivially implemented by any runtime.
 options-object params, uniform `Result` returns with typed errors** — reads,
 writes, and queries all return `Result<{value: T}, FsError>`; no mixing
 `string | null` reads with `Result` writes. Implementations route thrown errors
-through `fs_classify_error(error)` (`@fuzdev/fuz_util/fs.ts`), mapping
+through a small local classifier (fuz_css's `deps_defaults.ts`
+`fs_classify_error`), mapping
 ENOENT/EACCES/EPERM/EEXIST to a discriminated `kind`:
 
 ```typescript
@@ -140,7 +142,6 @@ type FsError =
 	| { kind: 'permission_denied'; message: string }
 	| { kind: 'already_exists'; message: string }
 	| { kind: 'io_error'; message: string };
-// FsJsonError adds {kind: 'invalid_json'} — where missing vs corrupt must be distinguishable
 
 if (!r.ok && r.kind !== 'not_found') throw new Error(r.message); // rm -f semantics
 ```

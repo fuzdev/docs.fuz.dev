@@ -6,7 +6,7 @@
 		"svelte": "5.57.2",
 		"sveltekit": "3.0.1",
 		"typescript": "6.0.3",
-		"gro": "0.226.0",
+		"gro": "0.227.0",
 		"vitest": "5.0.3"
 	},
 	"libraries": [
@@ -19,9 +19,9 @@
 			"glyph": "🦕",
 			"homepage_url": "https://util.fuz.dev/",
 			"published": true,
-			"module_count": 58,
-			"exported_module_count": 58,
-			"export_count": 453,
+			"module_count": 57,
+			"exported_module_count": 57,
+			"export_count": 446,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema"
@@ -40,15 +40,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/gro",
-			"version": "0.226.0",
+			"version": "0.227.0",
 			"path": "gro",
 			"description": "security-first JS runtime and toolchain on V8",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
-			"module_count": 73,
-			"exported_module_count": 50,
-			"export_count": 355,
+			"module_count": 78,
+			"exported_module_count": 55,
+			"export_count": 382,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",
@@ -78,7 +78,7 @@
 			"published": true,
 			"module_count": 63,
 			"exported_module_count": 59,
-			"export_count": 464,
+			"export_count": 468,
 			"peer_dependencies": [
 				"@fuzdev/fuz_schema",
 				"@fuzdev/fuz_util"
@@ -97,7 +97,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/mdz",
-			"version": "0.8.0",
+			"version": "0.8.1",
 			"path": "mdz",
 			"description": "a strict markdown dialect built for streaming, web authoring, docs, and untrusted content",
 			"glyph": "📝",
@@ -105,7 +105,7 @@
 			"published": true,
 			"module_count": 28,
 			"exported_module_count": 19,
-			"export_count": 120,
+			"export_count": 121,
 			"peer_dependencies": [
 				"@fuzdev/fuz_util"
 			],
@@ -277,7 +277,7 @@
 			"published": true,
 			"module_count": 49,
 			"exported_module_count": 43,
-			"export_count": 236,
+			"export_count": 237,
 			"peer_dependencies": [
 				"@fuzdev/fuz_css",
 				"@fuzdev/fuz_schema",

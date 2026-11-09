@@ -70,7 +70,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_css",
-			"version": "0.80.0",
+			"version": "0.81.0",
 			"path": "fuz_css",
 			"description": "semantic-first CSS framework and design system: styled HTML defaults, themes derived from a few knobs, and utility classes generated from what you use",
 			"glyph": "🪴",

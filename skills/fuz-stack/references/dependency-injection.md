@@ -263,10 +263,13 @@ individual `vi.fn()` for call tracking is fine.
 
 ## Scope — where the pattern doesn't apply
 
-- **Floor-tier utility modules** (fuz_util's `fs.ts`, `process.ts`, `git.ts`)
-  export bare functions over the platform plus the shared contracts (`FsError`,
-  `Result`) that `*Deps` interfaces are typed against — they're what default
-  implementations are _made of_.
+- **Host modules and floor-tier contracts** — gro's host modules
+  (`@fuzdev/gro/fs.ts`, `@fuzdev/gro/process.ts`, `@fuzdev/gro/spawn.ts`) export
+  the platform surface, imported by composition roots, and `FsError`
+  (`@fuzdev/gro/fs_error.ts`) and fuz_util's `Result` are the shared contracts
+  `*Deps` interfaces are typed against — they're what default implementations are
+  _made of_. Library code over them takes a handle as a parameter, as
+  `@fuzdev/gro/git.ts` takes a `git` `SpawnProgram` a root builds.
 - **Pure libraries** (parsers, renderers, formatters) have no side effects; a
   rendering/plugin seam (mdz's component injection) is composition, not DI.
 - **Narrow duck-typed interfaces** matching multiple existing objects

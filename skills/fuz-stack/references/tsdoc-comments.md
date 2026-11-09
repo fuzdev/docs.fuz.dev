@@ -235,10 +235,10 @@ earns its line when the mutation isn't obvious from the name:
 
 - **Cross-field invalidation** — `Logger.clear_colors_override` also
   invalidates four cached prefix strings
-- **Cross-resource side effects** — `attach_error_handler` also subscribes to
-  `process.uncaughtException`
-- **Implicit tracking** — `ProcessRegistry.spawn` also records the child for
-  `despawn_all`
+- **Cross-resource side effects** — a setup call that also subscribes to a
+  process-wide event
+- **Implicit tracking** — a `spawn` that also records the child so a later call
+  can stop it
 - **Mutation behind a query-shaped name** — `LruMap.get` reorders the recency list
 
 Ranking when warranted: `@mutates this.field - description` >

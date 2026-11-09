@@ -294,12 +294,11 @@ tracking/in-memory/throwing shapes: ./dependency-injection.md. Factories are
 `create_mock_*(overrides: Partial<T> = {})` spreading overrides last.
 
 **`vi.mock()` is a legacy escape hatch**, not a pattern — it exists where code
-predates DI (gro's build/deploy/cache tests) or a call site has no seam
-(fuz_repos's `operations_defaults.test.ts` mocks fuz_util's `spawn_out` to
-test the default operations themselves, which shell out with no seam below
-them). fuz_app module-mocks its auth `query_*` cluster from several
-middleware tests; the bearer-auth subset is factored into
-`testing/middleware.ts` as table-driven
+predates DI (gro's build/deploy/cache tests) or a call site has no seam. Where
+a seam exists, use it: fuz_repos's `operations_defaults.test.ts` passes the
+default operations a fake gro `SpawnProgram` instead. fuz_app module-mocks its
+auth `query_*` cluster from several middleware tests; the bearer-auth subset
+is factored into `testing/middleware.ts` as table-driven
 `describe_bearer_auth_cases` / `create_bearer_auth_test_app` — a documented
 carve-out. Treat any _new_ `vi.mock` as a signal to add a deps seam. When
 unavoidable: gro uses `vi.clearAllMocks()` in `beforeEach` +

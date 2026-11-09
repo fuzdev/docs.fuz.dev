@@ -157,7 +157,7 @@ const email1: Email = 'foo@bar.com'; // ok — plain string assigns
 const email2: Email = 'foo' as Address; // error — Address !== Email
 ```
 
-Real uses: `PathId` (`path.ts`), `GitOrigin`/`GitBranch` (`git.ts`, `flavor`
+Real uses: `PathId` (`path.ts`), `GitOrigin`/`GitBranch` (gro's `git.ts`, `flavor`
 schemas), color channel types (`colors.ts`), `Url` (`url.ts`, paired with a
 fuz_schema schema of the same name), `BlogPostId` (fuz_blog), `InputPath`
 (gro), `ReorderableId` (zzz). `Branded<TValue, TName>` (requires a cast, also

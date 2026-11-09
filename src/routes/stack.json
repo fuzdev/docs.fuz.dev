@@ -153,7 +153,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_app",
-			"version": "0.174.0",
+			"version": "0.175.0",
 			"path": "fuz_app",
 			"description": "fullstack app library",
 			"glyph": "🗝",
@@ -238,7 +238,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_blog",
-			"version": "0.40.0",
+			"version": "0.41.0",
 			"path": "fuz_blog",
 			"description": "blog software from scratch with SvelteKit",
 			"glyph": "🖊️",
@@ -269,7 +269,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_repos",
-			"version": "0.93.0",
+			"version": "0.94.0",
 			"path": "fuz_repos",
 			"description": "a tool for managing many repos",
 			"glyph": "🪄",

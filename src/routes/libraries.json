@@ -79867,7 +79867,7 @@
 	"fuz_app": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_app",
-			"version": "0.174.0",
+			"version": "0.175.0",
 			"description": "fullstack app library",
 			"glyph": "🗝",
 			"logo": "logo.svg",
@@ -214367,7 +214367,7 @@
 	"fuz_blog": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_blog",
-			"version": "0.40.0",
+			"version": "0.41.0",
 			"description": "blog software from scratch with SvelteKit",
 			"glyph": "🖊️",
 			"logo": "logo.svg",
@@ -217077,7 +217077,7 @@
 	"fuz_repos": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_repos",
-			"version": "0.93.0",
+			"version": "0.94.0",
 			"description": "a tool for managing many repos",
 			"glyph": "🪄",
 			"logo": "logo.svg",

@@ -97,7 +97,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/mdz",
-			"version": "0.8.1",
+			"version": "0.9.0",
 			"path": "mdz",
 			"description": "a strict markdown dialect built for streaming, web authoring, docs, and untrusted content",
 			"glyph": "📝",
@@ -186,7 +186,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_code",
-			"version": "0.58.0",
+			"version": "0.59.0",
 			"path": "fuz_code",
 			"description": "syntax styler for TypeScript, Svelte, Markdown, and more",
 			"glyph": "🎨",

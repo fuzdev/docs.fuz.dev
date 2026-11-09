@@ -6,14 +6,14 @@
 		"svelte": "5.57.2",
 		"sveltekit": "3.0.1",
 		"typescript": "6.0.3",
-		"gro": "0.227.0",
+		"gro": "0.229.0",
 		"vitest": "5.0.3"
 	},
 	"libraries": [
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_util",
-			"version": "0.80.0",
+			"version": "0.81.0",
 			"path": "fuz_util",
 			"description": "utility belt for JS",
 			"glyph": "🦕",
@@ -40,15 +40,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/gro",
-			"version": "0.227.0",
+			"version": "0.229.0",
 			"path": "gro",
 			"description": "security-first JS runtime and toolchain on V8",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
-			"module_count": 78,
-			"exported_module_count": 55,
-			"export_count": 382,
+			"module_count": 84,
+			"exported_module_count": 61,
+			"export_count": 441,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",
@@ -70,7 +70,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_css",
-			"version": "0.79.0",
+			"version": "0.80.0",
 			"path": "fuz_css",
 			"description": "semantic-first CSS framework and design system: styled HTML defaults, themes derived from a few knobs, and utility classes generated from what you use",
 			"glyph": "🪴",
@@ -269,7 +269,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_repos",
-			"version": "0.92.0",
+			"version": "0.93.0",
 			"path": "fuz_repos",
 			"description": "a tool for managing many repos",
 			"glyph": "🪄",

@@ -1,7 +1,9 @@
 import type { Gen } from '@fuzdev/gro';
 import { fs } from '@fuzdev/gro/fs.ts';
 import { create_fs_paths } from '@fuzdev/gro/fs_paths.ts';
+import { GIT_LOCAL_PASS_ENV, to_git_program } from '@fuzdev/gro/git.ts';
 import { library_load_from_repo } from '@fuzdev/gro/library_load.ts';
+import { spawn } from '@fuzdev/gro/spawn.ts';
 import type { LibraryJson } from '@fuzdev/fuz_util/library_json.ts';
 import { package_is_published } from '@fuzdev/fuz_util/package_helpers.ts';
 import { pkg_json_from_package_json } from '@fuzdev/fuz_util/pkg_json.ts';
@@ -73,6 +75,7 @@ export const gen: Gen = async ({ origin_path, log }) => {
 
 	// TypeScript packages
 	const fs_paths = create_fs_paths(fs);
+	const git = to_git_program(spawn, { pass_env: GIT_LOCAL_PASS_ENV });
 	for (const repo of TYPESCRIPT_REPOS) {
 		const repo_dir = join(DEV_DIR, repo.path);
 		const pkg_json = read_json(join(repo_dir, 'package.json'));
@@ -80,7 +83,7 @@ export const gen: Gen = async ({ origin_path, log }) => {
 
 		let library_json = null;
 		try {
-			({ library_json } = await library_load_from_repo(fs_paths, repo_dir, { log }));
+			({ library_json } = await library_load_from_repo({ fs_paths, git }, repo_dir, { log }));
 		} catch (err) {
 			log.warn(`skipping ${repo.name}: failed to analyze ${repo_dir}`, err);
 		}

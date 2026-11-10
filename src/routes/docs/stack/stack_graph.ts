@@ -175,6 +175,11 @@ export const stack_edges: Array<StackEdge> = [
 		kind: 'dev'
 	},
 	{
+		from: 'blake3',
+		to: 'gro',
+		kind: 'dev'
+	},
+	{
 		from: 'docs.fuz.dev',
 		to: 'blake3',
 		kind: 'dev'

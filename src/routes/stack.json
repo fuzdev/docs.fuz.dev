@@ -40,15 +40,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/gro",
-			"version": "0.230.0",
+			"version": "0.233.0",
 			"path": "gro",
 			"description": "security-first JS runtime and toolchain on V8",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
-			"module_count": 86,
-			"exported_module_count": 63,
-			"export_count": 449,
+			"module_count": 87,
+			"exported_module_count": 64,
+			"export_count": 453,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",
@@ -153,7 +153,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_app",
-			"version": "0.175.0",
+			"version": "0.176.0",
 			"path": "fuz_app",
 			"description": "fullstack app library",
 			"glyph": "🗝",
@@ -161,7 +161,7 @@
 			"published": true,
 			"module_count": 412,
 			"exported_module_count": 409,
-			"export_count": 2659,
+			"export_count": 2671,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_css",
@@ -393,12 +393,13 @@
 			"exported_module_count": 36,
 			"export_count": 333,
 			"peer_dependencies": [],
-			"runtime_dependencies": [],
+			"runtime_dependencies": [
+				"@fuzdev/fuz_schema"
+			],
 			"dev_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_code",
 				"@fuzdev/fuz_css",
-				"@fuzdev/fuz_schema",
 				"@fuzdev/fuz_ui",
 				"@fuzdev/fuz_util",
 				"@fuzdev/gro",
@@ -537,6 +538,8 @@
 			"@fuzdev/fuz_ui",
 			"@fuzdev/fuz_util"
 		],
-		"svelte-docinfo": []
+		"svelte-docinfo": [
+			"@fuzdev/fuz_schema"
+		]
 	}
 }

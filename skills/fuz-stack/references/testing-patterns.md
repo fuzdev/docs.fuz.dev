@@ -156,8 +156,9 @@ export default defineConfig({
 
 fuz_app additionally gates a `cross_backend_*` project family behind
 `FUZ_TEST_CROSS_BACKEND=1` — per-runtime projects (`rust_spine_stub`,
-`ts_node`, `ts_deno`, `ts_bun`) running `src/test/cross_backend/*.cross.test.ts`,
-plus `parity` and `security` projects with their own global setups.
+`ts_node`, `ts_bun`) running `src/test/cross_backend/*.cross.test.ts`,
+plus dual-spawn projects (`parity`, `security`, `timing`, `ts_differential`)
+with their own global setups.
 
 Because `isolate: false` shares module state, avoid `vi.mock()` in
 `.db.test.ts`; if unavoidable, `vi.restoreAllMocks()` (not `clearAllMocks`)
@@ -348,7 +349,7 @@ config (`session_options`, `create_route_specs`, `rpc_endpoints`, `bootstrap`)
 and skip groups whose config is absent. The roster is fuz_app inventory
 (`src/lib/testing/CLAUDE.md`).
 
-**WebSocket round-trip tests** run **in-process** — no HTTP server, no Deno —
+**WebSocket round-trip tests** run **in-process** — no HTTP server, no spawned backend —
 driving the real dispatcher and transport so per-action auth, validation,
 `ctx.notify`, and broadcast fan-out run through real code. DB-backed WS tests
 use `.db.test.ts` and the shared default factory; non-DB WS tests build a fresh

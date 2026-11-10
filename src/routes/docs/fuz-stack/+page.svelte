@@ -81,7 +81,8 @@
 				<tr>
 					<td>Build</td>
 					<td>
-						<code>gro check</code> runs typecheck + test + gen --check + format --check + lint
+						<code>gro check</code> runs typecheck + test (when vitest is declared) + gen --check +
+						format --check + lint
 					</td>
 				</tr>
 			</tbody>

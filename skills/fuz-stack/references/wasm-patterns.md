@@ -170,11 +170,15 @@ the instructions: `--enable-bulk-memory` and
 
 ### TypeScript entry points
 
-A hand-written TS entry re-exports wasm-pack's `pkg/` and layers stream
-helpers. Per-runtime entries differ in init: Node uses sync init
-(`readFileSync` + `initSync`), browsers async `init()` with exports guarded
-against uninitialized WASM. wasm-bindgen's camelCase is bridged to the
-ecosystem convention (`initSync` re-exported as `init_sync`).
+blake3 builds each wasm-bindgen crate (`blake3_wasm`, `blake3_wasm_small`)
+once with wasm-pack's `--target web` into `crates/<crate>/pkg`, the one JS
+target for npm and every runtime. The build
+generates the published entries into `pkg/`, which differ in init: `index.js`
+(Node) initializes at import (`readFileSync` + `initSync`), and `browser.js`
+(the default) needs `await init()` and guards every export against
+uninitialized WASM. Each crate's hand-written `mod.ts` `initSync`s the same
+`pkg/` for the repo's tests and benchmarks. wasm-bindgen's camelCase is
+bridged to the ecosystem convention (`initSync` re-exported as `init_sync`).
 
 - Stream helpers batch at 16 KB to reduce boundary crossings
   (`await hash_stream(file.stream())`, built via
@@ -188,9 +192,10 @@ ecosystem convention (`initSync` re-exported as `init_sync`).
   awaited in browsers) and
   `hash_blake3(data: Uint8Array | BufferSource | string): string` returning
   64-char hex (fuz_app's `Blake3Hash` schema validates this shape).
-- **`deno compile`**: wasm-bindgen's deno target loads WASM via `fetch()`,
-  which `deno compile` can't do. The build patches the generated JS to
-  `Deno.readFileSync` and creates a `_bg.js` stub for module resolution.
+- Tooling is `npm run` scripts whose TypeScript steps are gro tasks
+  (`npm run build:wasm`, and `npm run release`, a dry run that publishes with
+  `-- --wetrun`), with `npm run check` as the gate. The JS tests run on
+  `node --test`, and Deno and Bun run only their benchmark rows.
 
 ## Multiple Binding Crates (tsv)
 
@@ -262,8 +267,8 @@ and bundle-size-sensitive contexts. The wasmtime component is the exception —
 ## Testing
 
 blake3 keeps **zero Rust unit tests by design**: correctness is asserted in
-TypeScript (WASM vs native test vectors) and via a Wasmtime compare binary;
-`cargo test --workspace` is a compile gate. tsv's binding tests run per
+TypeScript on `node --test` (WASM vs native test vectors) and via a Wasmtime
+compare binary; `cargo test --workspace` is a compile gate. tsv's binding tests run per
 runtime (Deno, N-API, npm) plus in-crate FFI/N-API round-trips
 (./rust-patterns.md §Testing).
 

@@ -42,8 +42,8 @@ justification); `///` for public API, `//` for implementation notes.
    Patterns).
 6. Dev automation: spine-consuming workspaces add an `xtask` crate wrapping
    `check-release` (./rust-spine.md); mixed TS + Rust repos put the one
-   local check for both halves in `xtask` (gro's `cargo xtask check`). tsv and
-   blake3 still drive builds through Deno tasks; new repos don't add Deno.
+   local check for both halves in `xtask` (gro's `cargo xtask check`). tsv drives
+   builds through Deno tasks; new repos don't add Deno.
 7. Deps from ./rust-dependencies.md, shared via `[workspace.dependencies]`.
 
 ## Lints

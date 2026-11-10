@@ -163,7 +163,7 @@ hides it from docs and tomes, so it's wrong when external consumers use it.
 Gro is installed globally — run `gro` directly, never `npx gro`.
 
 ```bash
-gro check        # CI command: typecheck + test + gen --check + format --check + lint
+gro check        # CI command: typecheck + test (when vitest is declared) + gen --check + format --check + lint
 gro test         # vitest
 gro typecheck    # faster iteration
 gro gen          # run *.gen.ts generators (gro gen --check verifies no drift)
@@ -179,6 +179,12 @@ gro run file.ts  # execute TS; everything after the path goes to the script
 gro task         # list project tasks under src/
 gro task src/lib/foo.task.ts  # run a project task by path
 ```
+
+`gro check` runs its test step when vitest is a direct dependency (`dependencies`
+or `devDependencies`) or args are forwarded to the tests. When vitest isn't
+declared, `gro test` fails, and `gro check` skips the step if no test files
+exist and fails naming them if some do. `--no-test` skips the step without
+looking.
 
 `SKIP_EXAMPLE_TESTS=1 gro test` skips slow example tests in repos that
 support the flag. A name means only a builtin; a project task runs by path,
@@ -308,8 +314,11 @@ import small interfaces directly, never `Pick<Composite>`.
   (fuz_css is the exemplar). fuz_repos's `*Operations` is legacy — never
   author new ones.
 - **Composition roots** — `AppDeps` (fuz_app server, assembled once in a
-  two-step root); `RuntimeDeps` (env/fs/commands, platform factories for
-  Node/mock; the Deno factory stays until the Deno exit, no new Deno code).
+  two-step root); `RuntimeDeps` (env/fs/fetch/process, platform factories
+  for Node, which Bun runs too, and mock). A helper that spawns takes each
+  program as a `Program` handle (or a `ProgramFactory`) the root builds, on a
+  gro task root with `spawn.find`/`spawn.program` and an explicit `pass_env`,
+  never a general run-this-command capability.
   On the gro runtime a task's import graph is the composition root: host-module
   imports declare capabilities and grants are inferred from them; no global
   carries authority (`fetch` is `net.fetch`, an import), nothing is ambient.

@@ -6,9 +6,9 @@ description: Injectable *Deps interfaces, mock factories, composition patterns
 
 Typed interfaces for side effects, real implementations as defaults, accepted
 as params, tested with plain object mocks. No `vi.mock` — dependencies flow
-through signatures, so code is runtime-independent (Node / the gro runtime /
-tests; Deno is sunsetting and gets no new code) via parameterization, not
-magic mocks or ambient singletons.
+through signatures, so code is runtime-independent (Node, Bun, the gro
+runtime, tests) via parameterization, not magic mocks or ambient singletons.
+New code doesn't target Deno.
 
 The same discipline is what the gro runtime (`fgro`, experimental) builds
 on: there, importing a host module (gro's own fs, process, spawn) is the
@@ -36,19 +36,33 @@ export interface FsReadDeps {
 	read_text_file: (path: string) => Promise<string>;
 	readdir: (path: string) => Promise<Array<string>>;
 }
-export interface CommandDeps {
-	run_command: (cmd: string, args: Array<string>, options?: RunCommandOptions) => Promise<CommandResult>;
+// One program, resolved and given its environment by whoever made it
+export interface Program {
+	out: (args: ReadonlyArray<string>) => Promise<ProgramOutput>; // {kind, code | signal, stdout, stderr}
 }
+export type ProgramFactory = (env: Readonly<Record<string, string>>) => Program | null;
 
 // Functions declare exactly what they need via intersection
 export const setup_env_file = async (
 	deps: FsReadDeps & FsWriteDeps,
 	env_path: string,
-	example_path: string
-): Promise<void> => { /* ... */ };
+	example_path: string,
+	options?: SetupEnvOptions
+): Promise<SetupEnvResult> => { /* ... */ };
+
+// A helper that spawns takes the programs it runs
+export interface PostgresProgramDeps {
+	createdb: ProgramFactory;
+	dropdb: ProgramFactory;
+}
+export const reset_database = async (
+	deps: PostgresProgramDeps & Pick<FsReadDeps, 'stat'> & FsRemoveDeps,
+	database_url: string,
+	options?: ResetDatabaseOptions
+): Promise<ResetDbResult> => { /* ... */ };
 
 // App-level composite — wiring layer only
-export interface RuntimeDeps extends EnvDeps, FsReadDeps, FsWriteDeps, CommandDeps, LogDeps /* … */ {
+export interface RuntimeDeps extends EnvDeps, FsReadDeps, FsWriteDeps, ProcessProbeDeps, LogDeps /* … */ {
 	env_all: () => Record<string, string>;
 	readonly args: ReadonlyArray<string>;
 	cwd: () => string;
@@ -56,9 +70,20 @@ export interface RuntimeDeps extends EnvDeps, FsReadDeps, FsWriteDeps, CommandDe
 ```
 
 Platform factories build the composite once at the entry point —
-`create_deno_runtime(args)`, `create_node_runtime(args)`,
-`create_mock_runtime(args)`. There is no browser factory: browser/component
-DI is Svelte context (§Scope).
+`create_node_runtime(args)` (Node and Bun) and `create_mock_runtime(args)`.
+There is no browser factory: browser/component DI is Svelte context (§Scope).
+
+**Programs are handles, not a command capability.** `RuntimeDeps` runs no
+program: a helper that spawns takes each program it runs as a `Program`, or a
+`ProgramFactory` when the program's environment depends on run-time input (a
+password read from a URL), built at the composition root that decides which
+binary runs and what it sees. On a gro task root that's `spawn.find` /
+`spawn.program` with an explicit `pass_env`
+(`{createdb: (env) => spawn.find('createdb', {pass_env: ['PG*'], env})}`,
+over the unnarrowed root, since a narrowed `spawn` refuses `env`); a
+gro `SpawnProgram` satisfies `Program` with no import of gro, and `null` is a
+missing tool to report. Process liveness is `ProcessProbeDeps.probe_process`
+(signal 0), not a spawned `kill -0`.
 
 **Why not `Pick<GodType>`**: `Pick<AppRuntime, 'env_get'>` forces every
 consumer to import the god type. Standalone interfaces are shareable across
@@ -124,7 +149,7 @@ code.
 
 ## Layer Contracts (L0 platform vs L1 domain)
 
-**L0 — platform shims** (`FsReadDeps`, `CommandDeps`): mirror the platform —
+**L0 — platform shims** (`FsReadDeps`, `ProcessProbeDeps`): mirror the platform —
 **positional params, throw on error**, like `Deno.readTextFile` / `node:fs`.
 Stable, trivially implemented by any runtime.
 
@@ -157,7 +182,7 @@ interface; don't leak platform types (node's `SpawnOptions`) through an L1 shape
 - **Optional with default** for public API surfaces:
   `const { deps = default_fs_deps } = options;`.
 - **Narrow intersection** — exactly the capabilities used:
-  `deps: CommandDeps & FsReadDeps & FsRemoveDeps`.
+  `deps: PostgresProgramDeps & Pick<FsReadDeps, 'stat'> & FsRemoveDeps`.
 - **Ad-hoc per-function deps** — a unique combination gets its own co-located
   interface; use when sharing would add coupling without reuse:
 
@@ -227,8 +252,12 @@ individual `vi.fn()` for call tracking is fine.
   `AppDeps` bundle) for tests where incidental access is fine.
 - **Observable runtime mock** — `create_mock_runtime(args)` returns full
   `RuntimeDeps` with observable state (`mock_env`, `mock_fs`, `exit_calls`,
-  `command_calls`); `exit` throws `MockExitError`. Stub factories accept the
-  same narrow `*Deps` contracts production uses — never `Pick<GodType>`.
+  `mock_processes`); `exit` throws `MockExitError`. Programs fake separately:
+  `create_mock_program(respond)` records `calls`,
+  `create_mock_program_factory(program)` records `envs`, and
+  `mock_program_exit(code, stderr, stdout)` builds an output. Stub factories
+  accept the same narrow `*Deps` contracts production uses — never
+  `Pick<GodType>`.
 
 ## Traps
 

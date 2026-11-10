@@ -27,7 +27,7 @@ implementations live in their own repos.
 ## Gro commands
 
 ```bash
-gro check      # typecheck, test, gen --check, format --check, lint (run before committing)
+gro check      # typecheck, test (vitest is a devDependency), gen --check, format --check, lint (run before committing)
 gro typecheck  # typecheck only (faster iteration)
 gro test       # run tests with vitest
 gro gen        # regenerate .gen files (skill docs)

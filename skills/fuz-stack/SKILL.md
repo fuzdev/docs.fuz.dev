@@ -37,7 +37,7 @@ Each package's `CLAUDE.md` is authoritative for what it actually uses.
 | Package        | Description                                                                     |
 | -------------- | ------------------------------------------------------------------------------- |
 | `fuz_util`     | foundation utilities (zero deps) — hashing, async, schemas, types               |
-| `fuz_schema`   | performance-focused Standard Schema library — all but app data, `Flavored`      |
+| `fuz_schema`   | performance-focused schema library — all but app data, `Flavored`               |
 | `gro`          | security-first JS runtime and toolchain on V8 (today a Node task runner)        |
 | `fuz_css`      | semantic-first CSS framework and design system                                  |
 | `mdz`          | minimal markdown dialect — parser, renderer, Svelte preprocessor                |

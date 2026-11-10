@@ -62,6 +62,10 @@ and fuz_app re-use them rather than defining their own.
 2. **PascalCase, schema and type share the name** — no `-Schema` suffix, no
    snake_case: `const Foo = s.object({...}); type Foo = s.Infer<typeof Foo>;`.
    (`FactHashSchema` is the exception, as its type `FactHash` lives in fuz_util.)
+   The suffix is the library's: its own types are `ObjectSchema<T>`,
+   `ArraySchema<T>`, `StringSchema`, and so on, and a consumer writes
+   `FooSchema` only to name the *type of* an exported schema (§Exported
+   Schemas).
 3. **`meta(schema, {description})`** for descriptions and other metadata —
    §Metadata.
 4. **`parse` returns a result, `parse_or_throw` throws** — §Validation at
@@ -163,6 +167,45 @@ the registry; every field has a default (instantiation from partial JSON), and
 the `Cell` base class is generic over the schema
 (`abstract class Cell<TSchema extends AnySchema>`).
 
+## Exported Schemas
+
+A package whose `dist` ships schemas emits their types into its declarations.
+Every factory returns a type named for it over what it was given
+(`s.ObjectSchema<{...entries}>`, `s.ArraySchema<...>`,
+`s.VariantSchema<'kind', [...]>`), so a declaration prints names, not the
+output and input written out. What still repeats is an unannotated schema held
+by another, entries and all, so a schema other schemas hold gets its type named
+once:
+
+```typescript
+const UserEntries = {
+	/** A doc comment on an entry is the field's doc in the inferred types. */
+	name: s.string,
+	age: s.optional(s.number)
+};
+export interface UserSchema extends s.ObjectSchema<typeof UserEntries> {}
+export const User: UserSchema = s.object(UserEntries);
+export type User = s.Infer<typeof User>;
+```
+
+- A `variant` over named options needs no annotation: it prints
+  `s.VariantSchema<'kind', readonly [UserSchema, BotSchema]>`.
+- Where tools should print the output by name too (errors, hovers, generated
+  docs), make it an interface: `export interface User extends
+  s.SchemaStrictObjectOutput<typeof UserEntries> {}`, with a written-out union
+  for a variant's output.
+- A type written for shared entries is a `type` alias: an interface has no
+  index signature and is not a `SchemaEntries`.
+- A `pipe`'s output is computed by its steps and is still written out; name a
+  heavy exported one with `interface FooSchema extends s.PipeSchema<Output,
+  typeof First> {}`.
+- **Keep the floor at the version built against.** A `dist` built against a
+  fuz_schema that names a type prints that name, and over an older install
+  `skipLibCheck` reads the missing name as `any` with no error. A package whose
+  `dist` prints fuz_schema's types raises its range's floor whenever it
+  upgrades. fuz_schema's own rule: before 1.0 a minor is a break, a type
+  change that stops code compiling included, and a patch never is.
+
 ## Refinements, Formats, and Transforms
 
 `pipe(schema, ...steps)` runs steps in order and **stops at the first
@@ -198,7 +241,9 @@ reports at a field, like Zod's `refine` with `path`), `transform(fn)`,
 `unknown`, `literal(v)`, `one_of([...])` (an enum), `void`; containers
 `array`, `record(value)` (string keys, not validated), `object_with_rest(entries, rest)` (Zod's
 `catchall`), `union`, `variant(key, options)`, `lazy(() => schema)` for
-recursion (type the recursive schema as `s.Schema<T>`).
+recursion (type the recursive schema as `s.Schema<T>`, or `s.Schema<T, TInput>`
+where it holds a default: the annotation drops `kind`, `def`, and the input
+type).
 
 - **No input, no output** — `s.literal(null)` for HTTP input with no body
   (`input: s.literal(null)` in route specs); `s.void` for an action spec with
@@ -290,7 +335,12 @@ Issues are `{kind, expected, received, path, message}` and never hold the
 failed value, so they're safe to log; `path` keys come from the input, so
 treat them as untrusted text. Format one with `format_issue` (`path: expected
 X, received Y`); `get_issue_value(issue, input)` reads the value back when
-needed.
+needed, and `format_issue_with_value(issue, input)` writes a failed string,
+number, or boolean in place of its type (`received "funtion"`), for a caller
+that still holds the input and may show it. A parse reports at most a hundred
+issues; a `SchemaError` thrown by `parse_or_throw` lists ten and says how many
+more failed. Recognize one across two installed copies by `error.name ===
+'SchemaError'` and `error.issues`: `instanceof` is per copy.
 
 ## Quick Reference
 

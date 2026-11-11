@@ -56,7 +56,7 @@ don't rewrite `` `../some-other-repo/x.ts` `` into module form.
 
 ## 3. Code-shaped non-paths (backticks)
 
-CLI commands (`gro check`, `deno task scry`), top-level project files
+CLI commands (`gro check`, `npm run scry`), top-level project files
 (`package.json`, `gitops.config.ts`), system/config identifiers (`~/.fuz/`,
 `~/.mg/config.json`).
 

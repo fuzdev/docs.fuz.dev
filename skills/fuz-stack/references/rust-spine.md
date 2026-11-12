@@ -379,9 +379,11 @@ and never hand-rolls it:
 
 It refuses a forbidden crate (`fuz_testing`, `fuz_audit`) on a normal or
 build edge of any local package outside `testing_*` and `dev_only`, a
-violation of the built-in
-library layering rules (which crates a storage or OS leaf must never reach),
-and a `test_*` feature enabled on a release edge. Exit `0` clean, `65` a
+violation of the built-in library layering rules (which crates a storage or
+OS leaf must never reach), a `test_*` feature enabled on a release edge, and
+a crate whose re-declared `[lints]` tables have drifted from the workspace's
+(a dropped lint, a changed level, `unsafe_code` below `deny`, or a
+crate-root lift of it). Exit `0` clean, `65` a
 policy violation, `69` / `70` a tooling failure. The output lists the
 subjects it checked, so a renamed crate shows up instead of passing
 silently.

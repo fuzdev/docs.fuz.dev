@@ -58,11 +58,14 @@ numbers. This reference owns what the binding crates have in common.
   with abort; the FFI's catch is live only in the unwind corpus build.
 - **A C ABI passes buffers as pointer plus length**, and the caller frees
   each exactly once through an exported free (`tsv_free(ptr, len)`). Errors
-  come back as JSON objects.
+  come back as JSON objects. State the contract in full: an input is
+  readable for its length and not mutated during the call (validate UTF-8
+  and report it, don't demand it), and out-params are valid for writes,
+  aligned, and don't overlap the input.
 - **`unsafe` follows the boundary-crate rule** (see ./rust-patterns.md
-  §Lints): the full workspace lint table re-declared, and for a new crate
-  `unsafe_code = "deny"` with per-site lifts and `// SAFETY:` comments
-  (`tsv_napi` is at `deny`; `tsv_ffi` predates the rule at `"allow"`).
+  §Lints): the full workspace lint table re-declared, `unsafe_code = "deny"`
+  with per-item lifts and `// SAFETY:` comments (tsv's `tsv_ffi` and
+  `tsv_napi`, held to the workspace table by a test).
   `"allow"` stays right where a macro emits the unsafe (wit-bindgen). A
   binding that emits none keeps `[lints] workspace = true`.
 - **The generated module is not the public API.** A hand-written entry wraps

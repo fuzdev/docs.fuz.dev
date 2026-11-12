@@ -129,17 +129,21 @@ unwrap_used = "warn"
   workspace's block, not this one.
 - **A crate-level `[lints]` table replaces the workspace's whole**; Cargo
   can't override one lint. A crate that must differ re-declares every lint
-  and changes only what it must. Hold the copy to the workspace's with a
-  test (gro's xtask `lints.rs` compares the tables), because a hand-kept
-  copy silently drops lints.
-- **`unsafe` lives in a boundary crate that wraps it in a safe API**, never
-  in one function of a general crate. The shape for a new one is gro's
-  (`gro_sys`, `gro_v8`): `unsafe_code = "deny"`, lifted per function with
-  `#[expect(unsafe_code)]`, `clippy::undocumented_unsafe_blocks = "warn"`,
-  and `// SAFETY:` on every block. Older boundary crates (`fuz_pty`,
-  `tsv_ffi`) set `"allow"` crate-wide. `"allow"` stays right only where a
-  macro emits the `unsafe` and can't carry the attribute (a wit-bindgen
-  component).
+  and changes only what it must. A hand-kept copy silently drops lints, so a
+  check holds it to the workspace's: `cargo xtask check-release` does in
+  every workspace on the shared audit (see ./rust-spine.md §check-release),
+  and gro and tsv each carry a test.
+- **`unsafe` lives in a boundary crate that wraps it in a safe API**
+  (`gro_sys`, `gro_v8`, `fuz_pty`, `tsv_ffi`), never in one function of a
+  general crate. That crate sets `unsafe_code = "deny"`, lifts it per item
+  with `#[expect(unsafe_code, reason = "…")]` and never at the crate root,
+  adds `clippy::undocumented_unsafe_blocks = "warn"`, and writes `// SAFETY:`
+  on every block. The comment states the invariant that makes this block
+  sound (who owns the descriptor, why the pointer is valid and aligned, why
+  nothing aliases it), not that a caller upholds a contract; an `unsafe fn`
+  states its full contract under `# Safety`. Crate-wide `"allow"` is left
+  only for a crate whose `unsafe` is emitted by a macro that can't carry the
+  attribute (a wit-bindgen component), and the audit refuses it.
 - `Arc::clone(&x)`, not `x.clone()` (`clone_on_ref_ptr`), so the site reads
   as a refcount bump.
 - Nursery's `doc_link_code` rejects ``[`Arc`]`<`[`T`]`>``. Wrap the whole
@@ -214,11 +218,11 @@ fn main() -> ExitCode {
   raw, control sequences included.
 - **`.hint()` is advice for fixing the error, defined once beside the
   variant** and forwarded by every wrapper, so one wording appears on every
-  path. It returns `Option<HintMessage>` (`fuz_sys::cli`; `Static` or
-  `Owned`, a `Cow<'static, str>` by another name), or `Option<&'static str>`
-  on a leaf with only constant hints, which the first aggregator lifts with
-  `.map(HintMessage::Static)`. No `""` for "no hint". Add `.hint()` only
-  where some binary renders it.
+  path. A leaf whose hints are all constants returns `Option<&'static str>`;
+  once one interpolates, `Option<Cow<'static, str>>`, with an aggregator
+  lifting its leaves by `.map(Cow::Borrowed)`. A print site passes
+  `e.hint().as_deref()`. No `""` for "no hint". Add `.hint()` only where some
+  binary renders it.
 - **`.exit_code()` belongs to the binary's top-level error**, since the
   codes are part of the binary's interface (§CLI). A library with exactly one
   binary consumer may carry it beside the variants (`zap_core::Error`).

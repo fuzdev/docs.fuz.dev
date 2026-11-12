@@ -1,211 +1,172 @@
 ---
-description: Approved external crate allowlist for Rust workspaces
+description: Approved external crate allowlist, manifest conventions, isolate-by-crate
 ---
 
 # Approved Rust Dependencies
 
-The allowlist of external crates for the canonical Rust workspaces — CLIs and
-daemons, WASM/FFI/N-API bindings, web servers and spine crates
-(different-paradigm repos like games and protocol research carry their own).
-Prefer these; reach outside only with explicit approval (§Adding a
-dependency). For an external project adopting fuz-stack the list is advisory;
-the approval process applies inside the ecosystem.
+The external crates the ecosystem's Rust workspaces may use. Prefer std, then
+this list; anything else needs approval (§Adding a dependency). Inside the
+ecosystem the list is a gate; for an external adopter it's advice.
 
-Source of truth is each repo's root `[workspace.dependencies]`; this doc mirrors
-their **union** (any one workspace carries a small subset as direct deps — zap
-the fewest, the forge more — the rest transitive via the spine). Path-dep crates
-(including cross-repo deps onto the spine) aren't dependencies in this sense. A
-few approved crates are pinned at the member-crate level rather than the root:
-`js-sys`, `wasm-bindgen`, `talc` (wasm32-only) in `tsv_wasm`; `similar`,
-`tempfile` in `tsv_debug`; `libc` in `zzz_server`; `http-body-util` as a
-`fuz_http` dev-dependency. Verify against the workspaces periodically.
+It mirrors the union of the workspaces' manifests, and each workspace takes a
+small subset. When this list and a manifest disagree, the manifest is the fact
+and this list gets fixed. Path deps on a sibling checkout aren't dependencies
+in this sense. Workspaces of another paradigm (a game, a native window host)
+keep their own lists.
 
-## Serialization & encoding
+## The list
 
-| Crate        | Purpose                                                 |
-| ------------ | ------------------------------------------------------- |
-| `serde`      | Derive-based serialization framework                    |
-| `serde_json` | JSON (tsv enables `preserve_order` + `float_roundtrip`) |
-| `postcard`   | Compact binary serialization (the fuzd UDS wire)        |
-| `toml`       | TOML parsing — parse-only features (`std`, `serde`, `parse`), for reading declarative registries |
-| `hex`        | Hex encoding/decoding                                   |
-| `base64`     | URL-safe base64 (tokens)                                |
+A crate with no note does the obvious thing. A note is a rule for using it.
 
-## Errors & core utilities
+**Serialization** — `serde`, `serde_json`, `hex`, `base64`
 
-| Crate                                                      | Purpose                                                                                                |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `thiserror`                                                | Derive typed error enums                                                                               |
-| `futures` / `futures-util`                                 | Async combinators, `BoxFuture`                                                                         |
-| `time`                                                     | Date/time                                                                                              |
-| `uuid`                                                     | UUIDs                                                                                                  |
-| `semver`                                                   | Semantic-version parsing                                                                               |
-| `url`                                                      | URL parsing                                                                                            |
-| `tempfile`                                                 | Temp files/dirs (`NamedTempFile`)                                                                      |
-| `smallvec`                                                 | Stack-allocated small vectors                                                                          |
-| `bytes`                                                    | Cheaply-cloneable byte buffers (Postgres wire params in `fuz_db`)                                      |
-| `bumpalo`                                                  | Arena allocation (`collections` feature) — tsv's core AST strategy; see ./rust-perf.md §Arena allocation |
-| `phf`                                                      | Compile-time perfect-hash maps/sets (keyword tables)                                                   |
-| `unicode-ident` / `unicode-segmentation` / `unicode-width` | Unicode text handling                                                                                  |
-| `similar`                                                  | Text diffing (tsv's debug/compare tooling)                                                             |
+- `serde_json` takes `float_roundtrip` wherever a float crosses a TS ↔ Rust
+  wire, so a decimal parses to the same double `JSON.parse` gives. Features
+  that change its behavior (`preserve_order`, `arbitrary_precision`) never go
+  in a crate published as a library: features unify, so they would change
+  every consumer's `serde_json`.
+- `postcard` — compact binary records (fuzd's socket wire, pglet's storage)
+- `toml` — parse-only features (`std`, `serde`, `parse`), for reading a
+  declarative registry
+- `zmij` — shortest round-trip `f64` formatting, called directly so a shipped
+  crate needn't link `serde_json` for it (tsv)
 
-## Async runtime & networking
+**Core** — `thiserror`, `time`, `uuid`, `semver`, `url`, `tempfile`,
+`futures` / `futures-util` (`BoxFuture`, sinks and streams), `bytes`,
+`smallvec`, `similar` (text diffs in debug tooling), `unicode-ident` /
+`unicode-segmentation` / `unicode-width`
 
-| Crate                  | Purpose                                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `tokio`                | Async runtime                                                                                                                    |
-| `tokio-util`           | `CancellationToken`, `TaskTracker`                                                                                               |
-| `axum`                 | HTTP server (on hyper)                                                                                                           |
-| `axum-extra`           | axum extras (typed headers, cookies)                                                                                             |
-| `hyper` / `hyper-util` | HTTP/1 connection serving under axum — used directly where the server owns connection lifecycles (cutting stalled ones at shutdown) |
-| `tower` / `tower-http` | Service middleware                                                                                                               |
-| `tungstenite`          | WebSocket protocol types — `fuz_realtime` downcasts axum's `tungstenite::Error` (pinned to axum's version)                       |
-| `reqwest`              | HTTP client                                                                                                                      |
-| `rustls`               | TLS backend for `reqwest` — installs the `ring` crypto provider as the process default (`reqwest` is wired `rustls-no-provider`) |
+- `bumpalo` (`collections`) — arena allocation, safe API only
+  (see ./rust-perf.md §Arenas)
+- `phf` — compile-time perfect-hash keyword tables
+- `crc32fast` — storage page checksums (pglet)
+- `lru` — bounds a map an attacker can grow by enumerating keys (the
+  `RateLimiter`) or a cache
 
-## Concurrency
+**Async and network** — `tokio`, `tokio-util` (`CancellationToken`,
+`TaskTracker`), `axum`, `tower` / `tower-http`, `reqwest`
 
-| Crate         | Purpose                                                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `parking_lot` | `Mutex`/`RwLock` for sync-only critical sections (no poisoning). See ./rust-perf.md §Async lock hygiene for when to use `tokio::sync` or `std::sync` instead. |
-| `lru`         | Bounded LRU cache backing the `RateLimiter` — caps tracked keys so a key-enumeration attacker can't grow the map unboundedly (twin of fuz_app's `LruMap`).  |
+- `hyper` / `hyper-util` — named directly only where a server owns its accept
+  loop (`fuz_http::serve_with_shutdown`); kept on the versions axum links
+- `tungstenite` — named directly only to downcast axum's WebSocket read
+  errors, so it must track the version axum links
+- `rustls` — `reqwest` is wired `rustls-no-provider` and the process installs
+  the `ring` provider (`fuz_sys::tls`, or a module of its own in a workspace
+  without it). No `aws-lc-sys`, so binaries cross-compile to static musl.
+- `socket2` — sockets of a family std can't make, in tests
+- `http-body-util` — reading response bodies in a server's tests
 
-## Database
+**Concurrency** — `parking_lot` (see ./rust-perf.md §Locks)
 
-| Crate               | Purpose                 |
-| ------------------- | ----------------------- |
-| `tokio-postgres`    | Async PostgreSQL client |
-| `deadpool-postgres` | Connection pooling      |
+**Database** — `tokio-postgres`, `deadpool-postgres`
 
-## Crypto & auth
+**Crypto** — `blake3`, `argon2`, `ed25519-dalek`, `hmac` / `sha2`, `subtle`
+(constant-time compare), `zeroize`
 
-| Crate           | Purpose                                                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `blake3`        | Content-addressed hashing, token hashing                                                                                                                           |
-| `ring`          | SHA-512 digests (zap's content detection) — already in the graph as the `rustls` crypto provider, so no new C or build deps; used through one wrapper module, so the backend swaps to `sha2` in one place |
-| `argon2`        | Password hashing                                                                                                                                                   |
-| `ed25519-dalek` | Ed25519 signing/verification (artifact + release signatures)                                                                                                       |
-| `hmac` / `sha2` | HMAC-SHA256 (signed cookies, keyring)                                                                                                                              |
-| `subtle`        | Constant-time comparison                                                                                                                                           |
-| `zeroize`       | Secure memory clearing                                                                                                                                             |
-| `getrandom`     | OS randomness — the spine standard for new randomness (`fuz_sys::rand`, `fuz_auth`, `fuz_storage`)                                                                 |
-| `rand`          | RNG — pinned `0.8` in `[workspace.dependencies]`, consumed only by `fuz_sign` (the `ed25519-dalek` → `rand_core 0.6` constraint). Prefer `getrandom` for new code. |
+- `getrandom` — the source for new randomness
+- `rand` — pinned to the line `ed25519-dalek` requires, for key generation
+  only; new code uses `getrandom`
+- `ring` — SHA-512 where it's already in the graph as the TLS provider (zap),
+  behind one wrapper module so the backend swaps in one place
 
-## Filesystem & OS
+**Filesystem and OS** — `tar`, `flate2`, `notify`
 
-| Crate    | Purpose                                                     |
-| -------- | ----------------------------------------------------------- |
-| `nix`    | POSIX syscalls (advisory `flock`, permissions)              |
-| `libc`   | Raw libc FFI for syscalls/types beyond `nix` (PTY, signals) |
-| `rustix` | Safe syscalls `nix` lacks, where `unsafe` is forbidden (zap's xattr reads for POSIX ACLs) |
-| `notify` | Filesystem watching (inotify / FSEvents)                    |
-| `landlock` | Linux Landlock sandboxing through a safe API (gro's confined eval: read-only roots, no write/exec, no TCP) |
-| `seccompiler` | Linux seccomp-bpf filters (the no-exec / no-socket backstop in fuzi and gro's confined eval) |
-| `tar`    | tar archives                                                |
-| `flate2` | gzip / deflate                                              |
+- `nix` — the default for syscall wrappers (`flock`, permissions, signals)
+- `rustix` — safe syscalls `nix` lacks (xattr reads, `tcflush`)
+- `libc` — raw types and constants neither wraps (PTY, syscall numbers for a
+  filter). Don't use two of the three for one job.
+- `landlock`, `seccompiler` — the kernel box (see ./rust-patterns.md
+  §Kernel box)
+- `flate2` takes the `zlib-rs` backend, set at the workspace so one backend
+  compiles
 
-## CLI
+**CLI** — `argh` (see ./rust-patterns.md §CLI)
 
-| Crate  | Purpose                                                                                             |
-| ------ | --------------------------------------------------------------------------------------------------- |
-| `argh` | Derive arg parser, size-optimized. See ./rust-patterns.md §CLI Patterns for the parser-tier guidance. |
+**Logging** — `tracing`; `tracing-subscriber` and `tracing-appender` are
+consumed through `fuz_sys::logging`, not per consumer (a test may take
+`tracing-subscriber` as a dev-dep to capture logs)
 
-## Logging
+**WASM, N-API, and JS hosts** (see ./wasm-patterns.md)
 
-| Crate                | Purpose                                                                            |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `tracing`            | Structured logging                                                                 |
-| `tracing-subscriber` | Subscriber / formatting layers (consumed via `fuz_sys::logging`, not per-consumer) |
-| `tracing-appender`   | Non-blocking file appender                                                         |
+- `wasm-bindgen`, `js-sys` — pin `wasm-bindgen` exactly where wasm-pack's CLI
+  must match it
+- `wasm-bindgen-futures`, `web-sys` — a browser binding's default-off OPFS
+  feature (pglet), outside the shipped artifact
+- `console_error_panic_hook` — panic messages to the console, an optional
+  dep of a browser binding
+- `talc` — WASM global allocator, a wasm32-only target dep. Use the
+  `WasmGrowAndExtend` source; the default one fragments a long-lived
+  instance's linear memory.
+- `napi` / `napi-derive` / `napi-build` — the native Node and Bun path
+- `wit-bindgen`; `wasmtime` / `wasmtime-wasi` (host side, tests and benches)
+- `deno_core` / `deno_web` / `deno_webidl`, `v8` — gro's runtime. `v8` is
+  pinned to the exact version `deno_core` re-exports, so V8 builds once.
+- `tsv_ts` — tsv's TypeScript parser as a published crate, for an in-process
+  type strip
 
-## WASM, N-API & host
+**Images** — `libvips`, bindings to the system library (the engine `sharp`
+wraps), for a server's upload pipeline; approved, and in no public workspace
+yet. It links dynamically (`libvips-dev`
+to build, the runtime package on the host), so it's not for a static-musl
+binary. Its `unsafe` stays inside the binding. Chosen over the pure-Rust
+`image` stack, which needs the same C codecs for WebP and AVIF across more
+crates.
 
-| Crate                                 | Purpose                                                                                                                                                                                                                                                                                       |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wasm-bindgen`                        | JS interop (wasm-pack)                                                                                                                                                                                                                                                                        |
-| `js-sys`                              | engine-native `JSON.parse` for the wasm-bindgen parse exports (tsv)                                                                                                                                                                                                                           |
-| `talc`                                | WASM global allocator (`tsv_wasm`, wasm32-only target dep) — pure-Rust `no_std` replacement for std's dlmalloc; use the `WasmGrowAndExtend` source (the default claim source fragments a long-lived instance's linear memory). Pulls `lock_api` + `allocator-api2` into the wasm32 graph only |
-| `napi` / `napi-derive` / `napi-build` | N-API bindings — the native Node.js/Bun npm path (`tsv_napi`); `napi-build` is the matching build dep                                                                                                                                                                                         |
-| `wit-bindgen`                         | Component-model bindings                                                                                                                                                                                                                                                                      |
-| `wasmtime` / `wasmtime-wasi`          | WASM host (tests, benches)                                                                                                                                                                                                                                                                    |
-| `deno_core` / `deno_web` / `deno_webidl` | V8 embedding plus the web-platform APIs for gro's `fgro` runtime (pulls `rusty_v8`) |
-| `tsv_ts` | tsv's TypeScript parser, a git-pinned crate: `fgro` strips TypeScript in process |
+**Bench and fuzz only** — `rusqlite` (`bundled`) as a pinned comparison
+baseline, confined to a bench crate; `libfuzzer-sys` in a standalone
+`cargo fuzz` workspace
 
-See ./wasm-patterns.md for the binding-layer conventions these support.
+## Manifest conventions
 
-## Image processing
+- **Declare at `[workspace.dependencies]`** so members share one version. A
+  member-level declaration is for a dep only one crate takes: a
+  target-specific or dev-only dep, or one of a single binding, bench, or
+  test-harness crate.
+- **A non-obvious dep carries a comment** saying why it's there and what
+  holds its version (`tungstenite` tracking axum; `v8` tracking `deno_core`).
+  "Already in the graph" is the strongest argument for a direct dep, so say
+  it when it's true.
+- **`default-features = false` plus an explicit list** for a dep with a heavy
+  optional tree (`reqwest`, `nix`, `notify`, `rustls`, `hyper`).
+- **`multiple_crate_versions = "allow"`** tolerates duplicate majors the
+  graph forces. It's not a license for drift you control. tsv keeps the lint
+  on and holds its graph to one version of each crate.
 
-**`libvips`** — Rust bindings to the system **libvips** image library (the
-same engine `sharp` wraps) for decode/resize/encode (JPEG/PNG/WebP/AVIF),
-EXIF-orientation baking, metadata stripping, and thumbnailing. For
-spine-consumer servers with an image-upload pipeline (e.g. `visiones_server`).
+## Isolate by crate, not by feature
 
-- Dynamically links system libvips: `libvips42t64` (Debian 13) at runtime +
-  `libvips-dev` at build time — not a static-musl crate; on a Debian host
-  `zap` installs it via apt.
-- The `unsafe` FFI lives inside the binding — consumer crates keep
-  `unsafe_code = "forbid"`.
-- Chosen over the pure-Rust `image`/`ravif`/`image-webp` stack because
-  matching `sharp`'s formats there pulls in `libwebp` + `dav1d` C deps
-  anyway, across more crates and with worse parity.
+A capability that must stay **out of** a binary for security or trust reasons
+is a separate crate, never a cargo feature. Features unify across a
+`--workspace` build, so an unrelated crate can turn a feature-gated signing
+or test-hasher path on. A crate is in the graph or it isn't, and that's
+auditable.
 
-## Crate-vs-feature isolation (supply-chain)
+- `fuz_sign` is a crate, not a `fuz_crypto` feature: `fuz` links
+  verification only and can never sign.
+- `fuz_testing` is a crate, not a `fuz_auth` feature: the weakened test
+  Argon2 parameters can't reach a production binary.
+- `cargo xtask check-release` (`fuz_audit`) enforces it: no shipped binary
+  links a forbidden crate (see ./rust-spine.md §check-release).
 
-When a capability must be kept **out of** a binary's dependency graph for
-security or trust reasons, make it a **separate crate, not a cargo feature**.
-Cargo unifies features across a `--workspace` build, so a feature-gated
-"signing" or "test-hasher" path can be silently turned on by an unrelated
-crate's feature selection. A separate crate can't be: it is either in the
-dependency graph or it is not, and that is auditable.
+The one sanctioned feature seam is a `test_*` feature enabled only from
+`[dev-dependencies]`, for a seam inside the production path itself
+(see ./rust-patterns.md §Test injection). The audit refuses one on a normal or
+build edge.
 
-- `fuz_sign` is a separate crate (not a `fuz_crypto` feature) so signing stays
-  out of the `fuz` consumer graph — `fuz` links verification-only `fuz_crypto`.
-- `fuz_testing` is a separate crate (not a `fuz_auth` feature) so the weakened
-  test Argon2 params can't reach a production binary.
-- Enforcement is the `cargo xtask check-release` dep-graph audit (`fuz_audit`),
-  which fails if any non-`testing_`-prefixed binary transitively links a
-  forbidden crate; workspaces add extra forbids via `AuditRules`. See
-  ./rust-spine.md §xtask & check-release for the entry points and the
-  built-in layering rules.
+## Extract a shared leaf on the third copy
 
-## Shared low-level leaves
-
-**When a utility gets reimplemented a third time, extract it as a spine-free
-leaf** — no tokio-server/HTTP/DB surface, so spine-free repos can link it too.
-`fuz_eval` (the sandboxed config-eval harness, lifted out of zap) is the proven
-case, now shared down to its JS wrapper ingredients. `fuz_sys::periodic` is the
-second: the loop every spine server's sweeps run on, a default-off feature of
-the existing leaf rather than a new crate (./rust-patterns.md §Async Runtime &
-Graceful Shutdown).
-
-Known-duplicated, not yet extracted: a minimal dotenv (`KEY=VALUE`) parser
-(three copies), an env-isolating subprocess harness with a capped output drain
-(one, awaiting a second consumer), the atomic-write/flock dance for consumers
-that can't link `fuz_sys::fs::write_atomic` (./rust-patterns.md §Transactional
-state files), and an exponential-backoff retry combinator (none generic today —
-the only backoff is supervision-shaped, not request-retry).
-
-Signal-crate convention: prefer `nix` for syscall wrappers; reserve `libc` for
-types/constants `nix` doesn't expose (PTY). Avoid pulling both into one
-workspace for the same job.
-
-## Feature hygiene
-
-- **`default-features = false` + explicit feature lists** for deps with heavy
-  optional trees — `reqwest`, `nix`, `notify`, `futures-util` all do. Opt into
-  exactly what the workspace uses; don't inherit a crate's default surface.
-- **`multiple_crate_versions = "allow"`** (./rust-patterns.md §Lints) tolerates
-  _forced_ duplicate majors from the dep graph — transitive constraints two
-  upstream crates disagree on, unresolvable until one bumps. Not a license to
-  ignore version drift you control.
+A utility reimplemented a third time becomes a spine-free leaf (no HTTP, DB,
+or server surface), so spine-free workspaces can link it too. Prefer a
+default-off feature of an existing leaf (`fuz_sys`'s `periodic`, `capture`,
+`signal`) over a new crate, which needs approval. When reuse is known up
+front, extract on first use.
 
 ## Adding a dependency
 
-Prefer std, then this list. A new crate — third-party **or** a new first-party
-workspace member — needs explicit approval: name, purpose, what it replaces or
-enables, transitive footprint (a new `crates/<name>/` is a build-graph and
-release-surface decision; a module inside an existing crate isn't). Add at
-`[workspace.dependencies]` so members share one version, then record it here.
-Removing an unused dep is pre-authorized: verify nothing references it
-(features and build scripts included), drop it from the workspace and this
-list in the same change.
+A new crate needs explicit approval, whether third-party or a new first-party
+workspace member: name, purpose, what it replaces or enables, transitive
+footprint. "New" means new to the workspace: wiring up a crate already in
+`[workspace.dependencies]` or present in the lockfile is ordinary work.
+Record an approved crate here. Removing an unused dep is pre-authorized:
+check that nothing references it (features and build scripts included), then
+drop it from the manifest and this list in one change. Version bumps are the
+maintainer's.

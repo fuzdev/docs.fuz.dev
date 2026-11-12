@@ -71,22 +71,25 @@ export const skills: Array<SkillMeta> = [
 			{
 				slug: 'rust-dependencies',
 				title: 'Approved Rust Dependencies',
-				description: 'Approved external crate allowlist for Rust workspaces'
+				description: 'Approved external crate allowlist, manifest conventions, isolate-by-crate'
 			},
 			{
 				slug: 'rust-patterns',
-				title: 'Rust Patterns for the Fuz Ecosystem',
-				description: 'Rust lints, errors, DI ladder, idioms, CLI patterns'
+				title: 'Rust Patterns',
+				description:
+					'Rust workspace setup, the gate, lints, errors, type modeling, DI, testing, CLI, system safety'
 			},
 			{
 				slug: 'rust-perf',
-				title: 'Rust Performance Patterns',
-				description: 'Rust perf — profiling, arenas, locks, hot-path idioms, SIMD'
+				title: 'Rust Performance',
+				description:
+					'Rust performance — measuring and gating changes, arenas, hot-path idioms, locks'
 			},
 			{
 				slug: 'rust-spine',
-				title: 'Rust Spine & Consumer Servers',
-				description: 'Spine crate map, consumer servers, env, daemon lifecycle'
+				title: 'Rust Spine and Consumer Servers',
+				description:
+					'Servers on the Rust spine — run_app shape, the server toolkit, env, actions, realtime, check-release'
 			},
 			{
 				slug: 'svelte-patterns',
@@ -112,12 +115,13 @@ export const skills: Array<SkillMeta> = [
 				slug: 'twin-impl',
 				title: 'Twin Implementations (TS ↔ Rust)',
 				description:
-					'TS ↔ Rust twin implementations — convergence, naming parity, wire crates, digests'
+					'TS ↔ Rust twin implementations — naming parity, enforcement, wire shapes, digests'
 			},
 			{
 				slug: 'wasm-patterns',
-				title: 'WASM Patterns',
-				description: 'WASM/N-API build targets — wasm-bindgen, component model, JS interop'
+				title: 'WASM and Native Bindings',
+				description:
+					'Rust binding crates — WASM (wasm-bindgen, component model), N-API, C FFI, npm packaging'
 			}
 		]
 	},

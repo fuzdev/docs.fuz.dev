@@ -107,7 +107,7 @@ Each skill lives in `skills/<skill-name>/` following the
 
 | Skill       | Path                | Purpose                                                                        |
 | ----------- | ------------------- | ------------------------------------------------------------------------------ |
-| `fuz-stack` | `skills/fuz-stack/` | Coding conventions and patterns for `@fuzdev` TypeScript and Svelte 5 projects |
+| `fuz-stack` | `skills/fuz-stack/` | Coding conventions and patterns for `@fuzdev` TypeScript, Svelte 5, and Rust   |
 | `grimoire`  | `skills/grimoire/`  | Grimoire pattern: lore, quests, and arcs for cross-repo coordination           |
 
 ### Skill structure
@@ -127,16 +127,16 @@ skills/
 │   │   ├── mdz.md                     # mdz dialect: grammar surface, component/element registration, rendering seam, autolink, preprocessor
 │   │   ├── npm-dependencies.md        # Approved external npm package allowlist for TS/Svelte repos
 │   │   ├── path-references.md         # Path typography in docs (navigational vs src/lib module vs code-shaped)
-│   │   ├── rust-dependencies.md       # Approved external crate allowlist for Rust workspaces
-│   │   ├── rust-patterns.md           # Rust lints, errors, DI ladder, idioms, CLI patterns (fuz, zap, tsv, blake3)
-│   │   ├── rust-perf.md               # Rust perf: profiling, arenas, locks, hot-path idioms, SIMD, false sharing
-│   │   ├── rust-spine.md              # Spine crate map, consumer servers (run_app), env, daemon lifecycle, check-release
+│   │   ├── rust-dependencies.md       # Approved crate allowlist, manifest conventions, isolate-by-crate
+│   │   ├── rust-patterns.md           # Rust workspace setup, the gate, lints, errors, type modeling, DI, testing, CLI, system safety
+│   │   ├── rust-perf.md               # Rust perf: measuring and gating changes, arenas, hot-path idioms, locks
+│   │   ├── rust-spine.md              # Servers on the Rust spine: run_app shape, server toolkit, env, actions, realtime, check-release
 │   │   ├── svelte-patterns.md         # Svelte 5 runes, contexts, snippets, attachments
 │   │   ├── task-patterns.md           # Gro task system (.task.ts, TaskContext, error handling)
 │   │   ├── testing-patterns.md        # Testing patterns, fixtures, mocks, assertions
 │   │   ├── tsdoc-comments.md          # TSDoc style guide: tags, conventions, drift detection
-│   │   ├── twin-impl.md               # TS ↔ Rust twin implementations: convergence, naming parity, wire crates, digests
-│   │   └── wasm-patterns.md           # WASM/N-API build targets, WIT, wasm-bindgen, component model (blake3, tsv)
+│   │   ├── twin-impl.md               # TS ↔ Rust twin implementations: naming parity, enforcement, wire shapes, digests
+│   │   └── wasm-patterns.md           # Rust binding crates: WASM (wasm-bindgen, component model), N-API, C FFI, npm packaging
 └── grimoire/
     └── SKILL.md                       # Grimoire pattern (lore, quests, arcs)
 ```

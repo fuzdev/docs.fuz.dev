@@ -415,29 +415,62 @@ session.**
 
 ## Rust Crates
 
-The Rust workspaces (`fuz`/`fuzd`, the spine crates consumed by `zzz_server` /
-`fuz_forge_server`, `zap`, the `blake3`/`tsv` bindings) share conventions
-distinct from the TS side: snake_case carries over, but Rust solves with the
-type system and crate graph what TS solves with `*Deps`. These references own
-_conventions_ (adoptable by any workspace); each repo's `CLAUDE.md` owns its
-_inventory_.
+The Rust workspaces (the `fuz` CLI and `fuzd` daemon, the spine crates and
+the servers on them, `zap`, gro's runtime, `tsv`, `pglet`, the binding
+crates) share conventions distinct from the TS side: snake_case carries over,
+but Rust solves with the type system and crate graph what TS solves with
+`*Deps`. The references own _conventions_, each repo's `CLAUDE.md` owns its
+_inventory_, and each crate's rustdoc owns its invariants.
 
-- ./references/rust-patterns.md — new-workspace checklist, lints (and the
-  crate-override re-declare trap), release profile, `thiserror` taxonomy +
-  `.hint()`/`.exit_code()`/classifiers, graceful shutdown + periodic upkeep,
-  the DI escalation ladder, make-impossible-states idioms (zap_types is the
-  reference), CLI/exit codes, shared patterns (sandboxed eval, the one `$HOME`
-  lookup, transactional state files, CAS, bounded reads, type state, secret
-  masking)
-- ./references/db-patterns.md — query modules, `*_COLUMNS` + `col!` decode,
-  drift guard (TS twin in the same doc)
-- ./references/rust-spine.md — spine crate map, `run_app` / `RunAppOptions` /
-  the `testing_*` sibling binary, upkeep tasks, WS/SSE admission, `fuz_http`
-  JSON-RPC envelope, env loading, daemon lifecycle, `check-release` +
-  crate-layering rules
-- ./references/rust-perf.md — profiling, arenas, lock hygiene, `unsafe` escape hatch
-- ./references/rust-dependencies.md — approved crates, crate-vs-feature isolation
-- ./references/twin-impl.md — TS ↔ Rust twin architecture, naming parity, wire
-  crates, serde boundary conformance, digests (algorithm, encoding and
-  compare rule per hash and secret), tool twins (fuz_template's molt)
-- ./references/wasm-patterns.md — WASM, C-FFI, and N-API binding crates
+The essentials, each expanded in ./references/rust-patterns.md:
+
+- **Gate**: `cargo fmt --all --check` (by `-p` package where path deps
+  reach a sibling checkout, which `--all` would reformat),
+  `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`, `cargo doc` with warnings denied, and
+  `cargo xtask check-release` where the workspace has it. `cargo check`
+  skips test targets, and real-Postgres suites are `#[ignore]`: a green
+  `cargo test` hasn't run them.
+- **No `unsafe`** outside a dedicated boundary crate. **No `unwrap`,
+  `expect`, or `panic!`** in production code without
+  `#[expect(clippy::…, reason = "…")]`.
+- **Errors** are `thiserror` enums with the cause in `#[source]`. The binary
+  prints the whole chain and returns an `ExitCode`: by default `2` when the
+  caller must fix something local, `1` otherwise. `fuz`, `fuzi`, `zap`, and
+  `tsv` assign more; read a tool's table before touching its exits.
+- **A shipped CLI** parses with argh through an exit-code-correct wrapper,
+  never `argh::from_env()`. A new command whose effect is hard to undo is a
+  dry run until `--wetrun`.
+- **Closed sets are enums**, input structs deny unknown fields, and
+  impossible states don't compile.
+- **DI** is a concrete `*Options` struct by default (no `*Deps` suffix in
+  Rust), with enum dispatch before trait objects.
+- **Names** follow ordinary Rust style, except identifiers that mirror a TS
+  twin or the wire.
+- **Don't re-roll** a file, process, or home-directory primitive. `fuz_sys`
+  has it, hardened; a workspace that doesn't depend on `fuz_sys` mirrors its
+  shape without adding the dep.
+- **A new dependency or a new crate needs approval.**
+
+Read by task:
+
+- ./references/rust-patterns.md — any Rust work: workspace setup, the gate,
+  lints, release profile, errors, shutdown, type modeling, the DI ladder,
+  testing, CLI and exit codes, system safety (state files, bounded reads,
+  the kernel box, config eval)
+- ./references/rust-spine.md — writing or changing a server on the spine:
+  the `run_app` shape, the server toolkit, the `testing_*` sibling binary,
+  env and browser gates, actions and the JSON-RPC envelope, realtime, a
+  CLI's daemon lifecycle, `check-release`
+- ./references/db-patterns.md — any SQL: query modules, `*_COLUMNS`
+  projections, `col!` decode, the drift guard (TS and Rust)
+- ./references/twin-impl.md — anything with a TS twin, and any hash,
+  token, or secret format: naming parity, the cross-backend harness, wire
+  shapes, serde boundary conformance, digests (algorithm, encoding, and
+  compare rule per hash and secret)
+- ./references/rust-perf.md — a performance claim or hot path: measuring and
+  gating against a base, arenas, hot-path idioms, locks
+- ./references/wasm-patterns.md — WASM, N-API, and C FFI binding crates and
+  their npm packaging
+- ./references/rust-dependencies.md — before adding or choosing a crate: the
+  allowlist, manifest conventions, isolate-by-crate

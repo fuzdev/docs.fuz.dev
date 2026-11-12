@@ -1,415 +1,395 @@
 ---
-description: Spine crate map, consumer servers, env, daemon lifecycle
+description: Servers on the Rust spine — run_app shape, the server toolkit, env, actions, realtime, check-release
 ---
 
-# Rust Spine & Consumer Servers
+# Rust Spine and Consumer Servers
 
-**Applies to**: the fuz workspace's spine crates and the servers consuming
-them — `zzz_server`, `fuz_forge_server`, the other consumer servers, and the
-test-only `testing_spine_stub`.
-The spine is the Rust twin of `fuz_app`'s TS backend (./twin-impl.md).
-Consumers take the spine as **path deps to a sibling checkout of the fuz
-repo** — not git URLs, not vendoring. Shape/idiom conventions:
-./rust-patterns.md; this covers the spine surface and consumer contracts.
-This doc is the deliberate exception to the conventions-not-inventory rule:
-consumer authors need the spine's names in one place, so it carries them.
+**Applies to**: the spine crates in the fuz workspace and the servers built
+on them (`zzz_server`, `fuz_forge_server`, app servers). The spine is the Rust
+twin of `fuz_app`'s TS backend (see ./twin-impl.md). Consumers take it as **path
+deps to a sibling checkout of the fuz repo**; nothing is published.
 
-## Spine layers
+Shape and idiom conventions are in ./rust-patterns.md. This reference is the
+exception to conventions-not-inventory: a server author needs the names they
+call in one place. Behavior, gate orders, and error cases are each crate's
+rustdoc, the source to read before changing a call. A spine signature change
+sweeps every consumer and its test targets (`cargo clippy --all-targets`,
+not `cargo check`).
 
-The crates a consumer server names (the full crate inventory is the fuz
-repo's concern):
+## What a server names
 
-- **System leaves** — `fuz_sys` (fs, file_lock, secure_file, pid, env,
-  limits, cli, `home_dir` + tilde expansion;
-  `logging`/`signal`/`periodic`/`capture`/`argh`/`tls` features), `fuz_home`
-  (the `~/.fuz` layer), `fuz_crypto` (Ed25519 verify, `ContentHash`, canonical
-  JSON), `fuz_eval` (sandboxed one-shot Deno eval). HTTP/DB-free by enforced
-  rule.
-- **HTTP spine** — `fuz_http` (JSON-RPC envelope, IP/origin/host, the CORS
-  simple-request gate, lifecycle),
-  `fuz_db` (pool + migrations, `status`), `fuz_auth` (keyring, sessions,
-  `PasswordHasher`, bootstrap, audit, `spawn_auth_cleanup`), `fuz_actions`
-  (dispatch + `consumer_lifecycle`, `admit_upgrade`), `fuz_realtime` (WS/SSE
-  registries, two-phase registration), `fuz_cell` / `fuz_cell_actions`
-  (storage / verbs), `fuz_fact` / `fuz_fact_serving` (content-addressed
-  bytes + `spawn_orphan_temp_sweeper` / authz'd reads), `fuz_storage`
-  (File/Forge/Ssh/Https).
-- **Tooling** — `fuz_audit` (dep-graph audit), `fuz_testing` (test-only
-  impls, e.g. `TestingArgon2idHasher` — never shippable).
+- `fuz_actions` — `ActionSpec`, dispatch, the RPC and WebSocket routers, and
+  `server`, the toolkit `run_app` composes
+- `fuz_http` — `compose_stack` (the one composition root), `BaseServerEnv`,
+  the JSON-RPC envelope, the origin and host gates, shutdown
+- `fuz_auth` — credentials, sessions, roles, rate limits, audit
+- `fuz_db` — pool, migrations, query helpers, `status`
+- `fuz_realtime` — WebSocket and SSE registries
+- `fuz_cell` / `fuz_cell_actions`, `fuz_fact` / `fuz_fact_serving` — cells
+  and content-addressed bytes, for servers that store them
+- `fuz_sys` — logging init, `cli::report_failure`, the OS primitives
+- `fuz_testing` (the `testing_*` binary and dev-deps only), `fuz_audit` (the
+  xtask only)
 
-Consumers also name `fuz_db_admin`, `fuz_release`, `fuz_sign` (the forge) and
-`fuz_pty` (zzz). The storage-vs-serving splits and the `fuz_sys`/`fuz_home`
-leaf split are enforced by layering rules (§xtask & check-release).
+## A server's shape
 
-## Server lifecycle — `run_app`
+`main` is logging init, swap-point selection, and one call. `run_app` owns the
+lifecycle. `build_router` owns composition. Every piece that isn't the
+consumer's own domain comes from the toolkit. This is a deployed server
+behind a reverse proxy, with `fuz_forge_server` the exemplar; a loopback
+daemon differs at the edges (below).
 
-Each consumer exposes `pub async fn run_app(options: RunAppOptions)` — one
-entry point that both the production `main.rs` and the sibling
-`testing_*_server` binary (`testing_zzzd`, `testing_fuzfd`) call, differing
-only in injected options. The test binary takes its backend options from
-`fuz_testing::testing_backend_options` (`TestingArgon2idHasher` among them)
-and registers `_testing_*` actions; it's what the TS cross-backend suite launches,
-and the `testing_` prefix + `check-release` keep it unshippable.
+```rust
+// main.rs
+let invocation = match server_invocation("appd", StartCommand::Implicit) {
+    Ok(invocation) => invocation,
+    Err(exit) => return exit, // --help → stdout, 0; anything unknown → usage, 2
+};
+let _log_guard = fuz_sys::logging::init_non_blocking_stdout("info");
+if invocation == ServerInvocation::DbStatus {
+    return fuz_db::status::run_db_status_cli(&app_migration_namespaces()).await;
+}
+match run_app(RunAppOptions {
+    spine: SpineRunOptions::production(Arc::new(Argon2idHasher::new()), DEFAULT_ADDR),
+    extra_action_specs_factory: None,
+}).await {
+    Ok(()) => ExitCode::SUCCESS,
+    Err(e) => fuz_sys::cli::report_failure(&e, e.hint(), e.exit_code()),
+}
 
-Swap points — on `SpineBackendOptions` (in `SpineRunOptions`):
-`password_hasher`, `rate_limiters`, `login_ip_rate_limit`,
-`pre_migration_hook` (test-only DB setup), `daemon_token_state` (production
-`None`; the producer is confined to `fuz_testing` by the dep graph),
-`audit_inflight_tracking`; on the consumer's `RunAppOptions`:
-`extra_action_specs_factory` (`_testing_*` actions without `fuz_testing`
-entering the production graph).
+// runtime.rs
+pub async fn run_app(options: RunAppOptions) -> Result<(), StartupError> {
+    let RunAppOptions { spine, extra_action_specs_factory } = options;
+    let SpineRunOptions { backend, default_addr, drain_timeout } = spine;
+    let env = BaseServerEnv::from_process(ENV_OPTIONS)?;
+    let addr = env.bind_addr(default_addr)?;
+    let shutdown = fuz_http::shutdown_token();
+    let BuiltRouter { router, app } =
+        build_router(&env, backend, extra_action_specs_factory).await?;
+    serve_until_shutdown(router, ServeOptions {
+        server_name: SERVER_NAME, addr, drain_timeout, shutdown,
+        connection_closer: app.as_ref().map(|app| app.backend.connection_closer()),
+        upkeep: app.as_ref().map(|app| upkeep_options(app.backend.auth_cleanup_options())),
+    }).await
+}
 
-**`run_app` composes the shared toolkit, `fuz_actions::server`** — the Rust
-twin of fuz_app's `create_app_backend` / `create_app_server`. A consumer
-declares an `AppBackendSpec` const (session cookie name, migration namespaces,
-`expected_schema_json: Option<&'static str>` for `/ready`, and
-`audit_sse: Option<AuditSseSpec>` for the audit stream and its keep-alive
-interval), reads its env through `fuz_http::server_env::BaseServerEnv` (the bind
-pair, `DATABASE_URL`, cookie keys, `FUZ_ALLOWED_ORIGINS`,
-`FUZ_BOOTSTRAP_TOKEN_PATH`, and trusted proxies — loopback when unset, under a
-var the consumer names), and calls `create_app_backend`, which
-boots in one fixed order: READ COMMITTED guard → pre-migration hook →
-migrations → keeper → bootstrap availability → audit listeners (fan-out,
-then revocation) → `/ready`. The returned `AppBackend` builds every route
-state (`account_route_state`, `action_dispatch`, `ws_route_state`, …) and the
-pieces every server mounts: `auth_rest_routes` (an `AuthRestRoutes` of the
-account, bootstrap, and signup states, `signup: None` on a server with no
-signup, mounted by `into_router` under `/api/account`) and
-`audit_stream_router`. A server started without `DATABASE_URL` serves
-`boot_only` instead: the wildcard-origin check, the boot-only warning, and
-the probes alone. A bound the
-core builds is a `SpineBackendOptions` field (`login_ip_rate_limit`, set before
-boot, never patched onto the built core); a per-route-state difference is
-struct-update syntax over a builder's result
-(`AccountRouteState { login_fail_floor_ms: 0, ..backend.account_route_state(gate) }`). The consumer
-still owns its domain App, its action specs, and the final `Router`, then
-hands it to `serve_until_shutdown` with its upkeep handles. Startup failures
-are `StartupError` (`exit_code()`: configuration → 2, else 1; `hint()`),
-rendered by `fuz_sys::cli::report_failure`. A server whose command line is
-the standard `start` / `db-status` / `--help` reads it with
-`server_invocation(binary, start) -> Result<ServerInvocation, ExitCode>`,
-which prints help to stdout (exit 0) and `error: …` plus the usage to stderr
-(`EXIT_USAGE`, 2). One with commands of its own extends the line over
-`parse_server_invocation`, equally strict (an unknown argument exits 2 before
-the env is read). Don't
-re-implement the boot, the route states, serving, or the error policy per
-consumer.
+// router.rs, the body of build_router(env, backend_options, extra_action_specs_factory)
+if env.database_url.is_none() {
+    return Ok(BuiltRouter { router: boot_only(env, &APP_BACKEND_SPEC, SERVER_NAME)?, app: None });
+}
+let BootedAppBackend { backend, ready } = create_app_backend(env, &APP_BACKEND_SPEC, backend_options).await?;
+let app = App::new(backend); // the consumer's domain state, holding the backend
+let backend = &app.backend;
+let gate = backend.auth_gate(); // one gate, cloned into every route state
+let limits = ActionRateLimits::defaults(backend.rate_limiters); // one budget across RPC, WS, auth
+let mut specs = PROTOCOL_ACTION_SPECS();
+specs.extend(backend.auth_spec_set(authorize, role_registry));
+specs.extend(app_action_specs(&app));
+if let Some(factory) = extra_action_specs_factory { // the testing binary's seam
+    specs.extend(factory(Arc::new(app.clone()), backend.extra_action_specs_runtime())?);
+}
+let registry = compile_action_registry(specs)?; // a failed compile refuses the boot
+let dispatch = backend.action_dispatch(gate.clone(), registry, &limits);
+let group = RouteGroup::new(
+    "api",
+    probe_router(SERVER_NAME) // `/health` and `/`
+        .merge(ready.unwrap_or_default())
+        .nest("/api/account", backend.auth_rest_routes(gate.clone()).into_router())
+        .nest("/api", create_rpc_router(dispatch.clone())
+            .merge(register_action_ws(backend.ws_route_state(dispatch, required_roles))))
+        .merge(backend.audit_stream_router(gate)?),
+    BodyCap::Bytes(DEFAULT_BODY_LIMIT_BYTES),
+);
+let router = compose_stack([group], fallback_group(), &backend.stack_options());
+Ok(BuiltRouter { router, app: Some(app) })
+```
 
-The boxed-closure shapes —
-`ExtraActionSpecsFactory<App>` (returning `Result<Vec<ActionSpec>,
-StartupError>`, so a test seam can refuse the boot), `PreMigrationHook<E>`,
-the `ExtraActionSpecsRuntime` POD (`password_hasher` / `keyring` /
-`daemon_token_state` / `session_cookie_name` / `audit_emitter`, all
-`fuz_auth` types) — live in
-`fuz_actions::consumer_lifecycle`, generic over `App` and `E` so `fuz_testing`
-never enters the spine. (Not in `fuz_http::lifecycle`: `fuz_http` deps no spine
-crate, so it can't name `fuz_auth` types.) Each consumer instantiates with a
-one-line concrete alias
-(`pub type ExtraActionSpecsFactory = fuz_actions::ExtraActionSpecsFactory<handlers::App>;`)
-— its own definition, not a re-export shim.
+**The consumer declares**:
 
-`RunAppOptions` embeds the toolkit's `SpineRunOptions` (backend options,
-`default_addr: SocketAddr`, `drain_timeout` — `fuz_http::DEFAULT_DRAIN_TIMEOUT`)
-and adds only what is the consumer's own (zzz's `force_test_actions`). Its
-`testing_*` sibling mints the daemon token (`require_daemon_token_from_env`;
-zzz's `init_daemon_token` against its own dir), boots on
-`fuz_testing::testing_backend_options` (the test hasher, `DisabledForTesting`,
-the daemon token, `startup_reset_hook`, in-flight audit tracking; a suite
-that drives the limiters sets `rate_limiters` by struct update), and mounts
-`testing_reset_specs` (`_testing_reset` + `_testing_drain_effects`, over the
-runtime's daemon-token state). Its reset truncates with
-`truncate_reset_state` over the spine's `fuz_cell::CELL_DROP_TABLES` /
-`fuz_fact::FACT_DROP_TABLES` and its own tables. Each spine const, and
-`fuz_auth::AUTH_INTEGRATION_TRUNCATE_TABLES` (the auth tables the reset
-deletes from), is held to its migration chain's DDL by
-`fuz_testing::migration_created_tables`. The
-`schema_ready` drift test is `assert_expected_schema_fixture`.
+- `AppBackendSpec`, a `const`: session cookie name, `migration_namespaces`,
+  `expected_schema_json` (the committed fixture `/ready` compares against,
+  regenerated and drift-guarded by a test over
+  `fuz_testing::assert_expected_schema_fixture`), `audit_sse`,
+  `browser_gates`
+- `ServerEnvOptions`, a `const` naming its trusted-proxy var, and any env of
+  its own beside `BaseServerEnv`
+- one `const fn` returning its migration chain, shared by the boot,
+  `db-status`, and the schema fixture test so they can't drift. Auth first:
+  the other chains reference `actor`.
+- `RunAppOptions`, embedding `SpineRunOptions` as `spine` and adding only its
+  own seams
+- its `App`, its action specs, its `BuiltRouter`, and an
+  `upkeep_options(auth_cleanup, …) -> UpkeepOptions`
 
-**Every spine rate limiter is built through `RateLimiterMode`** —
-`mode.limiter(fuz_auth::DEFAULT_LOGIN_IP_RATE_LIMIT)`, never
-`Some(Arc::new(RateLimiter::new(…)))` + a conditional null. Production passes
-`Enforced`; the `testing_*` binary gets `DisabledForTesting` from
-`testing_backend_options` — the twin of
-`fuz_app`'s testing wiring (a cross-process suite's failed-login cases would
-otherwise exhaust the per-IP budget). Building through the mode keeps a newly
-wired surface from staying enforced while the rest is disabled, and any process
-that nulls a limiter prints a startup banner (same fail-loud shape as
-`TestingArgon2idHasher`). Consumer-owned limiters that aren't spine surfaces
-(an image-upload cap, say) stay live in both modes.
+**The toolkit owns, and a consumer never re-implements**: the boot
+(`create_app_backend`; its rustdoc has the order), every route state
+(`AppBackend`'s builders), serving and shutdown (`serve_until_shutdown`:
+bind, start upkeep, serve, close live connections, drain within the timeout,
+join upkeep), the standard command line (`start`, `db-status`, `--help`; a
+server with commands of its own extends it over `parse_server_invocation`),
+and the error policy (`StartupError`, whose `exit_code()` is `2` for what the
+operator must fix locally and `1` otherwise).
 
-**Upkeep runs beside the server, owned by `run_app`.** The toolkit's
-`spawn_upkeep(UpkeepOptions { auth_cleanup, extra }, &shutdown)` schedules the
-spine's auth cleanup (expired sessions deleted and their connections closed,
-expired role-grant offers audited once — `AppBackend::auth_cleanup_options`)
-plus each consumer task in `extra`: a disk-CAS consumer's
-`fuz_fact::spawn_orphan_temp_sweeper`, an invite-expiry sweep
-(`fuz_http::spawn_periodic`). `run_app` passes them as
-`ServeOptions::upkeep` (`None` in boot-only mode), and
-`serve_until_shutdown` starts them after the bind (migrations have run, so
-each startup pass can read the schema), serves, and joins them before
-returning. Where a consumer splits out a `build_router`, it spawns nothing and
-returns a `BuiltRouter { router, app: Option<App> }` (`None` in boot-only
-mode) for `run_app` to schedule from. The closer the cleanup closes through is
-the one the app's revocation handlers already hold
-(`AppBackend::connection_closer` — a `RealtimeCloser` where an SSE stream sits
-beside the WebSocket): a sweep with nothing to close through strands the swept
-sessions' connections. `testing_spine_stub` schedules none.
+The workspace's release profile sets `panic = "unwind"`, so the stack can
+answer a request panic with a 500 (see ./rust-patterns.md §Release profile).
+`fuz_http::server_env`'s module doc lists the shared env vars and their
+rules.
 
-The daemon-token keeper wiring (`BootstrapKeeperResolved` + boot-time
-`query_keeper_account_id`) is spine-owned in `fuz_auth` — don't re-implement.
+A per-route-state difference is struct-update syntax over a builder's result
+(`AccountRouteState { login_fail_floor_ms: 0, ..backend.account_route_state(gate) }`).
+A bound the core builds is a `SpineBackendOptions` field set before boot,
+never patched onto the built core. A server with no signup passes
+`signup: None` in its `AuthRestRoutes`.
 
-## JSON-RPC envelope — `fuz_http` owns it
+**A loopback daemon launched with flags** (zzz) makes the same toolkit calls
+and differs around them: it parses its own strict command line, builds its
+`AppBackendSpec` and `BaseServerEnv` at runtime from that line (a per-port
+cookie name), requires a database (no boot-only mode), and trusts no proxy.
 
-`fuz_http` owns the error constructors (`invalid_params(detail, reason)`,
-`internal_error`, `internal_error_with_source`, `not_found`, `conflict`,
-`forbidden`, `validation_error`, `rate_limited`) and
-`parse_strict_params<T: DeserializeOwned>` (an explicit `null` refused, as a
-strict fuz_schema `object` refuses it, then the serde decode). Consumers import, never
-re-declare — the envelope is what parity tests assert byte-for-byte. Prefer
-typed `#[derive(Deserialize)]` input structs + `parse_strict_params` over
-`params.get().and_then(Value::as_str)` chains (the chains are migration debt).
+### Two binaries over one `run_app`
 
-`internal_error_with_source` / `db_unavailable_with_source` and their flat-REST
-twins `internal_error_response_with_source` /
-`db_unavailable_response_with_source` take `&dyn Error` and log its cause chain
-(a `tokio_postgres::Error`'s `Display` is only its kind), plus a `sqlstate`
-field (`fuz_db::sqlstate_in_chain`) when a driver error in the chain carries
-one; a direct log of a DB error uses `error = ?e`.
+The production binary and a `testing_<name>` sibling call the same `run_app`
+and differ only in injected options. The sibling is what the TS cross-backend
+suite launches.
 
-`JsonrpcErrorCode` is an enum with a hand-written `Serialize` emitting the
-bare `i32` (`as_i32()`) — not scattered `pub const … : i32`. Because
-`JsonrpcError.code` is the enum, `error_code_to_http_status` is exhaustive: a
-new base code is a compile error, not a silent 500. TS twin: `fuz_app`'s
-`jsonrpc_errors`; consumers compare against `JsonrpcErrorCode::NotFound` (or
-its `as_i32()`), never a magic number.
+- It boots on `fuz_testing::testing_backend_options` (a fast test hasher,
+  limiters disabled, a daemon token, the startup reset hook) and passes an
+  `extra_action_specs_factory` that mounts its `_testing_*` actions. In
+  forge's shape those include `testing_reset_specs`, whose reset truncates
+  with `truncate_reset_state` over the spine's exported table lists plus the
+  server's own tables.
+- `fuz_testing` never enters the production graph: the factory type is
+  generic over the consumer's `App` and lives in `fuz_actions`, each consumer
+  instantiating it with a one-line alias
+  (`pub type ExtraActionSpecsFactory = fuz_actions::ExtraActionSpecsFactory<App>;`).
+  The `testing_` prefix and `check-release` keep the binary unshippable.
+- The factory returns `Result<Vec<ActionSpec>, StartupError>`, so a test seam
+  can refuse the boot.
+- In-process router tests use `fuz_testing::inert_app_backend` and
+  `GatedRouter::into_router_for_testing` (`fuz_http`'s `test_router_access`
+  feature, dev-deps only).
 
-A consumer's own code — the twin of a TS consumer spreading
-`JSONRPC_ERROR_CODES` and calling `register_jsonrpc_error_code(code, status)`
-— is one `const` declaring the number and its status together,
-`ConsumerErrorCode::new(-32020, StatusCode::BAD_GATEWAY)` (zzz's
-`ai_provider_error`), emitted with `consumer_error(code, message, data)`. `new`
-refuses a base-set number, a code outside `-32099..=-32000`, and a non-error
-status; in a `const` that's a compile error.
+## Rules
 
-## Env loading
+**Env**
 
-- **Shared reader, injectable seam**: the spine's common vars come from
-  `fuz_http::server_env::BaseServerEnv::from_vars(get, ServerEnvOptions)` —
-  the Rust twin of fuz_app's `BaseServerEnv` — so tests inject a map; a
-  consumer reads only its own vars beside it, through the same `from_vars`
-  shape (fuz_forge's env struct is the exemplar, including a test that
-  _rejects retired var names_). No stray `std::env::var` in router code;
-  `$HOME` goes through `fuz_sys::home_dir` / `expand_tilde`.
-- **Fail loud, not just closed**: security-consequential misconfig refuses to
-  boot — an empty `FUZ_ALLOWED_ORIGINS` (empty allowlist = allow-all;
-  `fuz_http::require_non_empty_origins`), a _malformed_ trusted-proxy list
-  (unset → loopback is fine), missing/weak cookie keys, a failed
-  `ActionRegistry::compile()` (an empty-registry fallback would answer
-  `method_not_found` to everything).
-- **Browser gates**: `SameSite=Strict` keeps other sites out but not other
-  ports on the same host, so the spine's JSON handlers refuse a `POST` with no
-  `Content-Type` or a form / text one (415 — a request a browser sends
-  cross-origin with no preflight). The host gate (`StackOptions::host_gate`,
-  DNS rebinding) is on by default: a server answers only to loopback names and
-  the hosts its allowlist names, so a deploy lists the origin it is served
-  from. A loopback daemon (zzz is the exemplar) also sets, on groups that take
-  no form uploads, `RouteGroup::refuse_simple_requests`, and lists exact
-  origins — the origin allowlist is the only gate on the never-preflighted
-  WebSocket upgrade, so `http://localhost:*` admits every local page.
-- **Booleans** via `fuz_sys::env::parse_stringbool` (the closed set fuz_app's
-  `EnvStringbool` reads; unknown values error).
-- **Secret-shaped names** carry the `SECRET_*` prefix — one contract across TS
-  (`fuz_app` `BaseServerEnv`) and Rust.
+- Read the shared vars through `BaseServerEnv::from_vars(get, options)`
+  (`from_process` in `run_app`), so tests inject a map. No stray
+  `std::env::var` in router code. Test that retired var names are no longer
+  read.
+- **Fail loud, not just closed.** Misconfiguration with a security
+  consequence refuses the boot instead of running degraded. Exit `2`: an
+  empty origin allowlist, a wildcard origin without
+  `FUZ_ALLOW_ORIGIN_WILDCARDS=true`, a malformed trusted-proxy list, missing
+  or weak cookie keys, a database not at READ COMMITTED. Exit `1`, as a
+  build defect: an action registry that doesn't compile (an empty one would
+  answer `method_not_found` to everything).
+- Secret-shaped names carry the `SECRET_` prefix on both spines. A
+  consumer's booleans parse through `fuz_sys::env::parse_stringbool` (a
+  closed set; unknown values error); the spine's wildcard opt-in takes
+  exactly `true` or `false`.
+- Through `from_vars`, trusted proxies default to the loopback hop under
+  the consumer's own var, and `,` trusts none, the setting for a server with
+  no reverse proxy.
 
-## Consumer wiring idioms
+**Browser gates**
 
-- **`OnceLock` breaks the App ↔ registry cycle**: action-spec builders capture
-  `Arc<App>` into handler closures, so the compiled registry can't exist until
-  the App does — `App.action_registry: OnceLock<Arc<ActionRegistry>>`, `set()`
-  after construction.
-- **`ActionContext<'a>` is the borrowed per-request seam**:
-  `notify: &dyn Fn(&str, &Value)`, `connection_id: Option<…>` (set on WS, `None`
-  on HTTP), `signal: &fuz_realtime::SignalToken` (alias of `CancellationToken`,
-  threaded into providers), `request_id`, plus `db`, `auth`, `audit`, `log`,
-  `client_ip`, `credential_type`, `post_commit_effects`.
-- **Streaming needs an owned sender**: the borrowed `notify` can't be captured
-  into a `'static` closure, so zzz builds a per-request
-  `ProgressSender = Box<dyn Fn(Value) + Send + Sync>` — only when the request
-  carries a progress token _and_ arrived over WS — wrapping chunks with
-  `fuz_http::notification(…)` and routing through
-  `Arc<fuz_realtime::ConnectionRegistry>::send_to`. HTTP → `None` →
-  non-streaming.
-- **WS and SSE admission is two-phase, and spine-owned**: `register_action_ws`
-  gates origin → 401 → token scope → acting actor (`?acting=`, on every
-  endpoint) → role (the resolved actor's global grants), then `admit_upgrade`
-  registers the connection pending with the endpoint's `required_roles`,
-  re-reads the credential, the acting actor, and its global roles
-  (`fuz_auth::recheck_admission`, which the audit SSE stream shares), and
-  admits — the per-account cap evicts only there. A
-  credential revoked mid-upgrade closes with 4001, a required role revoked
-  mid-upgrade with 4006 (`WS_CLOSE_PERMISSION_REVOKED`), a failed re-read with
-  1011, a superseded socket with 4004, and an upgrade the shutdown closed or
-  refused with 1001 (§Daemon lifecycle). The roles hold for the socket's
-  lifetime: revoking a global grant of one closes the account's sockets on
-  that endpoint with 4006, nothing more is written, and the client stays
-  closed rather than reconnecting into the gate. A consumer
-  mounting its own long-lived transport follows the same order
-  (`register_pending` / `subscribe_pending` → re-read → `admit`); a pending
-  entry is closeable but receives nothing and counts toward nothing.
-- **What a slow or silent client can hold is bounded, and spine-owned too**:
-  - _Outbound queues._ A send to a WebSocket never waits: it queues onto that
-    connection's byte budget (`DEFAULT_WS_OUTBOUND_QUEUE_BYTES`, or the
-    consumer's via `register_action_ws_with_options`), and one that does not
-    fit discards the queue and closes the connection with 4005
-    (`WS_CLOSE_OUTBOUND_OVERFLOW`). An SSE stream's queue has the same kind of
-    budget (`SSE_OUTBOUND_QUEUE_BYTES`); a frame that does not fit ends the
-    stream.
-  - _WS write deadline._ Every write the connection loop makes is bounded —
-    a frame by `WS_WRITE_STALL_TIMEOUT` — and one that misses its deadline
-    drops the socket with no close frame, so a client that stops reading
-    holds its loop and in-flight handlers for one deadline. It is per write,
-    not a throughput floor.
-  - _Accept-loop deadlines._ `fuz_http::serve_with_shutdown` keeps two on
-    every connection it accepts. A write that has waited
-    `WRITE_PROGRESS_TIMEOUT` with no byte accepted fails and the connection
-    is dropped, body and all — what ends an SSE stream or a download whose
-    client stopped reading, since hyper stops polling a body the socket won't
-    take. It runs only while a write is waiting, so an idle connection is
-    never cut by it. And a connection with no request in progress is closed
-    after `HEADER_READ_TIMEOUT` without a complete request head: a client
-    that never sends a request, or never finishes its headers, is dropped,
-    and the same deadline is the keep-alive idle time. A running handler, a
-    streaming response, and an upgraded socket are not timed by it; a request
-    body is not timed at all.
-  - _Credential deadline._ A WS closes 4001 "Credential expired"
-    (`WS_CLOSE_CREDENTIAL_EXPIRED_REASON`) and an SSE stream ends at
-    `ResolvedAuth::credential_deadline`, waited in hour-capped sleeps that also
-    check the wall clock.
-  - _Receive timeout._ `ActionWsOptions::receive_timeout`
-    (`DEFAULT_WS_RECEIVE_TIMEOUT`, 60 s) closes a silent socket with 4003.
+- `SameSite=Strict` keeps other sites out but not other ports on the same
+  host, so the spine's JSON handlers answer 415 to a `POST` with no
+  `Content-Type` or a form or text one, the requests a browser sends
+  cross-origin with no preflight.
+- The host gate (DNS rebinding) is on by default: a server answers only to
+  loopback names and the hosts its allowlist names, so a deploy lists the
+  origin it's served from.
+- A loopback daemon lists exact origins and sets
+  `RouteGroup::refuse_simple_requests` on groups that take no form uploads.
+  The origin allowlist is the only gate on a WebSocket upgrade, which is
+  never preflighted, so `http://localhost:*` admits every local page.
 
-  A consumer mounting its own long-lived transport inherits the accept-loop
-  deadlines and owes its own queue bound. These limits have no TS twin where
-  the runtime owns the socket.
-- **Migration namespaces compose**: substrate DDL lives in the owning crate
-  (`fuz_auth::AUTH_MIGRATIONS`, `fuz_cell::CELL_MIGRATIONS`,
-  `fuz_fact::FACT_MIGRATIONS`); the consumer composes them with its own via
-  `fuz_db::run_migrations`, ordered for FKs (auth first). A consumer's own
-  namespace stays small (the forge's is one token-policy table).
-- **Loopback-gated internal routes**: `/internal/*` checks the
-  `ConnectInfo<SocketAddr>` peer is loopback _and_ a per-resource secret —
-  X-Forwarded-For can't fake the peer.
-- **Boot errors carry the CLI exit-code policy**: a `StartupError` with
-  `exit_code()` mapping `Config → 2`, else `1` (./rust-patterns.md §CLI Patterns).
-- **Subprocess harness**: `spawn_collect`/`spawn_streaming` (with their `Spawn*Options`)
-  (env-isolating spawn, capped output drain) lives in `fuz_forge_server` —
-  local until a second consumer needs it; the promotion target is a spine-free
-  leaf crate.
+**Rate limiters**
 
-## Daemon lifecycle — two layers
+- Build every spine limiter through `RateLimiterMode`
+  (`mode.limiter(fuz_auth::DEFAULT_LOGIN_IP_RATE_LIMIT)`), never
+  `Some(Arc::new(RateLimiter::new(…)))` with a conditional null. Production
+  passes `Enforced` and the testing binary `DisabledForTesting`, so a newly
+  wired surface can't stay enforced while the rest are off, and a process
+  that nulls a limiter says so at startup.
+- A consumer-owned limiter that isn't a spine surface (an upload cap) stays
+  live in both modes.
 
-1. **Server-side graceful shutdown is shared.** Signal → `CancellationToken` is
-   `fuz_sys::signal::shutdown_token()` (`signal` feature); `fuz_http::lifecycle`
-   re-exports it — with `spawn_periodic` and the `CancellationToken` type, so
-   a consumer names neither `fuz_sys` nor `tokio-util` — and adds
-   `serve_with_shutdown(listener, router, token, closer: &dyn ShutdownCloser,
-   drain_timeout)` for axum consumers; `fuzd` (UDS, no axum) calls
-   `fuz_sys::signal` directly. This split is why `fuz_sys` (home-agnostic OS
-   leaf) and `fuz_home` (`~/.fuz`) are separate. `serve_with_shutdown` runs
-   its own accept loop over hyper, not `axum::serve`, whose drain waits on
-   every connection with no way to let one go.
-   - **Live connections close with the token.** A drain alone handles neither
-     long-lived transport: an SSE body never ends, so the drain waits it out,
-     and an upgraded WebSocket is a detached task the process exits under (the
-     client reads a reset, a browser's 1006). So `closer` is required.
-     `ShutdownCloser` is `close_all_connections() -> usize` (close every
-     connection, pending or admitted, and refuse every later one; sync,
-     idempotent) plus `wait_closed()` (resolve once the closed connections'
-     own tasks have written their close). `fuz_auth::ConnectionCloser:
-     ShutdownCloser`, so a consumer passes the closer its revocation handlers
-     already hold — `app.connection_closer().as_ref()`, the `Arc<dyn
-     ConnectionCloser>` upcast to `&dyn ShutdownCloser` (`RealtimeCloser` fans to
-     the WS and SSE registries) — and `NoopShutdownCloser` only in a mode that
-     mounts nothing live (boot-only).
-   - **Order on fire**: the listener closes, every connection is asked to
-     finish (the request in flight completes, keep-alive ends), and the
-     close-all runs (every WebSocket gets `WS_CLOSE_GOING_AWAY` 1001 with
-     `WS_CLOSE_GOING_AWAY_REASON`, `"Server shutting down"`; every SSE stream
-     ends once its body has written what was queued); then the drain — wait
-     for every connection — then `wait_closed`, which follows the drain so it
-     covers an upgrade still in flight. One `drain_timeout` from the fire
-     bounds it all (`DEFAULT_DRAIN_TIMEOUT`); reaching it is still `Ok`.
-     `serve_with_shutdown` returns only once the token has fired, so upkeep
-     on the same token has stopped, and consumer teardown (zzz's PTY
-     `kill_all`) runs after it returns.
-   - **Born closed.** The close-all sets each registry closing under the lock
-     it drains with, so a later registration is born closed: an upgrade is
-     refused 1001 before any database work, an SSE `admit` refuses (the route
-     answers the connect comment alone), and no admission landing mid-close
-     reads as revoked. The TS twin (`fuz_app`'s `AppServer.close` →
-     `close_all_connections`) carries the same closing flag on its `ConnectionRegistry`
-     and `SseRegistry`.
-   - **One write budget per WS loop.** Once the close-all fires, a loop's
-     remaining writes — one already in progress and the close frame; the
-     close-all discards what was queued — share one fixed deadline
-     (`fuz_http::SHUTDOWN_CLOSE_TIMEOUT`), so a client that stopped reading
-     can't hold every restart to the drain timeout; a write cut off there
-     ends the loop with no close frame.
-   - **A stalled HTTP response is cut by the serve loop.** A body whose
-     client stopped reading is never polled again, so an SSE stream in that
-     state never sees its own end. A connection still open one
-     `SHUTDOWN_CLOSE_TIMEOUT` after the close-all is dropped — socket and
-     body — at the first window of that length with no handler running on it
-     and no byte written to it. One whose handler is still running, or whose
-     response is still reaching its client, is checked again a window later,
-     the drain timeout bounding them all.
-2. **Client-side CLI lifecycle splits by transport.**
-   - `fuzd`'s UDS lifecycle lives in `fuz_daemon`: v2 `daemon.json`
-     (`socket_path`, no port), `Hello`-based health over `fuz_client`, a
-     `DaemonState` enum (`Running(info)` / `Unresponsive(info)` / `Stopped` /
-     `Stale(info)`) with one `get_daemon_state()` resolver.
-   - zzz's HTTP lifecycle is deliberately **local to zzz's CLI**: a port-based
-     `DaemonInfo` (`version`, `pid`, `port`, `started`, `app_version`; schema
-     shared with `fuz_app` TS), a reqwest `/health` probe, a `Wedged(info)` arm
-     for "pid alive, `/health` silent". It reuses `fuz_sys` primitives
-     (`is_pid_alive`, `send_signal`, `rfc3339_now`, `fs::write_atomic`) but
-     **not** `fuz_home`, whose daemon helpers model the UDS schema. Its
-     `daemon.json` is `0o644` on purpose (no secrets).
-   - Model liveness as one `DaemonState` enum + one resolver, not scattered
-     `pid_alive`/`healthy` booleans. Don't build a transport-generic lifecycle
-     crate for a single HTTP consumer.
-   - The HTTP lifecycle (and `reqwest`) must never enter the `fuz`/`fuzd`
-     graph — a convention, not a `check-release` rule, since `fuz` legitimately
-     links `fuz_client` for UDS (and `fuzd` links `fuz_daemon`).
+**Upkeep**
 
-## xtask & check-release
+- Periodic work runs through `ServeOptions::upkeep`: the spine's auth cleanup
+  plus each consumer task in `extra`, a boxed closure taking the shutdown
+  token and calling `fuz_http::spawn_periodic` or a spine sweeper
+  (`fuz_fact::spawn_orphan_temp_sweeper` for a server with a disk fact
+  store). It starts after the bind, so migrations have run, and is joined
+  before `serve_until_shutdown` returns. `build_router` spawns nothing.
+- Pass the closer the app already holds (`backend.connection_closer()`), so
+  a swept session's connections close.
+- Consumer teardown (killing child processes) runs after
+  `serve_until_shutdown` returns.
 
-Every spine-consuming workspace's `xtask` wraps the shared audit — don't
-hand-roll it: `fuz_audit::xtask_main()` (complete single-subcommand xtask; the
-forge's 3-line `main`), `run_check_release_cli()` (workspaces with their own
-router — zzz, zap), `run_check_release_cli_with_rules(&AuditRules)` where
-`AuditRules` is one POD: `extra_forbidden: &[&str]` (fuz adds `fuz_sign` so its
-`fuz` binary can never sign) + `per_binary: &[PerBinaryForbid]` (`fuz`/`fuzd`
-must not link `fuzi_*`). Only the fuz workspace passes rules; the no-arg
-consumers stay insulated. Exit codes: clean 0, policy violation 65, tooling
-failure 69/70.
+**Actions and the JSON-RPC envelope**
 
-`BUILTIN_CRATE_LAYERING` — per-crate _library_ layering applied
-unconditionally in every workspace (absent subjects skipped; the OK output
-lists subjects actually checked so a renamed crate is visible). Each rule: a
-library must not transitively runtime-depend on a forbidden set.
+```rust
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ThingGetParams { id: Uuid }
 
-| Subject    | Must not reach                                            | Invariant                                                |
-| ---------- | --------------------------------------------------------- | -------------------------------------------------------- |
-| `fuz_fact` | `axum`, `fuz_http`, `fuz_cell`, `fuz_auth`, `fuz_actions` | bytes escape only through the authz'd `fuz_fact_serving` |
-| `fuz_cell` | `fuz_actions`                                             | storage/authz half can't reach the verb layer            |
-| `fuz_sys`  | `axum`, `fuz_http`                                        | the OS leaf stays HTTP-free                              |
-| `fuz_home` | `axum`, `fuz_db`, `fuz_http`                              | the `~/.fuz` layer stays HTTP/DB-free                    |
+fn thing_get_spec() -> ActionSpec {
+    let handler: ActionHandler = Arc::new(|params: Value, ctx: ActionContext<'_>| {
+        Box::pin(async move {
+            let ThingGetParams { id } = fuz_http::parse_strict_params(params)?;
+            let thing = fuz_db::action_db_dispatch!(ctx.db, client => query_thing_get(client, &id).await)
+                .map_err(|e| fuz_http::internal_error_with_source("thing_get", &e))?
+                .ok_or_else(|| fuz_http::not_found("thing", None))?;
+            serde_json::to_value(thing)
+                .map_err(|e| fuz_http::internal_error_with_source("thing_get", &e))
+        })
+    });
+    ActionSpec::read_only(
+        "thing_get",
+        AuthSpec::account_grain(CredentialGate::Any),
+        InputShape::Object,
+        handler,
+    )
+}
+```
 
-`fuz_cell`'s rule is narrower than `fuz_fact`'s because it legitimately
-reaches `axum`/`fuz_http` via `fuz_auth` — the BFS runs over the runtime graph,
-so a rule must account for what a subject's legitimate deps pull. Grow the
-table one rule per real invariant; no speculative rules. The
-`[package.metadata.fuz_audit] dev_only = true` stanza on each xtask crate is
-the one config that can't be workspace-inherited. Why forbidden capabilities
-are crates, not features: ./rust-dependencies.md §Crate-vs-feature isolation.
+- Input is a typed `#[derive(Deserialize)]` struct with
+  `#[serde(deny_unknown_fields)]`, read by `fuz_http::parse_strict_params`
+  (an explicit `null` is refused as a strict schema refuses it;
+  `parse_strict_params_allowing_null` names the keys that may be null). No
+  `params.get(…).and_then(Value::as_str)` chains.
+- Errors come from `fuz_http`'s constructors (`invalid_params`, `not_found`,
+  `conflict`, `forbidden`, `validation_error`, `rate_limited`,
+  `internal_error`), never a hand-built envelope. The cross-backend tests
+  assert the envelope.
+- `internal_error_with_source(context, &e)` and `db_unavailable_with_source`
+  (and their flat-REST `*_response_with_source` forms) take the error and
+  log its cause chain and SQLSTATE. Use them over the bare forms whenever there is a
+  source.
+- Codes are `JsonrpcErrorCode` variants, never magic numbers. A consumer's
+  own code is one `const` declaring number and HTTP status together,
+  `ConsumerErrorCode::new(-32020, StatusCode::BAD_GATEWAY)`, emitted with
+  `consumer_error(code, message, data)`. `new` refuses a base-set number, a
+  code outside `-32099..=-32000`, and a non-error status, at compile time.
+- **The dispatcher owns the transaction.** A spec declared with side effects
+  (`ActionSpec::with_side_effects`; `read_only` otherwise) runs in one,
+  committed after the handler returns, and a handler never commits. A handler
+  reaches the database through `ctx.db`, which is a pooled client or that
+  transaction: `fuz_db::action_db_dispatch!(ctx.db, client => query_x(client, …).await)`.
+  Effects that leave the database (closing a socket, a notification) queue
+  on `post_commit_effects` and run after the commit.
+- Code that opens its own transaction (a hand-written route, a task) commits
+  with `fuz_db::commit_checked`, which refuses to commit a transaction a
+  swallowed statement error already aborted.
+- Gate reads by the action's `AuthSpec`, not by which transport it arrived
+  on.
+
+**Handler context**
+
+- `ActionContext<'a>` is the borrowed per-request seam: `db`, `auth`,
+  `audit`, `log`, `notify`, `signal` (the request's cancellation token, to
+  thread into long work), `request_id`, `connection_id` (set on WebSocket,
+  `None` on HTTP), `client_ip`, `credential_type`, `post_commit_effects`,
+  among others.
+- Handlers capture `Arc<App>`, so the compiled registry can't exist before
+  the App. Where the App must hold its registry, the field is a
+  `OnceLock<Arc<ActionRegistry>>` set after construction.
+- Streaming past the request needs an owned sender, since the borrowed
+  `notify` can't move into a `'static` closure: build a boxed
+  `Fn(Value) + Send + Sync` that wraps chunks with `fuz_http::notification`
+  and routes through `ConnectionRegistry::send_to`, only when the request
+  carries a progress token and arrived over WebSocket. Over HTTP the action
+  doesn't stream.
+
+**Realtime**
+
+- Admission, close-on-revoke, the per-account connection cap, outbound queue
+  budgets, write deadlines, credential-expiry closes, and shutdown closes are
+  spine-owned. A consumer mounts `register_action_ws` (or
+  `register_action_ws_with_options` to set `ActionWsOptions`:
+  `max_message_bytes`, `outbound_queue_bytes`, `receive_timeout`) and the
+  audit stream, and writes none of it.
+- `required_roles` on the WebSocket hold for the socket's life: revoking one
+  closes the account's sockets on that endpoint.
+- A consumer that mounts its own long-lived transport follows the spine's
+  two-phase order (`register_pending` / `subscribe_pending`, re-read the
+  credential, then `admit`) and owes its own outbound bound. It inherits the
+  serve loop's connection deadlines.
+
+| Code | Constant | Sent when |
+| --- | --- | --- |
+| 1001 | `WS_CLOSE_GOING_AWAY` | the server is shutting down |
+| 1009 | `WS_CLOSE_MESSAGE_TOO_BIG` | an inbound message is over the cap |
+| 1011 | `WS_CLOSE_INTERNAL_ERROR` | admission couldn't re-read the credential |
+| 4001 | `WS_CLOSE_SESSION_REVOKED` | the credential was revoked or expired |
+| 4003 | `WS_CLOSE_SERVER_HEARTBEAT_TIMEOUT` | the client was silent past `receive_timeout` |
+| 4004 | `WS_CLOSE_CONNECTION_LIMIT` | a newer connection took the account's slot |
+| 4005 | `WS_CLOSE_OUTBOUND_OVERFLOW` | the client fell behind its outbound budget |
+| 4006 | `WS_CLOSE_PERMISSION_REVOKED` | a required role was revoked |
+
+Codes and reason strings match `fuz_app`'s. Its client schedules no reconnect
+after 4001, 4004, or 4006.
+
+**Migrations and tables**
+
+- Substrate DDL lives in the owning crate (`fuz_auth::AUTH_MIGRATIONS`,
+  `fuz_cell::CELL_MIGRATIONS`, `fuz_fact::FACT_MIGRATIONS`). The consumer
+  lists them with its own namespace in `AppBackendSpec`, and the boot runs
+  them. Namespaces and migration names match the TS twin, so one database
+  serves either backend.
+- Migration names are descriptive (`full_<domain>_schema`, then named
+  appends), never `_vN`.
+- Query modules and column projections: ./db-patterns.md.
+
+**Internal routes**
+
+- A loopback-gated internal route checks that the `ConnectInfo<SocketAddr>`
+  peer is loopback and a per-resource secret. `X-Forwarded-For` can't fake
+  the peer.
+
+## Daemon lifecycle on the client side
+
+A CLI that starts, stops, and probes its daemon models liveness as **one
+state enum and one resolver** (`Running(info)`, `Unresponsive(info)`,
+`Stopped`, `Stale(info)`), not scattered `pid_alive` and `healthy` booleans.
+
+- The lifecycle splits by transport. `fuzd`'s Unix-socket lifecycle is
+  `fuz_daemon`; an HTTP daemon's (a port in `daemon.json`, a `/health` probe)
+  stays local to its own CLI and reuses only `fuz_sys` primitives. Don't
+  build a transport-generic lifecycle crate for one consumer.
+- A pid alone doesn't identify a process. Record what distinguishes this
+  boot (start ticks, a boot id) and compare it before signalling.
+- An HTTP daemon's lifecycle code never enters the `fuz` / `fuzd` graph.
+
+## check-release
+
+`cargo xtask check-release` audits the dependency graph of every shipped
+binary. Each workspace with path deps on fuz crates wraps the shared audit
+and never hand-rolls it:
+
+- `fuz_audit::xtask_main()` — a complete single-command xtask in one line
+- `run_check_release_cli()` — for an xtask with commands of its own
+- `run_check_release_cli_with_rules(&AuditRules)` — extra forbidden crates
+  and per-binary forbids, for a workspace with its own trust boundaries (fuz
+  forbids `fuz_sign` everywhere and the installer crates in `fuz` / `fuzd`)
+
+It refuses a forbidden crate (`fuz_testing`, `fuz_audit`) on a normal or
+build edge of any local package outside `testing_*` and `dev_only`, a
+violation of the built-in
+library layering rules (which crates a storage or OS leaf must never reach),
+and a `test_*` feature enabled on a release edge. Exit `0` clean, `65` a
+policy violation, `69` / `70` a tooling failure. The output lists the
+subjects it checked, so a renamed crate shows up instead of passing
+silently.
+
+- The xtask crate carries `[package.metadata.fuz_audit] dev_only = true`,
+  the one setting that can't be inherited from the workspace.
+- Grow the layering rules one per real invariant. A rule must account for
+  what the subject's legitimate deps pull in, since the walk covers the
+  whole runtime graph.
+- Why a forbidden capability is a crate and not a feature:
+  ./rust-dependencies.md §Isolate by crate.

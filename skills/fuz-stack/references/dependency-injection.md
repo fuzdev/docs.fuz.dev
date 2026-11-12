@@ -309,8 +309,8 @@ individual `vi.fn()` for call tracking is fine.
 
 `*Deps` is **TS-only** — Rust traits _are_ capabilities. Rust uses pure-noun
 capability traits (`PasswordHasher`, `Storage`) and `*Options` structs, with
-`cfg`/features, the crate graph, and enum dispatch covering much of what TS
-solves with injection. Full treatment: ./rust-patterns.md §Dependency Injection.
+the crate graph, test-only crates, and enum dispatch covering much of what TS
+solves with injection. Full treatment: ./rust-patterns.md §Dependency injection.
 
 ## Quick Reference
 

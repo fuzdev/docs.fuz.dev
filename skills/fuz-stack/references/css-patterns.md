@@ -34,21 +34,19 @@ closes. Reach past the defaults for layout (flex rows and columns, grids),
 intent color (`palette_c` on a destructive button), and behavior specific to
 the component.
 
-- **`row` and `row_wrap` zero their children's margins**, so space them with
-  `gap_*`.
-- **`column` does not.** Its children keep their flow margins, so a `gap_*`
-  on a `column` is added to them: a paragraph, list, or label sits a gap
-  further from the next child than a `div` beside it does, and a heading's
-  top margin stops collapsing into the margin above it. A vertical stack of
-  flow elements needs no class. `column` and `gap_*` are for children with
-  no margin of their own (`div`s, buttons, inputs); a flow element that has
-  to sit in one takes `mb_0` (`my_0` on a heading).
-- **A list item carries its own margin** in a styled `ul`, `ol`, or `menu`,
-  and resetting the list's `list-style`, `padding`, and `margin` leaves it
-  in place. A list laid out as a stack takes `unstyled`:
-  `<ul class="unstyled column gap_xs">`.
-- **`fieldset` is already a flex column**, so `column` adds nothing to it
-  and a `gap_*` is added to its labels' margins the same way.
+- **`row`, `row_wrap`, and `column` zero their direct children's margins**,
+  so a `gap_*` class is their whole spacing. A margin class on a child
+  (`mb_lg`) still applies, and a `legend` keeps its margin.
+- **A vertical stack of flow elements needs no class.** `column` is layout:
+  a gap stack of cards, controls, or fields, or a child that fills the rest.
+  Around headings and prose it replaces their rhythm with the one gap.
+- **`box` and `fieldset` are flex columns that keep flow margins.** A `gap_*`
+  on either is added to each child's margin, and a heading's top margin
+  doesn't collapse into the margin above it.
+- **A list laid out as a stack takes `unstyled`**, which drops its markers,
+  indent, and item margins: `<ul class="unstyled column gap_xs">`. Resetting
+  the list's own `list-style`, `padding`, and `margin` leaves the item
+  margins in place.
 - **A heading that opens a padded box** (`.panel`, `.pane`, `aside`, `li`,
   `blockquote`, `fieldset`, `dialog`, a table cell) drops its top margin.
 - **Density is one class**: a size composite on a container (§Composites)
@@ -205,8 +203,8 @@ name (`items-center`) generates nothing, silently.
 ### Composites
 
 - **Layout**: `row` (flex row, items centered), `row_wrap`, `column` (flex
-  column), `box` (flex column, centered both ways). `flex` alone is only
-  `display: flex`.
+  column), `box` (flex column, centered both ways, children keep their
+  margins). `flex` alone is only `display: flex`.
 - **Surfaces and controls**: `panel` (tinted, embedded container), `pane`
   (opaque, floating container), `chip`, `plain` (a control with a
   transparent border whose fill and shadow show only on hover), `selectable`,

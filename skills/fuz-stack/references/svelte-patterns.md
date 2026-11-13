@@ -1,365 +1,259 @@
 ---
-description: Svelte 5 runes, contexts, snippets, attachments
+description: Svelte 5 in the stack — state, deriveds, contexts, snippets, attachments, events
 ---
 
 # Svelte 5 Patterns
 
-The stack's deltas over Svelte's own docs, not a runes tutorial. Always runes
-mode; no legacy syntax — `$:`, `export let`, `on:click`, slots, stores
-(replaced by classes with `$state` fields), `use:` actions,
-`<svelte:component this>` (components are dynamic by default),
-`<svelte:self>` (import the component by name). Await expressions in
-components (`experimental.async`) are not enabled in any stack repo.
+The stack's deltas over Svelte's own docs, not a runes tutorial. Runes mode
+everywhere and no legacy syntax: no `$:`, `export let`, `on:click`, slots,
+stores, `use:` actions, or `<svelte:component>`. Shared state is a class with
+rune fields, provided through context.
 
-## State Runes
+## State
 
-### `$state()` vs `$state.raw()`
+- **`$state.raw()` for a value that is only ever reassigned; `$state()` for
+  an object or array mutated in place** (`push`, a property write, `bind:` on
+  a property). Mutating a raw value changes it and updates nothing. For a
+  primitive the two behave the same.
+- **Most fields in the stack are raw**: values are replaced far more often
+  than mutated, and zzz's Cells default their schema fields to raw. Match the
+  neighbors: in a class of raw fields, a reassigned-only field is raw.
+- **A field assigned in the constructor is declared with `!`**:
 
-Only make a variable reactive when something reads it reactively (`$effect`,
-`$derived`, template). Reactive state is `$state()`, including objects and
-arrays mutated in place. `$state.raw()` is a **performance opt-out** for large
-values only ever reassigned wholesale, never mutated (API responses). Mutating
-a `raw` value silently does nothing, so `raw` also makes replace-don't-mutate
-explicit — but choose by update pattern and size, not taste. Primitives:
-`$state()`.
+  ```typescript
+  // fuz_ui theme_state.svelte.ts
+  export class ThemeState {
+  	theme: Theme = $state.raw()!;
+  	color_scheme: ColorSchemePreference = $state.raw()!;
 
-> Migration note: the earlier house style was `raw`-by-default, so existing
-> fields across fuz_ui, fuz_app, and zzz are still `$state.raw()`. Write new
-> code with `$state()`; migrate opportunistically, checking nothing depends on
-> the raw non-reactivity.
+  	constructor(options?: ThemeStateOptions) {
+  ```
 
-`structuredClone`, `JSON.stringify` (including `toJSON()`), and `postMessage`
-walk `$state()` proxies cleanly.
+- **`JSON.stringify` and `toJSON()` walk a `$state()` proxy. `structuredClone`,
+  `postMessage`, and IndexedDB throw on one**: pass `$state.snapshot(value)`.
+- **`const r = $state.snapshot(x)` loses the clone in server output** (seen on
+  Svelte 5.57): the compiler emits `const r = x` there. Client output and
+  expression positions (`return $state.snapshot(x)`) are fine.
 
-### `$state()!` for constructor-initialized fields
+## Deriveds
 
-```typescript
-export class ThemeState {
-	theme: Theme = $state()!;
-	constructor(options?: ThemeStateOptions) {
-		this.theme = options?.theme ?? default_themes[0]!;
-	}
-}
-```
+- **`readonly` on a `$derived` class field** unless reassigning it is the
+  point.
+- **A `$derived` that markup reads returns `undefined`; it doesn't throw.** A
+  throw crashes every consumer's render. Guard at the call site.
 
-Used across fuz_ui state classes and zzz Cell subclasses (older code spells
-it `$state.raw()!`).
+  ```typescript
+  // zzz thread.svelte.ts
+  readonly model: Model | undefined = $derived.by(() =>
+  	this.app.models.find_by_name(this.model_name)
+  );
+  ```
 
-### `$state.snapshot()`
+- **A `$derived` field that reads a field declared without an initializer
+  uses `$derived.by(() => …)`.** A field assigned only in the constructor, or
+  a parameter property, trips TS2729 "used before initialization" in a direct
+  `$derived(this.app.lookup(this.name))`. A field declared `= $state.raw()!`
+  counts as initialized. Both forms read lazily at runtime; only the
+  typecheck differs.
+- **A `$derived` belongs to the effect that was running when it was created.**
+  State built during a component's init, in `onMount`, or in an `$effect`
+  stops recomputing when that component or effect is destroyed, and reads
+  return the last value (Svelte warns `derived_inert` in DEV). State that must
+  outlive its creator is constructed outside any effect: an event handler, an
+  async continuation, or a never-destroyed `$effect.root` (zzz's
+  `create_detached`).
+- **An immutable tree built at module scope uses getters with private
+  caches, not `$derived`.** Svelte's server runtime memoizes a `$derived` only
+  when it is created during a render, so a module-scope instance recomputes
+  on every read while prerendering. fuz_ui's `Library`, `Module`, and
+  `Declaration`:
 
-Deep plain copy (zzz Cell's `encode_property` returns `$state.snapshot(value)`
-for serialization). Use it when handing a proxy to code doing reference-identity
-checks on members; for plain serialization it's usually unnecessary. **Observed
-quirk** (Svelte 5.56 + vite-plugin-svelte, unfiled):
-`const r = $state.snapshot(x)` is silently elided to `const r = x` downstream of
-`compileModule`; `return $state.snapshot(x)` and inline expression use work.
+  ```typescript
+  #repo_url: Url | undefined;
+  get repo_url(): Url {
+  	return (this.#repo_url ??= repo_url_parse(this.pkg_json.repository)!);
+  }
+  ```
 
-## Derived Values
+  Reactivity moves up a level: swap the instance, don't mutate it.
 
-`$derived` to compute from state — never `$effect` with assignment;
-`$derived.by(() => ...)` for multi-step logic. Deriveds are writable (assign
-to override). Derived objects aren't deeply reactive — in the rare case you
-need that, create `$state` inside `$derived.by`.
+## State classes
 
-### `$derived` in Classes
+- **No module-level runes for shared state.** A module-level `$state` behind
+  getters is a hidden global: it can't be reset per test or session, a second
+  instance is impossible, and under SSR it leaks between requests. Export a
+  class, instantiate it at the right root, and share it by context:
 
-Mark `$derived` class properties `readonly` unless reassignment is intended.
-Return `| undefined` rather than throwing from a `$derived` that templates
-read — a throw render-crashes every consumer; guard at callsites:
+  ```typescript
+  export const world_ui_context = create_context<WorldUiState>();
+  export class WorldUiState {
+  	show_map: boolean = $state.raw(false);
+  	show_sidebar: boolean = $state.raw(true);
+  }
+  // layout: world_ui_context.set(new WorldUiState()); descendants: world_ui_context.get()
+  ```
 
-```typescript
-// zzz/thread.svelte.ts
-readonly model: Model | undefined = $derived.by(() => this.app.models.find_by_name(this.model_name));
-```
+- **A serializable class pairs `Foo`, `FooJson`, and `FooOptions`** (usually
+  `Partial<FooJson>`), with `toJSON(): FooJson`. fuz_ui's `ThemeState` is the
+  small exemplar. zzz's Cells make `FooJson` a fuz_schema schema and hydrate
+  from it in a base class (see ./fuz-schema.md).
+- **Collections that change are `SvelteMap` and `SvelteSet`** from
+  `svelte/reactivity`. A collection read by several lookups keeps secondary
+  indexes beside the primary map, so a derived does a `.get()` and not an
+  array scan (zzz's `IndexedCollection`).
+- **An imperative loop is a plain class with no runes**, mounted by a thin
+  component: a canvas renderer, a `requestAnimationFrame` loop, a long-lived
+  pointer tracker. Its fields stay non-reactive so per-frame writes schedule
+  nothing, and the wrapper calls its `destroy()` on unmount.
+- **Role-gated UI reads global grants**: `auth.is_admin` or
+  `auth.has_global_role(role)` on fuz_app's `AuthState`, the rule the
+  server's role gates apply. Never scan grant role names, which reads a
+  grant scoped to one resource as authority everywhere.
 
-**Immutable data-wrapper classes use getters + memoization, not `$derived`.**
-fuz_ui's `Library`/`Module`/`Declaration` were rewritten from `readonly x = $derived(…)` to plain getters with `#field ??=` caches:
+## Contexts
 
-```typescript
-#repo_url: RepoUrl | undefined;
-get repo_url(): RepoUrl {
-	return (this.#repo_url ??= repo_url_parse(this.pkg_json.repository)!);
-}
-```
-
-Reason: Svelte's server runtime only memoizes a `$derived` created during a
-render, so a `Library` constructed at module scope (the normal docs-site shape)
-rebuilds its whole tree on every property read during prerender. Rule: for an
-immutable tree constructed at module scope, getters + private caches;
-reactivity moves to the instance level (swap the `Library`, don't mutate it).
-`$derived` fields are for instances whose dependencies change.
-
-**Field-initializer order (plain classes).** Field initializers run before the
-constructor body, so `readonly status = $derived(this.app.lookup(this.name))`
-where `app`/`name` are constructor-assigned trips TS2729 "used before
-initialization". Wrap in `$derived.by(() => …)`: TS doesn't descend into the
-closure, and the read is lazy anyway. Cells don't hit this — `app` comes from
-the base `Cell` constructor and schema fields use `$state()!`, which counts as
-initialized in declaration order.
-
-## Reactive Collections
-
-`SvelteMap`/`SvelteSet` from `svelte/reactivity` are mutation-tracked
-(standard `Map`/`Set` aren't); `$derived.by` over them recomputes on mutation
-— fuz_ui's `DocsLinks` (`links: SvelteMap`, `fragments_onscreen: SvelteSet`).
-For entity collections read by different lookups, maintain **secondary
-indexes** — zzz's `IndexedCollection` (`indexed_collection.svelte.ts`):
-`by_id: SvelteMap` plus `single_index(key)` / `where(key, value)` /
-`derived_index(key)` (each a `$derived` rebuild, or kept in place for
-immutable keys), `values` derived from `by_id`, so deriveds do `.get()`
-lookups instead of array scans.
-
-## Schema-Driven Reactive Classes
-
-A serializable reactive class pairs `Foo`, `FooJson` (serialized shape), and
-`FooOptions` (usually `Partial<FooJson>`), with `toJSON(): FooJson`. fuz_ui's
-`ThemeState` is the simple exemplar (plain-interface `ThemeStateJson`); zzz's
-Cell pattern upgrades the shape to a fuz_schema schema and automates hydration in a
-`Cell` base class — same rune conventions (`$state()!` for schema fields,
-`readonly $derived` for computed). See ./fuz-schema.md.
-
-## Context Patterns
-
-`create_context<T>()` from `@fuzdev/fuz_ui/context_helpers.ts` is the standard —
-it predates Svelte's `createContext` and serves the same role over raw
-`setContext`/`getContext`; don't "upgrade" it. Without a fallback, `get()`
-throws if unset and `get_maybe()` returns `undefined`; with
-`create_context(() => fallback)`, `get()` uses the fallback and `set()`'s value
-is optional. Define in a shared module; a provider calls `.set()` at init,
-consumers `.get()` at init:
+`create_context<T>()` from `@fuzdev/fuz_ui/context_helpers.ts` is the one way
+to define a context; nothing calls `setContext` or Svelte's `createContext`
+directly. Without a fallback, `get()` throws when unset and `get_maybe()`
+returns `undefined`. With `create_context(() => fallback)`, `get()` returns
+the fallback. A library below fuz_ui in the dependency order carries its own
+copy of the helper, as mdz does.
 
 ```typescript
 export const frontend_context = create_context<Frontend>();
 export const section_depth_context = create_context(() => 0);
 ```
 
-### Getter contexts
-
-Contexts whose value may be reassigned wrap it in `() => T` so the context
-reference stays stable — `theme_state_context` (`() => ThemeState` —
-`theme_state` arrives as a reassignable prop), `library_context`
-(`() => Library`). Set with a closure over reactive state; **read lazily** —
-calling the getter once at init captures a snapshot and loses reactivity:
+**A context whose value can be replaced holds a getter**, `() => T`, so the
+context itself never changes (`theme_state_context`, `library_context`). Read
+it lazily. Calling the getter once at init captures a snapshot:
 
 ```typescript
 theme_state_context.set(() => theme_state);
-// consumer: .get() at init, then read lazily
+// a consumer
 const get_theme_state = theme_state_context.get();
 const theme_state = $derived(get_theme_state());
 ```
 
-Other lazy forms in real consumers: inside a template `{@const}`
-(`MdzNodeView.svelte`) and as a prop default re-evaluated while the prop is
-undefined (`const { value = get_theme_state() } = $props()` in
-`ColorSchemeInput.svelte`). Components with an optional `library` prop resolve
-prop-or-ancestor via
-`set_library_context_with_fallback(() => library_prop, 'ApiIndex')` (fuz_ui's
-`library.svelte.ts`) — prefers the prop, falls back to the ancestor, throws a
-component-named error when neither exists. Direct value contexts
-(`frontend_context`, `site_context`) are for values stable for the context's
-lifetime. Inventory: grep `create_context<`.
+## Snippets and each blocks
 
-## Snippets
-
-Top-level snippets are referenceable from `<script>`; one that doesn't touch
-component state can be exported from `<script module>`.
-
-**Parameterized children**: `Dialog` passes a `DialogContext` back
-(`{close, register_surface}` from `@fuzdev/fuz_ui/dialog.ts`; `register_surface`
-marks click-outside-safe regions) —
-`children: Snippet<[dialog: DialogContext]>`, rendered
-`{@render children(context)}`. `ThemeRoot` passes multiple values
-(`Snippet<[theme_state, style, theme_style_html]>`).
-
-**Generics**: fuz_ui's only real `generics=` use is `Contextmenu.svelte`'s
-tag-name generic (`generics="T extends string = 'span'"`); the generic
-list-renderer shape (`items: T[]` + `item: Snippet<[T]>`) has no ecosystem
-precedent yet.
-
-**Optional / string-or-snippet props**:
-`{#if snippet}{@render snippet()}{:else}…{/if}`; for `icon?: string | Snippet`
-branch on `typeof` at render (`Card`, `Alert`; `Alert` also parameterizes with
-`Snippet<[icon: string]>` to pass the resolved icon back).
-
-## Each Blocks
-
-Keyed — `{#each items as item (item.id)}` — with a unique key, never the
-index. Don't destructure the item when something mutates it
-(`bind:value={item.count}` needs the object reference).
+- **`children` can take arguments.** fuz_ui's `Dialog` hands its content a
+  `DialogContext`: `children: Snippet<[dialog: DialogContext]>`, rendered with
+  `{@render children(context)}`.
+- **A generic list component** declares `generics="T"` on the script tag and
+  takes snippets typed over `T`, such as `Snippet<[item: T]>`: zzz's
+  `SortableList`, fuz_ui's `RadioMenu`, fuz_app's `Datatable`.
+- **A tree renders through recursive snippets, not a recursive component**,
+  so the whole tree is one component instance and one set of context reads
+  (mdz's `MdzNodeView`).
+- **`icon?: string | Snippet`** branches on `typeof` at the render site
+  (`Card`, `Alert`).
+- **Every `{#each}` is keyed** (the lint config requires it), by identity:
+  `(item.id)`. The index is a key only for a positional list that never
+  reorders. Don't destructure an item that something binds to.
 
 ## Effects
 
-Effects are an escape hatch. Prefer `$derived` for computing; `{@attach}` for
-syncing with external libraries or DOM; event handlers or function bindings
-(`bind:value={get, set}`) for user interaction; `$inspect` for debug logging;
-`createSubscriber` from `svelte/reactivity` for observing something external;
-`untrack()` for reads that shouldn't create a dependency (config reads, breaking
-bidirectional-sync loops). Don't wrap effect contents in `if (browser)` —
-effects don't run on the server. Avoid updating `$state` inside effects.
+An effect is the last resort. Compute with `$derived`, sync an element with
+`{@attach}`, react to the user in an event handler.
 
-- **Debugging**: `$inspect.trace(label)` as the first line of an `$effect` or
-  `$derived.by` reports which dependency triggered a rerun.
-- **Listeners**: `<svelte:window>`/`<svelte:document>` over `$effect` +
-  `addEventListener`; element-scoped listeners go in `{@attach}` with `on()`.
-- **`$effect.pre()`** runs before DOM updates — dev-mode prop validation
-  (`if (DEV) $effect.pre(() => { if (!path && !href) throw … })` in
-  `GithubLink.svelte`) and scroll management.
-- **`effect_with_count(fn, initial = 0)`** from
-  `@fuzdev/fuz_ui/rune_helpers.svelte.ts` passes a call count so the initial
-  run can be skipped (`if (count === 1) return;` before persisting a change).
+- No `if (browser)` inside an effect: effects don't run on the server.
+- `<svelte:window>` and `<svelte:document>` for global listeners, not an
+  effect around `addEventListener`.
+- `$effect.pre` for DEV-only prop validation (`GithubLink.svelte`).
+- `effect_with_count(fn)` from `@fuzdev/fuz_ui/rune_helpers.svelte.ts` passes
+  a run count, so a handler can skip the first run
+  (`if (count === 1) return;`) before persisting a change.
+- **Measure with a binding**: `bind:clientWidth`, `bind:clientHeight`, or
+  `bind:contentRect`, not `bind:this` plus a `ResizeObserver` in an effect.
 
 ## Attachments
 
-`{@attach}` replaces `use:` actions. Attachments live in `*.svelte.ts` and are
-`(element) => cleanup | void`, typed as `Attachment` from `svelte/attachments`.
-fuz_ui uses a **factory** — a function taking config and returning the
-attachment (`{@attach my_attachment({...})}`):
+`{@attach}` replaces `use:`. An attachment lives in a `*.svelte.ts` module and
+is exported as a factory that takes its config:
 
 ```typescript
-export const my_attachment =
-	(options?: MyOptions): Attachment<HTMLElement | SVGElement> =>
+// fuz_ui autofocus.svelte.ts
+export const autofocus =
+	(options?: FocusOptions): Attachment<HTMLElement | SVGElement> =>
 	(el) => {
-		// setup
-		return () => { /* cleanup */ };
+		el.focus({ focusVisible: true, ...options });
 	};
 ```
 
-| Pattern                       | When                                                  | Exemplar                 |
-| ----------------------------- | ----------------------------------------------------- | ------------------------ |
-| **Simple factory**            | Fire-once, no ongoing observation                     | `autofocus(options?)`    |
-| **Lazy function** (`() => p`) | Reactive callbacks without rebuilding an observer     | `intersect(get_params)`  |
-| **Direct params**             | Static config cached for later retrieval              | `contextmenu_attachment` |
-| **Class method**              | Attachment shares reactive state with a class         | zzz `Scrollable`         |
+- **An attachment that builds an expensive observer takes a getter**, as
+  `intersect(() => params)` does, and reads it in an effect of its own.
+  Reactive callbacks then update without rebuilding the observer.
+- **An attachment runs in an effect**, so one that reads reactive state
+  reruns when it changes. A class exposes attachments as fields to share its
+  state with the element:
 
-- `autofocus` solves the HTML `autofocus` attribute not firing when an element
-  mounts from a reactive `{#if}`.
-- `intersect` takes `() => IntersectParamsOrCallback | null | undefined` (a bare
-  callback or a params object: `onintersect`, `ondisconnect`, `count`,
-  `options`) and runs `$effect` internally, so reactive callbacks update without
-  recreating the IntersectionObserver (rebuilt only when options change, deep
-  equality). Reach for the lazy form whenever the attachment builds an expensive
-  observer from reactive values.
-- `contextmenu_attachment(params)` caches menu params on the element's dataset;
-  its cleanup removes the entry.
+  ```typescript
+  // zzz scrollable.svelte.ts (abridged)
+  export class Scrollable {
+  	target_class: string = $state.raw()!;
+  	threshold: number = $state.raw()!;
+  	scroll_y: number = $state.raw(0);
+  	readonly scrolled: boolean = $derived(this.scroll_y > this.threshold);
 
-**Class-method attachments run in an effect context**, so one that reads
-reactive state reruns when it changes — the reason to use this shape:
+  	container: Attachment = (element) => {
+  		const onscroll = () => {
+  			this.scroll_y = element.scrollTop;
+  		};
+  		const cleanup = on(element, 'scroll', onscroll);
+  		onscroll(); // the event won't fire on mount
+  		return cleanup;
+  	};
 
-```typescript
-// scrollable.svelte.ts (simplified)
-export class Scrollable {
-	scroll_y: number = $state(0);
-	readonly scrolled: boolean = $derived(this.scroll_y > this.threshold);
-
-	container: Attachment = (element) => {
-		const onscroll = () => { this.scroll_y = element.scrollTop; };
-		const cleanup = on(element, 'scroll', onscroll);
-		onscroll(); // sync the initial value — the event won't fire on mount
-		return cleanup;
-	};
-
-	// reruns whenever `this.scrolled` flips
-	target: Attachment = (element) => {
-		element.classList.toggle(this.target_class, this.scrolled);
-		return () => element.classList.remove(this.target_class);
-	};
-}
-// <div {@attach scrollable.container} {@attach scrollable.target}>
-```
+  	// reruns when `scrolled` flips
+  	target: Attachment = (element) => {
+  		if (this.scrolled) {
+  			element.classList.add(this.target_class);
+  		} else {
+  			element.classList.remove(this.target_class);
+  		}
+  		return () => element.classList.remove(this.target_class);
+  	};
+  }
+  // <div {@attach scrollable.container} {@attach scrollable.target}>
+  ```
 
 ## Props
 
-Treat props as though they will change: derive from them
-(`let color = $derived(type === 'danger' ? 'red' : 'green')`), never assign once
-at init. `let` (not `const`) when destructuring `$bindable()` props.
+- **Treat a prop as a value that will change.** Derive from it; never read it
+  once at init.
+- **Rest props are typed from `SvelteHTMLElements['div']`** (`svelte/elements`),
+  intersected with the component's own props, spread as `{...rest}`, with the
+  class merged as an array (`class={['card', rest.class]}`), since a caller
+  may pass an array or object.
+- **When the root tag varies**, don't intersect both element types. Type the
+  shared rest as `HTMLAttributes<HTMLElement>` and take each branch's own
+  attributes as an `*_attrs` prop: `Card`'s `a_attrs?: SvelteHTMLElements['a']`,
+  `Alert`'s `button_attrs` and `div_attrs`.
+- **`$props.id()`** for `id`/`for` pairs and SVG `<defs>` references. No
+  counters, no `crypto` ids.
+- Props are documented inline in the `$props()` type (see
+  ./tsdoc-comments.md).
 
-**Rest props**: intersect `SvelteHTMLElements['div']` (from `svelte/elements`,
-not `HTMLAttributes<HTMLDivElement>`) with custom props for single-root
-components, spread `{...rest}` and merge `class="card {rest.class}"`. When the
-root tag varies (`Card` renders `<a>` or `<div>`), don't intersect both element
-types — type shared rest props as `HTMLAttributes<HTMLElement>` and take
-branch-specific attrs separately (`a_attrs?: SvelteHTMLElements['a']` — the
-`*_attrs` shape used by `Card`, `Alert`, `Details`).
+## Events
 
-**`$props.id()`** gives an SSR-safe per-instance id for `id`/`for` pairs and
-SVG `<defs>` references (`Sparkline`, `ProjectActivityChart`) — no hand-rolled
-counters or `crypto` ids.
+- **`on()` from `svelte/events` for a DOM listener added in code**: an
+  attachment, a `.svelte.ts` class, a helper. It keeps ordering with
+  Svelte's delegated handlers and returns its cleanup. This is the form for
+  new code; some listeners still call `addEventListener`. Non-DOM targets (an
+  `AbortSignal`, a `WebSocket`) take `addEventListener`.
+- **Handling an event claims it.** `swallow(event)` from
+  `@fuzdev/fuz_util/dom.ts` calls `preventDefault()` and
+  `stopImmediatePropagation()`; reach for it where a handler would call
+  `preventDefault` on a key or pointer event that other handlers could also
+  see. `swallow(e, false)` uses `stopPropagation` in place of the immediate
+  form, and `swallow(e, true, false)` leaves the default. A parent that must
+  see the event first listens in the capture phase. A form's `onsubmit` just
+  calls `preventDefault()`.
+- A conditional handler passes `undefined` to detach:
+  `onkeydown={active ? on_keydown : undefined}`.
 
-## Event Handling
+## Styling
 
-Standard DOM syntax; conditional handlers pass `undefined` to remove
-(`<svelte:window onkeydown={active ? on_window_keydown : undefined} />`).
-
-**`on()` from `svelte/events`** for programmatic listeners in attachments,
-`.svelte.ts`, and plain `.ts` — preserves ordering relative to delegated
-declarative handlers and returns a cleanup. Always prefer it over
-`addEventListener`, even outside components
-(`on(element, 'wheel', onwheel, { passive: false })`).
-
-**`swallow(event, immediate = true, preventDefault = true)`** from
-`@fuzdev/fuz_util/dom.ts` combines `preventDefault()` and
-`stopImmediatePropagation()` (`swallow(e, false)` → `stopPropagation` instead;
-`swallow(e, true, false)` → no `preventDefault`). **Handling an event =
-claiming it**: use `swallow` whenever you would call `preventDefault`; if a
-parent must observe first, use the `capture` phase explicitly. Handlers that
-only need `stopPropagation` (keeping game input from seeing chat keystrokes)
-call `e.stopPropagation()` directly.
-
-## Component Composition
-
-`<script lang="ts" module>` for component-level exports — contexts and types
-(`TomeSection.svelte` exports `register_section_header_context`,
-`section_depth_context`, `section_id_context`).
-
-## Runes in `.svelte.ts` Files
-
-Prefer **classes** over module-level state: export a class, instantiate once
-at the appropriate root, share via context.
-
-**No module-level runes for shared state.** A module-level `$state` behind
-getter/setter objects is a hidden global: it can't be reset per test, realm,
-or session; its lifetime is the module's; a second instance is impossible;
-and during SSR it leaks between requests. Same for factories closing over
-`$state` and returning `{get query() {...}, set query(v) {...}}` proxies — a
-common community pattern the stack doesn't use; rewrite as a class when
-touching one.
-
-```typescript
-export const world_ui_context = create_context<WorldUiState>();
-export class WorldUiState {
-	show_map: boolean = $state(false);
-	show_sidebar: boolean = $state(true);
-}
-// layout: world_ui_context.set(new WorldUiState()); descendants: world_ui_context.get()
-```
-
-Precedent: fuz_app's `SidebarState` (`ui/sidebar_state.svelte.ts`) with an
-options-injected `enabled` getter override, provided by `AppShell.svelte` via
-the getter context `sidebar_state_context`. For derived-heavy state, pair
-writable `$state` fields with `readonly` deriveds — fuz_ui's `ApiSearchState`
-(`api_search.svelte.ts`).
-
-**Role-gated UI reads global grants.** Gate on `auth.is_admin` /
-`auth.has_global_role(role)` from fuz_app's `AuthState`
-(`ui/auth_state.svelte.ts`) — global grants only, the rule the server's role
-gates apply — never on a scan of grant role names, which reads a grant scoped
-to one resource as authority everywhere.
-
-**Plain classes for imperative loops.** Canvas2D/WebGPU renderers, rAF loops,
-and long-lived pointer listeners use a **plain class with no runes**, mounted
-by a thin `.svelte` wrapper: private fields (`#hovered_id`) stay non-reactive
-so rAF mutations don't schedule reruns; the wrapper binds dimensions, forwards
-reactive sources via getter-backed options, and calls `destroy()` on unmount.
-
-## CSS in Components
-
-Minimal `<style>` blocks — many components have none; when one exists it holds
-component-specific layout with all values from tokens (./css-patterns.md).
-Use clsx-style arrays/objects in `class`, not the `class:` directive:
-
-```svelte
-<div class={['card', active && 'active', size]}></div>  <!-- not class="card" class:active -->
-```
-
-Theming and child-styling (`style:` on elements, `--prop={v}` on components,
-`:global` as a last resort): ./css-patterns.md §Dynamic Theming.
+Component CSS, conditional classes, the theming API, and the scoped-selector
+trap are in ./css-patterns.md §Components.

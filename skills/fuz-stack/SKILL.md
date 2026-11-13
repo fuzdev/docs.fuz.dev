@@ -1,6 +1,6 @@
 ---
 name: fuz-stack
-description: Development conventions and coding patterns for the @fuzdev ecosystem — naming, file organization, testing, styling, documentation, and tooling for TypeScript, Svelte 5, and Rust projects. Use when writing or reviewing code in any @fuzdev project. Triggers include running gro commands (gro check, gro test, gro gen), styling with fuz_css, writing or splitting tests, generating code with .gen.ts files, naming functions or variables (snake_case conventions), organizing files in src/lib/ or src/test/, writing TSDoc comments, creating Svelte 5 components with runes, or formatting code. Also use for the Result type, fixture-based testing, CSS utility classes, TODO_ docs, breaking changes policy, async concurrency patterns, Gro task system, type utilities (Flavored, Branded), dependency injection patterns (*Deps/*Options/*Context interfaces, AppDeps, RuntimeDeps, mock factories), or setting up documentation (tomes, svelte-docinfo, API routes, docs layout). Also covers the ecosystem's Rust workspaces — cargo and clippy lints, thiserror error handling, the dependency-injection escalation ladder, enum-dispatch and make-impossible-states idioms, spine-consumer servers (zzz_server, fuz_forge_server), daemon lifecycle, and CLI and xtask patterns. Triggers include running cargo or clippy, editing Cargo.toml, naming or organizing Rust crates, or working on the fuz and fuzd daemon, the zap convergence engine, or the spine crates.
+description: Development conventions and coding patterns for the @fuzdev ecosystem — naming, file organization, testing, styling, documentation, and tooling for TypeScript, Svelte 5, and Rust projects. Use when writing or reviewing code in any @fuzdev project. Triggers include running gro commands (gro check, gro test, gro gen), styling with fuz_css, writing or splitting tests, generating code with .gen.ts files, naming functions or variables (snake_case conventions), organizing files in src/lib/ or src/test/, writing TSDoc comments, creating Svelte 5 components with runes, or formatting code. Also use for the Result type, fixture-based testing, CSS utility classes, breaking changes policy, async concurrency patterns, Gro task system, type utilities (Flavored, Branded), dependency injection patterns (*Deps/*Options/*Context interfaces, AppDeps, RuntimeDeps, mock factories), or setting up documentation (tomes, svelte-docinfo, API routes, docs layout). Also covers the ecosystem's Rust workspaces — cargo and clippy lints, thiserror error handling, the dependency-injection escalation ladder, enum-dispatch and make-impossible-states idioms, spine-consumer servers (zzz_server, fuz_forge_server), daemon lifecycle, and CLI and xtask patterns. Triggers include running cargo or clippy, editing Cargo.toml, naming or organizing Rust crates, or working on the fuz and fuzd daemon, the zap convergence engine, or the spine crates.
 license: 0BSD
 metadata:
   author: ryanatkn
@@ -9,409 +9,254 @@ metadata:
 
 # Fuz stack conventions
 
-> **Pre-alpha**: conventions are actively evolving. When code or a project's
+> **Pre-alpha**: conventions are still moving. When code or a project's
 > `CLAUDE.md` conflicts with this skill, the code is ground truth.
 >
-> **À la carte**: each project adopts only what serves it. Deep imports and
-> the flat namespace make this natural at the package level too.
+> **À la carte**: each project adopts what serves it.
 >
-> **Skip for**: planning/lore-only edits, third-party code review, simple
-> git/shell operations. Repo `CLAUDE.md` is authoritative for project-specific
-> patterns — this skill covers shared conventions across TypeScript, Svelte,
-> and Rust.
+> **Skip for**: planning/lore-only edits, third-party code review, simple git
+> or shell operations.
 
-## Why These Conventions
+**Read by language.** §Shared rules applies to everything. A TS or Svelte
+task reads §TypeScript and Svelte; a Rust task skips to §Rust Crates. Each
+part is the rules that most often go wrong, then a list of references to read
+by task. The references own conventions, patterns, and traps; each repo's
+`CLAUDE.md` owns its inventory (modules, commands, options).
 
-The stack is designed so the full lifecycle — produce, deploy, operate — is
-accessible to anyone with intent and an AI partner. Consistent,
-self-describing patterns let an agent learn once and apply everywhere:
-snake_case aligns TS, Rust, and SQL with zero renaming; schemas are the
-single source of truth for data shape, type, defaults, and validation
-(`@fuzdev/fuz_schema`, stack-wide); `fuz_app` is the shared
-backend spine (auth, sessions, DB, SSE) that zzz and the apps build on.
+## Shared rules
 
-## Package Ecosystem
+The stack is built so that producing, deploying, and operating software is
+within reach of one person and an AI partner. Consistent, self-describing
+patterns are what let an agent learn a rule once and apply it in every repo.
 
-Each package's `CLAUDE.md` is authoritative for what it actually uses.
+- **snake_case across TS, Rust, and SQL**, so one identifier names the same
+  thing in every layer (`query_session_get_valid`, `keyed_hash`) with no
+  renaming at a boundary.
+- **Schemas are the source of truth for data**: shape, type, defaults, and
+  validation come from one definition, and a schema change cascades.
+- **No backwards compatibility.** Rename or delete in place and update every
+  caller. No deprecated stubs, shims, or compat aliases. A published package
+  records a consumer-visible change in a changeset (`gro changeset`).
+- **A new dependency needs approval**, and so does a new package or crate.
+  Prefer the allowlists in ./references/npm-dependencies.md and
+  ./references/rust-dependencies.md. Upgrades are the maintainer's. Removing
+  a dependency nothing uses is pre-authorized.
+- **Versions, publishing, and deploys are the maintainer's.** Don't run
+  `gro publish`, `gro deploy`, or `gro release`.
+- **`// TODO` comments are welcome**, not debt to hide. `// TODO @many` marks
+  one that applies in several places. A planning doc that spans sessions
+  lives outside the repo, in whatever planning layer the workspace has:
+  `gro check` refuses a `TODO*.md` at a repo's root on CI.
 
-| Package        | Description                                                                     |
-| -------------- | ------------------------------------------------------------------------------- |
-| `fuz_util`     | foundation utilities (zero deps) — hashing, async, schemas, types               |
-| `fuz_schema`   | performance-focused schema library — all but app data, `Flavored`               |
-| `gro`          | security-first JS runtime and toolchain on V8 (today a Node task runner)        |
-| `fuz_css`      | semantic-first CSS framework and design system                                  |
-| `mdz`          | minimal markdown dialect — parser, renderer, Svelte preprocessor                |
-| `fuz_ui`       | Svelte 5 components — themes, layouts, overlays, auto-docs                      |
-| `fuz_app`      | stack spine — auth, sessions, DB, SSE, route specs                              |
-| `docs.fuz.dev` | experimental AI-generated docs and skills for Fuz                               |
-| `fuz_template` | starter template — SvelteKit web apps, Rust native tools, or both               |
-| `fuz_code`     | syntax styler for TypeScript, Svelte, Markdown, and more                        |
-| `fuz_blog`     | blog software from scratch with SvelteKit                                       |
-| `fuz_repos`    | multi-repo management                                                           |
-| `blake3`       | BLAKE3 hashing compiled to WASM (`@fuzdev/blake3-wasm` + `blake3-wasm-small`)   |
-| `zzz`          | software garage — produce software with AI assistance                           |
-| `zap`          | convergence — deploy and operate infrastructure                                 |
+## Packages
 
-**Dependency flow**: `fuz_schema → fuz_util → gro + fuz_css → mdz → fuz_ui → fuz_app → zzz, apps`.
-zap sits beside the chain: its site builds on fuz_ui; its Rust engine links
-only fuz's spine-free system leaves (`fuz_eval`, which pulls in `fuz_sys`),
-plus `fuz_audit` for its xtask — never the HTTP/DB spine.
+**Dependency order**:
+`fuz_schema → fuz_util → gro, fuz_css → fuz_code, mdz → fuz_ui → fuz_app → apps`.
 
-**Deps**: prefer the approved allowlists (./references/npm-dependencies.md,
-./references/rust-dependencies.md). Adding or upgrading needs approval;
-removing an unused dep is pre-authorized.
+| Package          | What it is                                                          |
+| ---------------- | ------------------------------------------------------------------- |
+| `fuz_schema`     | the stack's schema library                                          |
+| `fuz_util`       | foundation utilities, with no `dependencies` of its own             |
+| `gro`            | task runner and toolchain; becoming a JS runtime on V8              |
+| `fuz_css`        | semantic-first CSS framework and design system                      |
+| `fuz_code`       | syntax highlighting                                                 |
+| `mdz`            | strict markdown dialect: parser, renderer, Svelte preprocessor      |
+| `fuz_ui`         | Svelte 5 components, theming, the docs system                       |
+| `fuz_app`        | the TS backend spine: auth, sessions, DB, actions, realtime         |
+| `svelte-docinfo` | static analysis of TS and Svelte, behind the API docs               |
+| `tsv`            | formatter and parser for TS, Svelte, and CSS (Rust)                 |
 
-## Coding Conventions
+fuz_app's Rust twin is the spine crates in the `fuz` repo; servers such as
+zzz's and fuz_forge's are built on those, and fuz_app's cross-backend suites
+hold the two to one wire contract.
 
-### Naming — snake_case + PascalCase
+## TypeScript and Svelte
 
-Functions, variables, and constants you define are `snake_case`
-(`SCREAMING_SNAKE_CASE` for constants); types, classes, and components are
-`PascalCase`. **Not camelCase.** External APIs keep their native casing
-(`.map()`, `addEventListener()`, `initSync`).
+### Naming
+
+Functions, variables, and `.ts` files are `snake_case`. Types, classes,
+components, and schemas are `PascalCase`. Primitive constants are
+`SCREAMING_SNAKE_CASE`. **Not camelCase.** An external API keeps its own
+casing (`.map()`, `addEventListener()`). svelte-docinfo follows the wider
+Svelte ecosystem's conventions instead (camelCase, kebab-case files, an index
+barrel), because that ecosystem is its audience.
 
 ```typescript
-export const git_current_branch_name = async (): Promise<GitBranch> => { ... };
+export const git_current_branch_name = async (
+	git: SpawnProgram,
+	options?: SpawnCallOptions
+): Promise<GitBranch> => { ... };
 export function create_context<T>(fallback?: () => T) { ... }
 const DEFAULT_TIMEOUT = 5000;
-type PackageJson = {};
+export const Args = s.object({ ... }); // a schema shares its type's name
 class DocsLinks {}
 // file: src/lib/DocsLink.svelte
 ```
 
-Why: cross-language alignment (same identifiers in TS, Rust, and SQL —
-`keyed_hash`, `get_user_sessions`) and legibility (`package_json_load` vs
-`packageJsonLoad`).
+The name's form is chosen by what disambiguates it in a flat namespace:
 
-### Naming Patterns
+| Pattern               | Example                   | When                            |
+| --------------------- | ------------------------- | ------------------------------- |
+| `domain_action`       | `git_push`                | the bare action is ambiguous    |
+| `domain_is_adjective` | `git_workspace_is_clean`  | a boolean in a domain cluster   |
+| `action_domain`       | `escape_js_string`        | the action reads on its own     |
+| `to_target`           | `to_file_path`            | a conversion                    |
+| `create_domain`       | `create_context`          | a factory                       |
+| `query_table_verb`    | `query_session_get_valid` | a SQL query function            |
 
-Two forms, chosen by **disambiguation** in the flat namespace:
+The file says which: `git.ts` holds `git_*`, `string.ts` holds action-first
+names. Common verbs: `create`, `to`, `is`, `has`, `parse`, `format`,
+`resolve`, `generate`, `load`, `find`, `render`, and `assert` for a test
+helper.
 
-| Pattern               | Example                  | Use case                                       |
-| --------------------- | ------------------------ | ---------------------------------------------- |
-| `domain_action`       | `git_push`               | bare action ambiguous → prefix the domain      |
-| `domain_is_adjective` | `git_workspace_is_clean` | boolean in a domain cluster                    |
-| `action_domain`       | `escape_js_string`       | self-descriptive action, domain qualifies      |
-| `to_target`           | `to_file_path`           | conversions                                    |
-| `format_target`       | `format_number`          | formatting                                     |
-| `create_domain`       | `create_context`         | factories                                      |
+### Flat namespace
 
-Rule of thumb: domain-prefix when the bare name is ambiguous (`git_push` not
-`push`); action-first when self-descriptive (`truncate`, `strip_start`). File
-names signal which: `git.ts` → `git_*`, `string.ts` → action-first.
+**Every exported name is unique across a package's modules.** svelte-docinfo
+checks it, and projects turn the check on with
+`svelte_docinfo({onDuplicates: 'throw'})`, which fails the build listing each
+conflict. Resolve one by renaming the side that isn't the primary API:
 
-Action verbs: `parse`, `create`, `get`, `to`, `is`, `has`, `format`,
-`render`, `analyze`, `extract`, `load`, `save`, `escape`, `strip`, `ensure`,
-`validate`, `should`.
-
-### Flat Namespace — Fail Fast
-
-All exported identifiers must have **unique names across all modules**. The
-check is opt-in in `svelte-docinfo`, and fuz projects turn it on with
-`svelte_docinfo({onDuplicates: 'throw'})`, which fails the build listing every
-conflict with module path and kind. Resolve by renaming the side that
-is _not_ the primary public API, or `/** @nodocs */` the loser — but `@nodocs`
-hides it from docs and tomes, so it's wrong when external consumers use it.
-
-- Component is primary (class is state/helper): suffix the class `State` /
-  `Info` (`DocsLink.svelte` + `DocsLinkInfo`; precedent `ThemeState`,
+- **The component is primary**: suffix the class `State` (`ThemeState`,
   `AuthState`, `SidebarState`).
-- Class is primary (stateful, consumers instantiate it): suffix the component
-  `View` / `Pane` (zzz's `Chat` + `ChatView.svelte`; mdz's `MdzNode` +
-  `MdzNodeView.svelte`).
+- **The class is primary** (consumers instantiate it): suffix the component
+  `View` (zzz's `Chat` and `ChatView.svelte`).
+- **The `@nodocs` tag removes an export from the check and from the docs.**
+  It is right for the `task`, `Args`, and `gen` exports that every task and
+  gen file shares, and wrong for anything a consumer imports.
 
-### File Organization
+### Files
 
-- **`src/lib/`** — exportable code: `PascalCase.svelte`, `*.ts`, `*.svelte.ts`
-  (runes), `*.gen.ts` (generated)
-- **`src/test/`** — tests (NOT co-located), mirroring `lib/`
-- **`src/routes/`** — SvelteKit routes
-- **No barrels** — import every module by full path
-  (`@fuzdev/fuz_app/env/load.ts`); package `exports` use wildcards
-- **No re-exports in TypeScript** — each TS symbol has one canonical module;
-  callers import it from there. Don't `export {X} from './y.ts'` or re-export an
-  import to spare callers an import line — two paths to one symbol drift and
-  hide its source. Exceptions are modules whose job is to aggregate or wrap:
-  generated registries and a hand-written entry over a non-importable generated
-  module (wasm-pack's `pkg/`)
-- **Subdirectories** at 3+ closely related files sharing a domain concept
-  (`lib/auth/`, `lib/env/`, `lib/db/` in fuz_app) — not preemptively; a lone
-  file stays at `lib/` root; the subdirectory is part of the import path
-  (`@fuzdev/fuz_app/env/load.ts`), and tests mirror it
-  (`src/lib/auth/keyring.ts` → `src/test/auth/keyring.test.ts`). Domain files
-  split by role: `account_schema.ts`, `account_queries.ts`,
-  `account_routes.ts`, `session_middleware.ts`
+- **`src/lib/`** is exportable code, **`src/routes/`** is the SvelteKit app,
+  and **`src/test/`** is every test, mirroring `lib/`. Tests are never
+  beside the source.
+- **No barrels.** Import each module by its path
+  (`@fuzdev/fuz_app/env/load.ts`, `@fuzdev/gro/task.ts`); package `exports`
+  are wildcards. gro's bare `@fuzdev/gro` entry re-exports a few types;
+  prefer the module paths.
+- **No re-exports.** A symbol has one module, and callers import it from
+  there. Two paths to one symbol drift and hide its source. The exceptions
+  are modules whose job is to aggregate or wrap: a generated registry, a
+  hand-written entry over generated output that can't be imported directly
+  (wasm-pack's `pkg/`), and a project file that re-exports a task or gen a
+  package ships, so gro can run it by path.
+- **Most repos keep `src/lib` flat** and cluster by filename prefix
+  (`git.ts`, `sveltekit_shim_*.ts`): the libraries, and zzz, the largest app.
+  **fuz_app and fuz_forge group each domain into a subdirectory**
+  (`lib/auth/`, `lib/db/`), which becomes part of the import path and which
+  the tests mirror. Follow the repo, and don't open a subdirectory for a file
+  or two.
+- **A domain's files split by role**: `account_schema.ts`,
+  `account_queries.ts`, `account_routes.ts`.
 
-### Code Style
+### Code style
 
-- TypeScript strict mode, explicit types; Svelte 5 runes; tsv formatting with
-  tabs, 100 char width
-- **Import extensions**: the real source extension — `./bar.ts`,
-  `./Foo.svelte`, never `.js`-for-a-`.ts`-file — gro's loader resolves exactly
-  the named file, no extension probing. Library code (`src/lib`)
-  imports relative; everything else (`src/routes`, `src/test`) uses the
-  `#lib/*` / `#routes/*` package.json subpath imports (`#lib/db/db.ts`).
-  Cross-package `@fuzdev/pkg/foo.ts` resolves via the package's `exports`
-  `.js`/`.ts` mirror. Full rules: ./references/path-references.md §5.
-- **Comments**: JSDoc (`/** */`) = sentences with periods; inline (`//`) =
-  fragments, no capital or period
-- **No backwards compatibility**: delete unused code, rename directly, no
-  deprecated stubs or shims. Document breaks in changesets.
+- **Strict TypeScript, Svelte 5 runes, tabs, 100 columns.** `gro format`
+  (tsv) formats; don't hand-format.
+- **An import names the real file**: `./bar.ts`, `./Foo.svelte`, never `.js`
+  for a `.ts` file. `src/lib` imports relatively. Outside it, `#lib/*` and
+  `#routes/*` reach into those trees and a file in the same directory is
+  imported relatively. Another package is `@fuzdev/pkg/foo.ts`. Rules and
+  reasons: ./references/path-references.md §Import specifiers.
+- **Comments**: a doc comment (`/** */`) is sentences with periods. An inline
+  `//` comment is a lowercase fragment with no period, in new code; older
+  files mix both.
 
-## Gro Commands
-
-Gro is installed globally — run `gro` directly, never `npx gro`.
+### The gate
 
 ```bash
-gro check        # CI command: typecheck + test (when vitest is declared) + gen --check + format --check + lint
-gro test         # vitest
-gro typecheck    # faster iteration
-gro gen          # run *.gen.ts generators (gro gen --check verifies no drift)
-gro format       # tsv
-gro lint         # ESLint
-gro build        # production build
-gro publish      # changesets version + npm publish + git push
-gro deploy       # build + force push to deploy branch
-gro release      # publish + deploy
-gro changeset    # create a changeset
-gro sync         # gen + update exports
-gro run file.ts  # execute TS; everything after the path goes to the script
-gro task         # list project tasks under src/
-gro task src/lib/foo.task.ts  # run a project task by path
+gro check       # everything below, the command to run before calling work done
+gro typecheck   # svelte-check or tsc
+gro test        # vitest; `gro test foo` filters
+gro gen         # run *.gen.ts files; `gro gen --check` fails on drift
+gro format      # tsv; `gro format --check` verifies
+gro lint        # eslint
+gro sync        # svelte-kit sync + package.json exports; run when check says they drifted
 ```
 
-`gro check` runs its test step when vitest is a direct dependency (`dependencies`
-or `devDependencies`) or args are forwarded to the tests. When vitest isn't
-declared, `gro test` fails, and `gro check` skips the step if no test files
-exist and fails naming them if some do. `--no-test` skips the step without
-looking.
+- **Run `gro` directly**, never through `npx`.
+- **`gro check` syncs first** (`svelte-kit sync`, `package.json` exports),
+  then runs typecheck, tests, `gen --check`, a `package.json` drift check,
+  `format --check`, and lint.
+- **The test step runs when vitest is a declared dependency**, or when args
+  are forwarded to the tests. Without either, `gro check` skips tests when
+  there are no test files and fails naming them when there are.
+- **A name is a builtin; a project task runs by path**:
+  `gro task src/lib/foo.task.ts`. `gro` lists the builtins.
+- **Read the gate's exit code.** Don't pipe it through a filter and then
+  commit.
 
-`SKIP_EXAMPLE_TESTS=1 gro test` skips slow example tests in repos that
-support the flag. A name means only a builtin; a project task runs by path,
-`.task.ts` suffix required — nothing is searched, and a project task never
-shadows a builtin. To extend a builtin, write a task that invokes it by name
-(composition, not an override) and point the `package.json` script at it.
-Custom tasks: ./references/task-patterns.md.
+### The rules by topic
 
-## Code Generation
+- **Styling** — fuz_css styles semantic HTML, and block elements space
+  themselves. The default is the baseline: name the gap before adding a
+  class or a `<style>` block. Work down the ladder (element, built-in
+  convention, composite, token or keyword class, literal class, `<style>`)
+  and never hardcode a spacing or color value. Local classes are
+  `kebab-case` and never take a fuz_css class name.
+- **Svelte** — runes only. Shared state is a class with rune fields, shared
+  through `create_context` from `@fuzdev/fuz_ui/context_helpers.ts`, never
+  module-level runes. `$state.raw()` for a value that is only reassigned,
+  `$state()` for one mutated in place.
+- **Schemas** — `@fuzdev/fuz_schema` is the one schema library. `s.object`
+  rejects unknown keys and is the default. A schema and its type share a
+  PascalCase name. `s.parse` at a boundary, `s.parse_or_throw` for an
+  invariant, `s.with_default_fn` for a mutable default.
+- **Dependency injection** — side effects are small `*Deps` interfaces taken
+  as parameters and composed bottom-up; data is `*Options`. A function that
+  spawns takes each program as a handle. A root (a server entry, a task) is
+  thin, with its body in a function that takes deps. Tests pass plain
+  objects, not module mocks. In the browser, DI is Svelte context.
+- **Results and errors** — `Result` from `@fuzdev/fuz_util/result.ts` for a
+  failure the caller handles, an exception for a bug. `to_error_message(e)`
+  for a caught `unknown`.
+- **Tests** — `assert` from vitest (it narrows), `test()` not `it()`, files
+  split by aspect (`module.aspect.test.ts`), any test with a database named
+  `.db.test.ts`. Fixture `expected.json` files are generated, never
+  hand-edited.
+- **SQL** — one module per table, new functions named `query_<table>_<verb>`
+  taking `QueryDeps`, and every read projected through the table's `*_COLUMNS`
+  const, never `SELECT *`.
+- **TSDoc** — say why, not what. Backtick every identifier; on API pages
+  they become links. The one exception is the reference that opens a `@see`,
+  which is written bare. `@param name - description`, `@returns`,
+  `@throws ErrorType description`, and `@mutates target - description` for a
+  mutation a reader wouldn't guess.
+- **Docs prose** — a bare `./` or `../` path is a promise that it resolves on
+  disk and renders as a link; backtick an illustrative one. A module is its
+  backticked `src/lib`-relative path. mdz is not GFM: single `*` is literal,
+  and `snake_case` survives.
+- **Tasks and gen** — a task's `Args` is a fuz_schema schema. Generated
+  files are committed and `gro check` fails on drift.
 
-`*.gen.ts` files export `gen`; `foo.gen.ts` → `foo.ts`, `foo.gen.css.ts` →
-`foo.css`. Return `string`, `{content, filename?, format?}`, an array, or
-`null`. Most projects run `gro gen` rarely — fuz_css utility classes come from
-the `vite_plugin_fuz_css` plugin (`virtual:fuz.css`) and API metadata from the
-`svelte-docinfo` plugin, not gen tasks. See ./references/code-generation.md.
+### Read by task
 
-## TSDoc/JSDoc Conventions
-
-Full guide: ./references/tsdoc-comments.md.
-
-- Main description: complete sentences ending in a period
-- `@param name - description`: hyphen separator; single sentence = lowercase
-  fragment, no period; multi-sentence = capitalized with periods. `@returns`
-  (not `@return`) follows the same rule
-- `@module` at the end of a module-level comment
-- `@mutates target - description`: the description must name what a reader
-  wouldn't guess (columns, cascades, side channels); omit the tag when the
-  method name already says it
-- `@internal`: not-stable API, stays documented; `@nodocs`: removed from docs
-  and flat-namespace validation
-- Backtick identifier references — mdz autolinks them to API docs
-
-**Tag order**: description → `@param` → `@returns` → `@mutates` → `@throws` →
-`@example` → `@deprecated` → `@see` → `@since` → `@default` → `@internal` →
-`@nodocs`
-
-## Documentation System
-
-Projects use **tomes** (not "stories") plus auto-generated API docs. Pipeline:
-source → `svelte-docinfo` Vite plugin → `virtual:svelte-docinfo` →
-`library_json_from_modules()` → `Library` → Tome pages + API routes. Setup,
-layout, components, and README code-example style:
-./references/documentation-system.md.
-
-## mdz — Strict Markdown Dialect
-
-`mdz` (`@fuzdev/mdz/mdz.ts`) is a small, unambiguous grammar, **not a
-CommonMark/GFM superset** — ambiguous input stays literal text. Bold/strike are
-doubled (`**`/`~~`); italic is single `_` at word boundaries, so `snake_case`
-renders verbatim. fuz_ui renders TSDoc through it, injecting `DocsLink` for
-inline code and fuz_code's `Code` for blocks via getter contexts in
-`@fuzdev/mdz/mdz_contexts.ts`; backticked identifiers that resolve to API
-symbols become links. Full surface, injection seam, and the
-`svelte_preprocess_mdz` preprocessor: ./references/mdz.md.
-
-## Path References in Docs
-
-mdz auto-linkifies bare `./`/`../` paths, so typography carries meaning:
-
-- **Navigational paths** — bare (`./foo`, `../foo`, `~/dev/foo`); a bare path
-  is a promise it **resolves on disk**. Backtick illustrative paths
-  (`` `./build/` ``) as the escape hatch.
-- **src/lib module references** — backticked, src/lib-relative, no leading
-  `./`/`../`/`src/lib/` (`auth/account_schema.ts`).
-- **Cross-repo** — bare `../other-repo/...` for navigation or the
-  `@scope/pkg/foo.ts` specifier for identity; TSDoc must not point outside its
-  own repo.
-- **Code-shaped non-paths** — backticks (`gro check`, `package.json`, `~/.fuz/`).
-
-Full rules and formatter cautions: ./references/path-references.md.
-
-## Svelte 5 Patterns
-
-`$state()` for all reactive state — it proxies objects and arrays so in-place
-mutation (push, splice, property writes, `bind:` on object properties)
-triggers updates. `$state.raw()` is a performance opt-out for large
-wholesale-replaced values, not a default. Contexts go through
-`create_context<T>()` from `@fuzdev/fuz_ui/context_helpers.ts`. Everything
-else — `$derived.by`, SvelteMap/SvelteSet, schema-driven classes, snippets,
-attachments, props, events, module-level-rune pitfalls:
-./references/svelte-patterns.md.
-
-## fuz_css
-
-**Default styling is the baseline — justify every deviation.** fuz_css styles
-semantic HTML (buttons, inputs, headings, links, lists, code, tables,
-`<aside>`, `<blockquote>`, `<details>`, `<small>`, `<kbd>`, …) via
-low-specificity `:where()` selectors, and block elements space themselves via
-**flow margin**. The most common mistake is adding `mb_*`/`gap_*`/`p_*` where
-flow margin already spaces, or re-declaring color/font the element carries.
-Most app files have no `<style>` block at all.
-
-```svelte
-<!-- BAD: headings and paragraphs already carry flow margin -->
-<h2 class="mb_md">{title}</h2><p class="mb_md">{body}</p>
-<!-- GOOD: correct rhythm with zero classes -->
-<h2>{title}</h2><p>{body}</p>
-```
-
-**Styling ladder** — stop at the first rung that suffices:
-
-1. Semantic HTML (right element, no class)
-2. Built-in conventions (`.selected`, `.palette_a`–`.palette_j`, `.inline`, `.unstyled`)
-3. Composite classes (`row`, `row_wrap`, `column`, `box`, `panel`, `chip`, `ellipsis`)
-4. Token or keyword classes (`p_md`, `gap_lg`, `flex`)
-5. Literal classes (`justify-content:space-between`, `width:100%`, `hover:opacity:80%`)
-6. `<style>` block with design tokens
-
-Rungs 3–5 are one tier — mix freely; the real cuts are semantic-vs-class and
-classes-vs-`<style>`. Don't churn existing `<style>` blocks into class strings.
-Token classes are `snake_case`; keyword classes are bare CSS keywords (`flex`,
-`sticky`), plus `hidden`; any other single non-token declaration stays a
-literal (`flex:1`, `border-radius:50%`) - no coined name, `hidden` the one
-exception. Component-local classes are `kebab-case` (`site-header`) and never
-take a keyword's name. Full reference: ./references/css-patterns.md.
-
-## Dependency Injection
-
-**Small standalone `*Deps` interfaces, composed bottom-up.** Leaf functions
-import small interfaces directly, never `Pick<Composite>`.
-
-- **Suffixes** — `*Deps` (capabilities; fresh mock factories per test),
-  `*Options` (data/config; literal objects), `*Context` (scoped world for a
-  callback). No `*Config`. Single-capability service interfaces keep pure-noun
-  names (`Keyring`, `FactStore`).
-- **Files** — `deps.ts` + `deps_defaults.ts` + test-side `mock_deps.ts`
-  (fuz_css is the exemplar). fuz_repos's `*Operations` is legacy — never
-  author new ones.
-- **Composition roots** — `AppDeps` (fuz_app server, assembled once in a
-  two-step root); `RuntimeDeps` (env/fs/fetch/process, platform factories
-  for Node, which Bun runs too, and mock). A helper that spawns takes each
-  program as a `Program` handle (or a `ProgramFactory`) the root builds, on a
-  gro task root with `spawn.find`/`spawn.program` and an explicit `pass_env`,
-  never a general run-this-command capability.
-  On the gro runtime a task's import graph is the composition root: host-module
-  imports declare capabilities and grants are inferred from them; no global
-  carries authority (`fetch` is `net.fetch`, an import), nothing is ambient.
-- **Contracts** — L1 domain deps take a single `options` object and return
-  `Result` with typed error kinds; L0 platform shims mirror the platform and
-  throw. Plain-object mocks, no mocking libs; throwing stubs over silent no-ops.
-- **Scope** — function-param deps are for plain TS call graphs; browser/UI DI
-  is Svelte context, not `*Deps` params.
-
-Full guide: ./references/dependency-injection.md.
-
-## Common Utilities
-
-`@fuzdev/fuz_util`:
-
-- **`Result<TValue, TError>`** — `({ok: true} & TValue) | ({ok: false} & TError)`;
-  properties sit directly on the result
-- **`to_error_message(value, fallback?)`** (`error.ts`) — normalizes an unknown
-  caught value to a string
-- **`Logger`** — hierarchical (`new Logger('module')`, `.child()`), level via
-  the `PUBLIC_LOG_LEVEL` env var
-- **`Timings`**, **`run_dag()`**, **`each_concurrent` / `map_concurrent` /
-  `map_concurrent_settled` / `AsyncSemaphore` / `Deferred`**
-- `OmitStrict`, `PickUnion` (`types.ts`); **`Flavored`/`Branded`** come from
-  `@fuzdev/fuz_schema/schema.ts`
-
-See ./references/fuz-util.md.
-
-## fuz_schema Schemas
-
-`@fuzdev/fuz_schema` schemas are the source of truth for data across the
-stack — JSON shape, TS type, defaults, metadata, and serialization; schema
-changes cascade through the stack. The packages below fuz_app import the
-namespace (`import * as s from '@fuzdev/fuz_schema/schema.ts'`); fuz_app and
-the apps import by name, aliasing the reserved word (`void as fuz_void`).
-
-- **`s.object()`** by default, action inputs and outputs included — it
-  rejects unknown keys; readers of remote payloads drop unknown keys
-  (fuz_app's `safe_parse_dropping_unknown_keys`). `s.loose_object()` (keeps
-  them) / `s.strip_object()` (drops them) only for external data, persisted
-  files read across versions, REST error bodies, and protocol envelopes —
-  with a comment saying why.
-- **PascalCase, schema and type share the name**:
-  `const Foo = s.object({...}); type Foo = s.Infer<typeof Foo>;`
-  (`s.InferInput` for the pre-default input, exported as `FooInput`)
-- **`meta(schema, {description})`** (`@fuzdev/fuz_schema/meta.ts`) for
-  metadata; app keys like fuz_app's `sensitivity` extend `SchemaMeta` by
-  declaration merging, read fail-safe with `find_schema_meta`
-- **`s.brand()`** for validated nominal types (`Uuid`, `DiskfilePath`),
-  outermost, after any step that changes the value
-- **Compose by spreading `def`** — `s.object({...Base.def, x})`; there are no
-  `extend`/`pick`/`omit`/`partial` helpers
-- **`s.parse` at boundaries** (returns `{ok, value}` / `{ok: false, issues}`,
-  never throws), **`s.parse_or_throw`** for internal assertions
-- **`s.with_default_fn`** for mutable defaults — `with_default` shares its one
-  value across every parse
-
-Mind that `pipe` stops at its first failing step and that
-`object` returns the input itself when nothing changed, so output keeps the
-input's key order. UUIDs and timestamps are `s.pipe(s.string, s.uuid)` and
-`s.pipe(s.string, s.iso_datetime)` (fuz_app's `Uuid`, `Timestamp`), which
-serialize to fuz_schema's Rust side where a `regex` doesn't; there is no email
-or URL kind (fuz_app's `Email`, fuz_util's `Url`).
-
-See ./references/fuz-schema.md.
-
-## Query Modules (DB)
-
-One module per table; functions are `query_<table>_<verb>(deps: QueryDeps, …)`;
-`assert_row` on `INSERT … RETURNING`. Every read projects through the table's
-exported `*_COLUMNS` const — never `SELECT *` — rendered at the site via
-`columns_sql` / `qualify_columns` / `omit_columns`, and drift-guarded against
-the live schema (`assert_columns_match_live`). The Rust twin uses the same
-identifiers with positional decode. See ./references/db-patterns.md.
-
-## Testing
-
-Tests in `src/test/`, mirroring `lib/`. `assert` from vitest, chosen for type
-narrowing (`assert(x instanceof Error)` narrows; `expect(...).toBeInstanceOf`
-doesn't). Custom helpers are `assert_*`. `describe` blocks (one or two
-levels), `test()` not `it()`. Split suites by aspect:
-`{module}.{aspect}.test.ts`; DB tests use `.db.test.ts` to share one WASM database
-instance via vitest `projects`. Parsers/transformers use fixtures under
-`src/test/fixtures/<feature>/<case>/` — **never hand-edit `expected.json`**;
-regenerate via `gro task src/test/fixtures/<feature>/update.task.ts`. See
-./references/testing-patterns.md.
-
-## TODOs
-
-Leave **copious** `// TODO:` comments — expected, not debt to hide. For
-multi-session work, create `TODO_*.md` in the project root with status, next
-steps, and decisions; delete when complete; **update before ending a
-session.**
+- ./references/svelte-patterns.md — components and state classes: state and
+  deriveds, contexts, snippets, attachments, props, events
+- ./references/css-patterns.md — any styling: the defaults, the ladder,
+  tokens, class rules and traps, extraction, component CSS
+- ./references/fuz-schema.md — defining or parsing a schema: strictness,
+  brands, defaults, composing, metadata, exported schemas
+- ./references/fuz-util.md — `Result`, errors, `Logger`, timings,
+  concurrency, nominal types
+- ./references/dependency-injection.md — anything with side effects:
+  `*Deps` and `*Options`, layers, programs, roots, fakes, traps
+- ./references/testing-patterns.md — writing or splitting tests: layout,
+  assertions, DB tests, fixtures, test doubles
+- ./references/db-patterns.md — any SQL: query modules, `*_COLUMNS`
+  projections, the drift guard (TS and Rust)
+- ./references/twin-impl.md — anything with a Rust twin, and any hash, token,
+  or secret format
+- ./references/tsdoc-comments.md — writing doc comments: tag forms, links,
+  where tags are dropped, drift
+- ./references/path-references.md — paths in docs and comments, and import
+  specifiers in source
+- ./references/mdz.md — writing mdz content or wiring its renderer
+- ./references/documentation-system.md — setting up or changing a docs site:
+  the pipeline, tomes, the library context
+- ./references/task-patterns.md — writing or invoking a gro task
+- ./references/code-generation.md — writing a `.gen.*` file
+- ./references/npm-dependencies.md — before adding a package, or choosing
+  between peer, dependency, and dev
 
 ## Rust Crates
 

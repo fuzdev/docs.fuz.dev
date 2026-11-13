@@ -1,26 +1,23 @@
 ---
-description: TSDoc style guide — tags, conventions, drift detection
+description: TSDoc style — what to write, tag forms, linking, where tags are dropped, drift
 ---
 
-# TSDoc Comment Style Guide
+# TSDoc Comments
 
-Doc comments are extracted by `svelte-docinfo` (TypeScript AST → per-declaration
-metadata, exposed via `virtual:svelte-docinfo`) and rendered by `mdz`, which
-autolinks backticked identifiers to API docs. **Write standard JSDoc with the
-tags below, backtick identifier references, and the system handles the rest.**
+Doc comments are extracted by `svelte-docinfo` and rendered on each
+project's API docs through mdz. Write standard JSDoc with the tags below and
+backtick every identifier.
 
-## Writing Good Documentation
+## What to write
 
-### Prioritize "why" over "what"
-
-Don't restate the function name. Explain why this exists, what problem it
-solves, what depends on it.
+**Say why, not what.** Don't restate the name and the types. Explain why the
+thing exists, what depends on it, and what a caller would get wrong.
 
 ```typescript
-// Weak — restates the name and types
+// Weak: restates the name
 /** Creates a new session. */
 
-// Strong — purpose and rationale
+// Strong: purpose and rationale
 /**
  * Predicts the next version by analyzing all changesets in a repo.
  *
@@ -31,358 +28,188 @@ solves, what depends on it.
  */
 ```
 
-Name algorithms so readers can look them up ("Uses Kahn's algorithm with
-alphabetical ordering within tiers for deterministic results") and give
-rationale for non-obvious parameter choices. Multi-step workflows get a
-numbered list (`1. **Sort** — …`), usually in a `@module` comment paired with a
-`@see` cluster for pipeline stages.
-
-### Conciseness — anti-patterns
-
-A wrong or filler comment costs more than it adds. Four patterns recur in
-audits:
-
-**1. Helper-contract `@throws` at every callsite.** Document the contract on
-the helper, not on every caller that delegates to it.
-
-```typescript
-// Weak — same internal invariant repeated on every create_* query
-/** @throws Error if the INSERT does not return a row (failed `assert_row` invariant) */
-// Weak — generic driver error true of every SQL call
-/** @throws Error propagated from the underlying driver on syntax errors, ... */
-// Strong — lives on assert_row itself
-/** @throws Error if `row` is undefined */
-```
-
-**2. `@mutates X - <verb that mirrors the function name>`.** The tag earns its
-line only when it surfaces _what would surprise a reader_: specific
-tables/columns, cross-table cascades, fire-and-forget effects, context keys
-consumed downstream, counter or rate-limiter state.
-
-```typescript
-// Weak — set_session_cookie already says it
-/** @mutates `c` - writes the `Set-Cookie` header */
-
-// Useful — names columns / cascades / side channels
-/** @mutates `app_settings` row - sets `open_signup`, `updated_at`, `updated_by` */
-/** @mutates `permit_offer` siblings - stamps `superseded_at` on every other pending offer for the tuple */
-/** @mutates Hono context - sets `SESSION_COOKIE_EXPIRES_AT_KEY`, and may clear the session cookie */
-```
-
-**3. Duplicate sentence** — a `@returns` and a prose sentence saying the same
-thing. Pick one.
-
-**4. Filler.** `@param X - the X` (drop it, but keep a qualifier: format,
-constraint, edge case); step-by-step narration of self-evident behavior; hedges
-("simply", "just", "essentially", "should never happen"); "useful for" bullet
-lists that repeat the description.
-
-```typescript
-// Weak — every line restates name + type
-/**
- * @param specs - route specs to register
- * @param method - HTTP method
- * @returns matching route spec, or `undefined`
- */
-// Strong — only the line that adds a qualifier
-/** @param path - request path (exact or with concrete param values) */
-```
-
-### Voice
-
-`@mutates` and `@throws` are terse fragments —
-`@mutates <target> - <verb> <scope>`. Backticks on every
-table/column/symbol/constant name are house style. Multi-paragraph descriptions
-are _earned_ by security or invariant rationale (TOCTOU, fail-closed,
-sibling-supersede, ordering, init order). A union type alias documents its
-members as a bullet list of backticked literals with ` - description`.
-
-### CLAUDE.md is a map; TSDoc is the detail
-
-Non-obvious semantics — wire shape, invariants, ordering, failure modes —
-belong on the symbol's TSDoc, not in a downstream CLAUDE.md. CLAUDE.md entries
-are one-line pointers: symbol name plus a hook. CLAUDE.md prose drifts because
-it lives far from the code; TSDoc on the symbol is visible during the edit.
-
-## Tag Reference
-
-### Main description
-
-Complete sentences ending in a period; blank line between summary and detail.
-
-### `@param`
-
-`@param name - description` — hyphen separator, source parameter order,
-identifiers backticked. Single-sentence descriptions are lowercase fragments
-with no period (`@param foo - the value to clamp`); multi-sentence descriptions
-are capitalized sentences with periods, continuation lines indented
-(`@param exclude_dev - If true, excludes dev dependencies to break cycles.` then
-` *   Publishing uses exclude_dev=true …`). Acronyms and proper names (CSS, BLAKE3,
-Fisher-Yates) stay capitalized. A legacy sentence-style file may stay internally
-consistent until touched.
-
-`@param options.field - description` documents a sub-property. Matching is by
-parameter name, so destructured params (`fn({a, b}: T)` — TS names it `__0`)
-can't be documented; name the parameter if it needs docs.
-
-### `@returns`
-
-`@returns` (not `@return`); same capitalization rules as `@param`. For async
-functions describe what the `Promise` resolves to, not the `Promise`.
-
-### `@throws`
-
-`@throws ErrorType description` — type as first word, even if just `Error`
-(`@throws TaskError if production cycles detected`). svelte-docinfo always
-reads the unbraced first word as the type, so a description-only
-`@throws if …` records `if` as the type, and a lone `@throws Error` (no
-description) records no type. `{ErrorType}` parses exactly but isn't house
-style.
-
-### `@example`
-
-Fenced code blocks (mdz renders examples as markdown); show the common case
-first, additional `@example` tags for variants; `// =>` or `// →` comments for
-return values — a bare call with no visible output teaches nothing. Constants
-and simple predicates don't need examples. Interface fields can carry inline
-`@example` tags too.
-
-````typescript
-/**
- * @example
- * ```typescript
- * mdz_from_tsdoc('{@link SomeType}')
- * // → '`SomeType`'
- * ```
- */
-````
-
-### `@deprecated`
-
-Rarely used — the no-backwards-compatibility policy means deprecated code is
-deleted. When used, include the backticked replacement.
-
-### `@see`
-
-- **External URLs** — `{@link url|text}` for display text, bare URL when
-  self-explanatory
-- **Sibling modules** — the lib-relative module path, backticked
-  (`` @see `actions/action_rpc.ts` for the JSON-RPC dispatcher ``); see
-  [Module path format](#module-path-format)
-- **Identifiers** — backticked, not `{@link}`
-  (`` @see `each_concurrent` for the side-effect variant ``)
-
-### `@since`
-
-Parsed, not currently used.
-
-### `@default`
-
-Documents defaults for interface fields and component props; place it on the
-field's own doc comment:
-
-```ts
-/**
- * How the content is aligned in the viewport.
- * @default 'center'
- */
-align?: DialogAlign;
-```
-
-### `@internal`
-
-Not-stable public API (standard TSDoc semantics). A marker, not an exclusion —
-extracted as `internalMessage`, the declaration stays fully documented so
-consumers _can_ badge or filter (fuz_ui's `DeclarationDetail` shows an
-`internal` badge plus the message; nothing filters on it yet). Trailing prose is
-kept: say who uses it or why it's internal. Use it for power-user-importable
-internals that should stay documented (deep extractor modules, orchestration
-seams); to remove a symbol from docs entirely, use `@nodocs`.
-
-```typescript
-/** @internal Used by `analyzeCore` and the test harnesses — not stable API. */
-```
-
-### `@nodocs` (non-standard)
-
-Drops the declaration from analysis output and duplicate checking. Dominant
-use: exported-but-internal plumbing forced by the no-barrels convention (mdz
-is the heaviest user); also build-system internals (Gro `Args`/`task`, `gen`
-exports) and flat-namespace collisions.
-
-```typescript
-/** @nodocs */
-export const Args = s.object({...});
-```
-
-**Never `@nodocs` a symbol external consumers import.** Rename one side of the
-collision instead (SKILL.md §Flat Namespace) — hiding the primary surface also
-hides it from generated docs and tomes.
-
-### `@mutates` (non-standard)
-
-`@mutates target - description`. Everything before the first ` - ` is the
-target — a parameter, a path (`this.field`), or a multi-word reference
-(`` `permit_offer` siblings ``); backticks in the target are stripped by the
-parser. Same capitalization as `@param`. Document mutations visible outside the
-function; locals, closure state, and pull-based caches are out of scope. A
-bare `` @mutates `target` `` with no description parses but is discouraged —
-if the mutation needs no description, the tag adds little.
-
-**On class methods**, stateful classes mutate by design; tagging every
-`add`/`remove`/`clear`/`set` is noise. `@mutates this[.field] - description`
-earns its line when the mutation isn't obvious from the name:
-
-- **Cross-field invalidation** — `Logger.clear_colors_override` also
-  invalidates four cached prefix strings
-- **Cross-resource side effects** — a setup call that also subscribes to a
-  process-wide event
-- **Implicit tracking** — a `spawn` that also records the child so a later call
-  can stop it
-- **Mutation behind a query-shaped name** — `LruMap.get` reorders the recency list
-
-Ranking when warranted: `@mutates this.field - description` >
-`@mutates this - description` > bare > omit (correct when the name says it all).
-
-```typescript
-/**
- * Shuffles an array in place using the Fisher-Yates algorithm.
- * @mutates array - randomly reorders elements in place
- */
-```
-
-### `@module`
-
-Module-level doc comment, tag at the end of the block; works in `.ts` and in a
-`.svelte` component's `<script>`. Prioritize it for modules with design
-rationale, pipeline stages, or cross-references; `##` headings (`## Design`,
-`## Behavioral notes`) for complex modules.
-
-### Tag order
-
-description → `@param` (source order) → `@returns` → `@mutates` → `@throws` →
-`@example` → `@deprecated` → `@see` → `@since` → `@default` → `@internal` →
-`@nodocs`
-
-### Where a tag has no effect
-
-The parser discards these (svelte-docinfo emits `misplaced_tag` for the
-overload and `@module` cases, but no consumer imports `diagnostics` today):
-
-- Symbol-scope tags (`@example`, `@deprecated`, `@internal`, `@since`, `@see`,
-  `@throws`, `@mutates`, `@default`, `@nodocs`) on a **non-primary overload
-  signature** — put them on the first overload signature, whose JSDoc documents
-  the symbol (`@param`/`@returns` are per-signature)
-- `@nodocs` inside a `@module` comment — use the analyzer's `exclude` patterns
-  to skip a module
-- `@nodocs` on a member (class, interface, type alias, enum) or a component
-  prop — still emitted, no warning; it applies to top-level declarations and
-  export statements
-- `@default` on a top-level function (dropped silently) — it lands on
-  variables, members of interfaces/type aliases/classes (callable members
-  included), and component props
-
-`@defaultValue` / `@defaultvalue` / `@return` do take effect — they parse as
-synonyms of `@default` / `@returns` — but aren't house style.
-
-## Inter-linking with mdz
-
-Backticked identifiers autolink; unmatched references fall through to plain
-`<code>`. Autolinking applies in main descriptions, `@param`, `@returns`,
-`@example`, and `@see`; `@throws` and `@mutates` render as plain text, so
-backticks there display literally (still house style — consistency wins).
-References are case-sensitive (`` `library` `` won't match `Library`).
-
-**Wrap every mention of an exported identifier, module filename, or type name
-in backticks** — functions, types, classes, module paths (`module_helpers.ts`,
-`actions/composables.ts`, `DocsLink.svelte`), tag names in prose (`@param`),
-enums and constants.
-
-### Module path format
-
-Module references must use the path `Library.module_by_path` indexes: the
-`src/lib/`-relative path with the source extension. Anything else silently
-falls through.
-
-```typescript
-// GOOD
-/** @see `actions/action_rpc.ts` for the JSON-RPC dispatcher */
-// BAD — `./` prefix
-/** … from `./action_rpc.js` … */
-// BAD — `.js` runtime extension
-/** @see `action_rpc.js` */
-// BAD — bare filename of a nested module (breaks when the file is at actions/action_rpc.ts)
-/** @see `action_rpc.ts` */
-// BAD — redundant `src/lib/`
-/** @see `src/lib/actions/action_rpc.ts` */
-```
-
-Top-level files match by bare filename (`tome.ts`); nested files need the
-sub-path. When in doubt, include the directory. The canonical format is
-documented on `Module.path` in fuz_ui's `module.svelte.ts`.
-
-**Never reference outside the repo from TSDoc** — the published API docs stand
-alone, so an out-of-repo path is a dead link (./path-references.md §4).
-
-### Internal paths
-
-`/word` after whitespace autolinks as internal navigation — including HTTP
-routes, which then break prerender. Backtick them:
-
-```typescript
-/** BAD — mdz autolinks /login and breaks prerender: - POST /login */
-/** GOOD — renders as <code>: - `POST /login` */
-```
-
-## Svelte components
-
-Document props inline in the `$props()` type annotation. Obvious props with no
-default need no comment; focus on behavior, constraints, and non-obvious
-defaults.
+- **Name the algorithm** so a reader can look it up ("Kahn's algorithm, with
+  alphabetical order within a tier for determinism").
+- **A long description is earned** by security or invariant rationale:
+  ordering, fail-closed behavior, a race that was closed.
+- **Non-obvious semantics go on the symbol, not in a `CLAUDE.md`.** Wire
+  shapes, invariants, and failure modes live in TSDoc, where they are visible
+  during the edit. A `CLAUDE.md` entry is a one-line pointer.
+
+**Cut what adds nothing.** A wrong or empty comment costs more than none.
+
+- **`@param x - the x`.** Keep a `@param` only for what the name and type
+  don't say: a format, a constraint, an edge case.
+- **A `@returns` that repeats the summary sentence.** Pick one.
+- **A helper's contract restated at every caller.**
+  `@throws Error if the INSERT returns no row` belongs on `assert_row`, not on
+  each query that calls it. The same goes for errors any call could raise (the
+  driver's syntax errors).
+- **`@mutates` that mirrors the function name.** `set_session_cookie` doesn't
+  need "writes the `Set-Cookie` header".
+- **Narration of obvious steps, and hedges**: "simply", "just",
+  "essentially", "should never happen".
+
+## Tags
+
+| Tag | Form |
+| --- | --- |
+| description | complete sentences ending in a period; a blank line between summary and detail |
+| `@param` | `@param name - description`, in parameter order; `@param options.field - …` for a property |
+| `@returns` | not `@return`; for an async function, what the promise resolves to |
+| `@throws` | `@throws ErrorType description`, the type first, even when it is `Error` |
+| `@mutates` | `@mutates target - description` (stack-specific) |
+| `@example` | a fenced code block; `// =>` comments for results |
+| `@default` | on an interface field or component prop |
+| `@see` | the reference first and bare, then prose (§Links) |
+| `@cssprop` | `@cssprop --name - description`, in a component's doc comment |
+| `@internal` | not stable API; stays documented, with a note on who uses it |
+| `@nodocs` | removed from docs and from the flat-namespace check (stack-specific) |
+| `@module` | marks a module comment; the last line of the block |
+
+**Order**: description, `@param`, `@returns`, `@mutates`, `@throws`,
+`@example`, `@deprecated`, `@see`, `@since`, `@default`, `@internal`,
+`@nodocs`.
+
+- **A single-sentence `@param` or `@returns` is a lowercase fragment with no
+  period** (`@param foo - the value to clamp`). Several sentences are
+  capitalized with periods. Acronyms and proper names keep their capitals.
+- **A destructured parameter can't be documented**, since tags match by
+  parameter name and TS names it `__0`. Name the parameter.
+- **`@throws` reads its first word as the type**, and needs a description
+  after it. `@throws if the file is missing` records `if` as the type, a
+  backticked type isn't read as one, and a lone `@throws Error` records no
+  type. A hyphen after the type is fine (`@throws Error - if …`, gro's
+  form).
+- **`@mutates` names what a reader wouldn't guess**: the columns, the
+  cascade, the side channel.
+
+  ```typescript
+  /** @mutates `app_settings` row - sets `open_signup`, `updated_at`, `updated_by` */
+  /** @mutates `permit_offer` siblings - stamps `superseded_at` on every other pending offer for the tuple */
+  ```
+
+  On a class, `add`, `remove`, and `set` mutate by design and need no tag.
+  Tag the surprising ones: a query-shaped method that reorders (`LruMap.get`),
+  a setter that also invalidates caches, a `spawn` that also records the
+  child.
+- **`@nodocs` is for exports the docs shouldn't list**: plumbing exported
+  only because modules import by path, and the `task`, `Args`, and `gen`
+  exports every task and gen file shares. Never put it on a symbol consumers
+  import: rename one side of a collision (see SKILL.md's flat-namespace
+  rule).
+- **`@internal` says who uses it**:
+  `/** @internal Used by the test harnesses — not stable API. */`
+- **`@deprecated` is rare.** With no backwards compatibility, deprecated code
+  is deleted.
+- **`@example` shows the common case first** and a result. A bare call with
+  no visible output teaches nothing.
+
+## Links
+
+**Backtick every identifier, module path, and type name.** On an API docs
+page a backticked name that matches a declaration or module becomes a link;
+anything else stays code (see ./mdz.md).
+
+- **Not `{@link Name}`.** Inline `{@link}` is kept raw and renders as the
+  literal text.
+- **A module is its `src/lib`-relative path with the source extension**:
+  `actions/action_rpc.ts`. A `./` prefix, a `.js` extension, a
+  `src/lib/` prefix, or the bare filename of a nested module all miss
+  silently. A top-level module is its filename.
+- **`@see` is the exception: write its reference bare.** The renderer
+  backticks the first whitespace-delimited token of a `@see` itself, so a
+  backticked one comes out doubled and unlinked, and a comma glued to the
+  reference breaks it. Identifiers in the prose after it still take
+  backticks. Most existing `@see` lines backtick the reference; fix one when
+  you touch it.
+
+  ```typescript
+  /**
+   * @see each_concurrent for the side-effect variant
+   * @see actions/action_rpc.ts for the JSON-RPC dispatcher
+   * @see https://fuz.dev for the project
+      * @see [svelte-docinfo](https://github.com/fuzdev/svelte-docinfo) for the analysis library
+   */
+  ```
+
+    A `{@link …}` works only as the whole of a `@see` (`{@link url|text}`,
+  `{@link url text}`, or `{@link Name}`). Prose after it breaks the link:
+  use the markdown form.
+- **Backtick an HTTP route**: `POST /login`. A bare `/login` after a
+  space is an internal link, and a link to a page that doesn't exist fails
+  the prerender.
+- **Links work in descriptions, `@param`, `@returns`, `@example`, and
+  `@see`.** `@throws`, `@mutates`, `@deprecated`, `@internal`, and `@since`
+  render as plain text, backticks included. Backtick there anyway, for the
+  reader of the source.
+- **Never point outside the repo.** Published API docs stand alone, so a
+  `../other-repo` path is dead (see ./path-references.md). Credit outside
+  work in prose or with a URL.
+
+## Where a tag is dropped
+
+svelte-docinfo's `CLAUDE.md` has the full rules. The ones that bite:
+
+- **On an overloaded function, symbol-level tags go on the first overload
+  signature.** `@example`, `@throws`, `@see`, and the rest are discarded on
+  any other signature, and a comment on the implementation signature is
+  hidden entirely. `@param` and `@returns` are per signature.
+- **A module comment keeps prose, `@example`, `@see`, `@deprecated`,
+  `@since`, and `@internal`.** Declaration tags in it are dropped, `@nodocs`
+  included: leave a module out with the analyzer's `exclude` patterns.
+- **`@nodocs` works on top-level declarations and export statements**, not on
+  a member or a prop.
+- **`@default` is dropped on a top-level function.**
+- **An unknown tag is dropped silently.**
+
+## Modules and components
+
+A module comment ends with `@module`. Write one where a module has design
+rationale, pipeline stages, or relationships a reader needs first; use `##`
+headings inside a long one.
+
+A component documents itself in an HTML comment that starts with
+`@component`, with its `@cssprop` lines, and documents each prop inline in
+the `$props()` type:
 
 ```svelte
+<!-- fuz_ui Dialog.svelte (excerpt) -->
 <script lang="ts">
-	// fuz_ui Dialog.svelte (abridged)
 	const {
-		show = true,
+		align = 'center',
 		dismissable = true,
-		onbeforeclose,
-		children,
 		...rest
 	}: Omit<SvelteHTMLElements['dialog'], 'children' | 'onclose'> & {
 		/**
-		 * Whether the dialog is shown. When the `<dialog>` mounts it opens via
-		 * `showModal()`; when it unmounts it closes.
-		 * @default true
+		 * How the content is aligned in the viewport. `center` vertically centers it;
+		 * `top` aligns it to the top and grows downward, which avoids jank when the
+		 * content's height changes.
+		 * @default 'center'
 		 */
-		show?: boolean;
+		align?: DialogAlign;
 		/**
-		 * Whether clicking outside the content closes the dialog. `Escape`
-		 * closes it regardless of this.
+		 * Whether clicking outside the content (see `content_selector`) closes the
+		 * dialog. `Escape` closes it regardless of this.
 		 * @default true
 		 */
 		dismissable?: boolean;
-		/**
-		 * Called before a user-initiated close. Return `false` to veto.
-		 */
-		onbeforeclose?: () => boolean | void;
-		/** Rendered inside the overlay. Receives the `DialogContext` (e.g. `{close}`). */
-		children: Snippet<[dialog: DialogContext]>;
 	} = $props();
 </script>
 ```
 
-## Drift — Correctness Over Coverage
+An obvious prop needs no comment. For a prop with a destructuring default,
+the generated docs show the code's default and ignore the tag, so a
+`@default` beside it is for readers of the source and must be kept matching.
 
-**A wrong doc comment is worse than a missing one** — readers trust it and
-propagate the mistake. When refactoring a public API, re-read the TSDoc on
-every touched symbol. Common drift:
+## Drift
 
-- **`@throws` vs return shape** — declares `@throws` but the body returns
-  `null`/`undefined` on that path (or vice versa); highest-value because
-  callers branch on it
-- **Signature changed** — `@param` order or names no longer match
-- **Return shape widened** — new fields on a returned type go undocumented
-- **Error semantics tightened** — a thrown class was replaced or an
-  `error.data.reason` added, but `@throws` names the old one
-- **Cross-refs rotted** — `@see some_helper.ts` points at a moved or deleted file
+**A wrong doc comment is worse than a missing one**: readers trust it. When
+a public signature changes, reread the TSDoc of every symbol touched.
+
+- **`@throws` against the return shape**: the tag says it throws and the body
+  returns `null` on that path, or the reverse. Callers branch on this.
+- **Parameters renamed or reordered**, with `@param` left behind.
+- **A returned type that grew fields** nobody documented.
+- **A thrown class that was replaced** while `@throws` names the old one.
+- **A `@see` to a module that moved.**

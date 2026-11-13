@@ -12,17 +12,18 @@ export const skills: Array<SkillMeta> = [
 		name: 'fuz-stack',
 		title: 'Fuz stack conventions',
 		description:
-			"Development conventions and coding patterns for the @fuzdev ecosystem — naming, file organization, testing, styling, documentation, and tooling for TypeScript, Svelte 5, and Rust projects. Use when writing or reviewing code in any @fuzdev project. Triggers include running gro commands (gro check, gro test, gro gen), styling with fuz_css, writing or splitting tests, generating code with .gen.ts files, naming functions or variables (snake_case conventions), organizing files in src/lib/ or src/test/, writing TSDoc comments, creating Svelte 5 components with runes, or formatting code. Also use for the Result type, fixture-based testing, CSS utility classes, TODO_ docs, breaking changes policy, async concurrency patterns, Gro task system, type utilities (Flavored, Branded), dependency injection patterns (*Deps/*Options/*Context interfaces, AppDeps, RuntimeDeps, mock factories), or setting up documentation (tomes, svelte-docinfo, API routes, docs layout). Also covers the ecosystem's Rust workspaces — cargo and clippy lints, thiserror error handling, the dependency-injection escalation ladder, enum-dispatch and make-impossible-states idioms, spine-consumer servers (zzz_server, fuz_forge_server), daemon lifecycle, and CLI and xtask patterns. Triggers include running cargo or clippy, editing Cargo.toml, naming or organizing Rust crates, or working on the fuz and fuzd daemon, the zap convergence engine, or the spine crates.",
+			"Development conventions and coding patterns for the @fuzdev ecosystem — naming, file organization, testing, styling, documentation, and tooling for TypeScript, Svelte 5, and Rust projects. Use when writing or reviewing code in any @fuzdev project. Triggers include running gro commands (gro check, gro test, gro gen), styling with fuz_css, writing or splitting tests, generating code with .gen.ts files, naming functions or variables (snake_case conventions), organizing files in src/lib/ or src/test/, writing TSDoc comments, creating Svelte 5 components with runes, or formatting code. Also use for the Result type, fixture-based testing, CSS utility classes, breaking changes policy, async concurrency patterns, Gro task system, type utilities (Flavored, Branded), dependency injection patterns (*Deps/*Options/*Context interfaces, AppDeps, RuntimeDeps, mock factories), or setting up documentation (tomes, svelte-docinfo, API routes, docs layout). Also covers the ecosystem's Rust workspaces — cargo and clippy lints, thiserror error handling, the dependency-injection escalation ladder, enum-dispatch and make-impossible-states idioms, spine-consumer servers (zzz_server, fuz_forge_server), daemon lifecycle, and CLI and xtask patterns. Triggers include running cargo or clippy, editing Cargo.toml, naming or organizing Rust crates, or working on the fuz and fuzd daemon, the zap convergence engine, or the spine crates.",
 		references: [
 			{
 				slug: 'code-generation',
 				title: 'Code Generation',
-				description: 'Gro gen system — .gen.* files, inputs, output formats'
+				description: 'Gro gen — .gen.* files, the gen export, inputs, where codegen is used'
 			},
 			{
 				slug: 'css-patterns',
 				title: 'CSS Patterns',
-				description: 'fuz_css styling — default-reliance, the styling ladder, variables, extraction'
+				description:
+					'fuz_css styling — default-reliance, the styling ladder, tokens, class rules, extraction'
 			},
 			{
 				slug: 'db-patterns',
@@ -33,18 +34,18 @@ export const skills: Array<SkillMeta> = [
 			{
 				slug: 'dependency-injection',
 				title: 'Dependency Injection',
-				description: 'Injectable *Deps interfaces, mock factories, composition patterns'
+				description: 'Injectable *Deps interfaces, composition roots, layer contracts, test doubles'
 			},
 			{
 				slug: 'documentation-system',
 				title: 'Documentation System',
-				description: 'Docs pipeline — Tome system, layout architecture, project setup'
+				description: 'Docs sites — the pipeline, tomes, project setup, code examples in docs'
 			},
 			{
 				slug: 'fuz-schema',
 				title: 'fuz_schema Schemas',
 				description:
-					'fuz_schema conventions — strict objects, naming, brands, defaults, metadata, introspection'
+					'fuz_schema conventions — strict objects, naming, brands, defaults, metadata, parsing at boundaries'
 			},
 			{
 				slug: 'fuz-util',
@@ -56,17 +57,19 @@ export const skills: Array<SkillMeta> = [
 				slug: 'mdz',
 				title: 'mdz — Strict Markdown Dialect',
 				description:
-					'mdz dialect — grammar surface, component registration, rendering seam, autolink, preprocessor'
+					'mdz dialect — what parses, authoring traps, the rendering seam, autolinks, preprocessor'
 			},
 			{
 				slug: 'npm-dependencies',
 				title: 'Approved npm Dependencies',
-				description: 'Approved external npm package allowlist for TS/Svelte repos'
+				description:
+					'Approved external npm packages for TS/Svelte repos, and peer vs dependency vs dev'
 			},
 			{
 				slug: 'path-references',
-				title: 'Path References in Documentation',
-				description: 'Path typography — navigational vs src/lib module vs code-shaped'
+				title: 'Path References',
+				description:
+					'Path typography in docs (navigable vs module vs code-shaped) and import specifier rules'
 			},
 			{
 				slug: 'rust-dependencies',
@@ -94,22 +97,25 @@ export const skills: Array<SkillMeta> = [
 			{
 				slug: 'svelte-patterns',
 				title: 'Svelte 5 Patterns',
-				description: 'Svelte 5 runes, contexts, snippets, attachments'
+				description:
+					'Svelte 5 in the stack — state, deriveds, contexts, snippets, attachments, events'
 			},
 			{
 				slug: 'task-patterns',
 				title: 'Task Patterns',
-				description: 'Gro task system — .task.ts files, TaskContext, error handling'
+				description:
+					'Gro tasks — .task.ts modules, Args schemas, invoke_task, names vs paths, errors'
 			},
 			{
 				slug: 'testing-patterns',
 				title: 'Testing Patterns',
-				description: 'Vitest patterns, fixtures, mocks, assertion helpers'
+				description: 'Vitest patterns — file layout, assertions, DB tests, fixtures, test doubles'
 			},
 			{
 				slug: 'tsdoc-comments',
-				title: 'TSDoc Comment Style Guide',
-				description: 'TSDoc style guide — tags, conventions, drift detection'
+				title: 'TSDoc Comments',
+				description:
+					'TSDoc style — what to write, tag forms, linking, where tags are dropped, drift'
 			},
 			{
 				slug: 'twin-impl',

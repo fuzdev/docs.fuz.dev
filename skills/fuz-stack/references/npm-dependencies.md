@@ -1,161 +1,91 @@
 ---
-description: Approved external npm package allowlist for TS/Svelte repos
+description: Approved external npm packages for TS/Svelte repos, and peer vs dependency vs dev
 ---
 
 # Approved npm Dependencies
 
-The allowlist of external npm packages for the canonical TS/Svelte repos —
-libraries, apps, sites, tooling (different-paradigm or pre-canonical repos
-carry their own deps). Prefer these; reach outside only with explicit
-approval (§Adding a dependency).
+The external npm packages the stack's TS and Svelte repos use. Prefer these,
+and reach outside only with explicit approval (§Adding a dependency).
 
-Source of truth is each repo's `package.json`; this hand-maintained list is
-deliberately **not exhaustive** — narrowly repo-specific deps (one app's domain
-library, an editor extension's typings, a benchmark-only reference impl) are
-left out. Workspace-published packages (`@fuzdev` / `@ryanatkn` scopes,
-`svelte-docinfo`) are internal and never appear here. Verify against the repos
-periodically.
+Each repo's `package.json` is the source of truth. This list is kept by hand
+and leaves out what only one repo's domain needs (a map library, an editor
+extension's typings, a benchmark's reference implementations). The stack's own
+packages (the `@fuzdev` and `@ryanatkn` scopes, `svelte-docinfo`) are internal
+and not listed.
 
-## Language & build toolchain
+## The list
 
-| Package                        | Purpose                                  |
-| ------------------------------ | ---------------------------------------- |
-| `typescript`                   | TypeScript compiler                      |
-| `tslib`                        | TS runtime helpers                       |
-| `svelte`                       | Component framework (runes)              |
-| `@sveltejs/kit`                | Application framework                    |
-| `@sveltejs/vite-plugin-svelte` | Svelte ↔ Vite integration                |
-| `@sveltejs/adapter-static`     | Static-site adapter                      |
-| `@sveltejs/acorn-typescript`   | TS-aware acorn parser (Svelte toolchain) |
-| `@sveltejs/package`            | Library packaging (`svelte-package`)     |
-| `svelte-check`                 | Svelte / TS diagnostics                  |
-| `svelte2tsx`                   | Svelte → TSX for typechecking            |
-| `vite`                         | Build tool / dev server                  |
-| `vitest`                       | Test runner                              |
-| `jsdom`                        | DOM implementation for tests             |
+- **Language and build**: `typescript`, `tslib`, `svelte`, `@sveltejs/kit`,
+  `@sveltejs/vite-plugin-svelte`, `@sveltejs/adapter-static`,
+  `@sveltejs/package`, `svelte-check`, `svelte2tsx`, `vite`, `vitest`, `jsdom`
+- **Lint**: `eslint`, `eslint-plugin-svelte`, `typescript-eslint`; `@eslint/js`
+  and `globals` only inside the shared `@ryanatkn/eslint-config`
+- **Release**: `@changesets/changelog-git`, `@changesets/types`
+- **Types**: `@types/node`, `@types/estree`, `@types/pg`, `@types/ws`,
+  `@types/picomatch`, `@standard-schema/spec`
+- **Runtime utilities**: `esm-env` (the `DEV` and `BROWSER` flags), `date-fns`
+- **Parsing and source edits**: `zimmerframe` (AST walker), `magic-string`,
+  `acorn`, `acorn-jsx`, `@sveltejs/acorn-typescript`, `@webref/css` (CSS
+  reference data), `@jridgewell/trace-mapping`
+- **Server** (fuz_app's optional peers): `hono`, `@hono/node-server`,
+  `@hono/node-ws`, `@hono/bun`, `pg`, `@electric-sql/pglite`,
+  `@node-rs/argon2`, `ws`
+- **Tooling internals**: `chokidar` and `dotenv` (gro); `picomatch`,
+  `tinyglobby`, and `commander` (svelte-docinfo)
 
-## Lint & format
+**Not for app code**:
 
-| Package                | Purpose                                                                                       |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| `eslint`               | Linter                                                                                        |
-| `eslint-plugin-svelte` | Svelte lint rules                                                                             |
-| `typescript-eslint`    | TypeScript lint integration                                                                   |
-| `@eslint/js`           | ESLint's built-in JS rule presets (used only inside the shared eslint-config package)         |
-| `globals`              | Global-identifier sets for ESLint configs (used only inside the shared eslint-config package) |
-
-**Retired**: `prettier` + `prettier-plugin-svelte` — tsv (`gro format`)
-formats every repo; don't add them (tsv keeps prettier only as its conformance
-oracle).
-
-## Release tooling
-
-| Package                     | Purpose                                      |
-| --------------------------- | -------------------------------------------- |
-| `@changesets/changelog-git` | Git-based changelog generator for changesets |
-| `@changesets/types`         | Changesets type definitions                  |
-
-## Type definitions
-
-| Package            | Purpose                    |
-| ------------------ | -------------------------- |
-| `@types/node`      | Node.js types              |
-| `@types/deno`      | Deno runtime types         |
-| `@types/estree`    | ESTree AST types           |
-| `@types/pg`        | `pg` (node-postgres) types |
-| `@types/ws`        | `ws` types                 |
-| `@types/picomatch` | `picomatch` types          |
-
-## Core utilities
-
-| Package                     | Purpose                                                      |
-| --------------------------- | ------------------------------------------------------------ |
-| `esm-env`                   | Environment flags (`DEV` / `BROWSER`)                        |
-| `zimmerframe`               | AST walker                                                   |
-| `magic-string`              | Source-string edits with sourcemaps                          |
-| `@webref/css`               | W3C CSS reference data                                       |
-| `@jridgewell/trace-mapping` | Sourcemap decoding                                           |
-| `date-fns`                  | Date utilities                                               |
-| `valibot`                   | Schema validation in svelte-docinfo (its own public schemas) |
-| `immer`                     | Immutable state updates (setup's state)                      |
-
-(`dequal` and `fast-deep-equal` appear only as benchmark baselines in
-fuz_util — not stack utilities; don't add them to app code.)
-
-## Backend & server
-
-| Package                | Purpose                          |
-| ---------------------- | -------------------------------- |
-| `pg`                   | PostgreSQL client                |
-| `@electric-sql/pglite` | Embedded Postgres (WASM)         |
-| `hono`                 | HTTP server framework            |
-| `@hono/node-server`    | Hono Node adapter                |
-| `@hono/node-ws`        | Hono Node WebSocket adapter      |
-| `@hono/bun`            | Hono Bun adapter                 |
-| `@hono/deno`           | Hono Deno adapter                |
-| `@node-rs/argon2`      | Argon2 password hashing (native) |
-| `ws`                   | WebSocket implementation         |
-
-## Parsing & build internals
-
-| Package                    | Purpose                  |
-| -------------------------- | ------------------------ |
-| `esbuild`                  | Bundler / transform      |
-| `oxc-parser`               | Fast JS/TS parser        |
-| `acorn`                    | JS parser (ESTree)       |
-| `acorn-jsx`                | JSX plugin for acorn     |
-| `chokidar`                 | File watching            |
-| `dotenv`                   | `.env` loader            |
-| `picomatch` / `tinyglobby` | Glob matching            |
-| `commander`                | CLI argument parsing     |
+- `prettier` and `prettier-plugin-svelte` are retired. tsv formats every repo
+  through `gro format`.
+- Other schema libraries (`zod`, `valibot`, `arktype`, `typebox`) and
+  equality helpers (`dequal`, `fast-deep-equal`) appear only as benchmark
+  baselines in fuz_schema and fuz_util.
+- A new CLI in TS parses with fuz_util's `args_parse`, not a parser package
+  (see ./task-patterns.md §Args). `commander` stays where it is.
 
 ## Adding a dependency
 
-Prefer web standards, then `node:` built-ins (gro's host modules replace
-these per module as they land, with a Node implementation and the gro
-runtime's builtins behind one import; code that fetches takes `fetch` as a
-dep, since the gro runtime has no global `fetch` and callers pass
-`net.fetch`), then this list. New scripts and tasks
-run on Node via gro, never on Deno. A new package needs explicit
-approval — name, purpose, what it replaces or enables, transitive footprint.
-Removing an unused dependency is pre-authorized: verify nothing references it,
-drop it, and if it was the last user, drop it from this list in the same
-change.
+Prefer a web standard, then a `node:` built-in, then this list. gro's host
+modules replace the `node:` built-ins one at a time, with a Node
+implementation and the gro runtime's behind one import; code that fetches
+takes `fetch` as a dep, since on the gro runtime it is `net.fetch` and not a
+global. New scripts and tasks run on Node through gro, never on Deno.
 
-## Dependency classification (peer vs dependency vs dev)
+A new package needs explicit approval: its name, its purpose, what it
+replaces or enables, and its transitive footprint. Upgrades are the
+maintainer's. Removing a dependency nothing uses is pre-authorized: check
+that nothing references it (build scripts and re-exports included), drop it,
+and drop it from this list if that was its last user.
 
-For a **published library**, the `package.json` field is a correctness
-decision. Litmus test: _if a consumer ended up with a second copy of this
-package, would anything break?_ Yes → peer. No, but published code imports it →
-`dependencies`. Only the build sees it → `devDependencies`.
+## Peer, dependency, or dev
 
-- **`peerDependencies`** — must resolve to a **single instance** in the
-  consumer's tree: a framework host (`svelte`, `@sveltejs/kit`;
-  `svelte/compiler` used only as a parser shares no runtime state, so it may
-  be a plain dependency, as in fuz_css) or anything whose instances/types
-  cross the library's API boundary (`@fuzdev/fuz_schema` schemas, `esm-env`
-  flags). Two copies break `instanceof`, fuz_schema brand identity and
-  declaration-merged `SchemaMeta` keys, Svelte context keys, and the dev/prod
-  env gate. Mirror the version in `devDependencies` so the
-  library's own build resolves it. Required when the public API always
-  reaches it; **optional** (via `peerDependenciesMeta`) for
-  an opt-in path (a preprocessor, a deep-import module many consumers skip) —
-  but **only when a _required_ peer guarantees it transitively**: `svelte` and
-  `@sveltejs/kit` both depend on `esm-env`, so a lib requiring either can leave
-  `esm-env` optional. A singleton on a path with **no** required framework peer
-  (`esm-env` in a node-only utility like `fuz_util/log.ts`) must be a
-  **required** peer — npm auto-installs those, so the consumer never hits a
-  missing-module crash.
-- **`dependencies`** — published code imports it as a self-contained detail
-  never handed across the API boundary; pin a known-good version. Build-time
-  helpers a consumer never touches (`magic-string`, `zimmerframe` in a Svelte
-  preprocessor) belong here so the library ships its own copy. An optional peer
-  is acceptable for such a helper only when a required framework peer already
-  guarantees it (type-only `@types/estree` via `svelte`, erased at build).
-  Never a `devDependency`-only import — that breaks any consumer who reaches
-  the path.
-- **`devDependencies`** — build/test only, never shipped in `dist`.
+For a **published library** the field is a correctness decision. The test:
+_if a consumer ended up with a second copy of this package, would anything
+break?_ Yes means a peer. No, but published code imports it, means
+`dependencies`. Only the build or tests see it means `devDependencies`.
 
-**Apps, sites, and templates are not libraries** — leaf deploy targets with no
-installing consumers; everything is `dependencies`/`devDependencies`, never
-peers.
+- **`peerDependencies`**: anything that must be one instance in the
+  consumer's tree. That is a framework host (`svelte`, `@sveltejs/kit`) and
+  anything whose values or types cross the library's API: `@fuzdev/fuz_schema`
+  schemas, `esm-env` flags, the other `@fuzdev` libraries. Two copies break
+  `instanceof`, Svelte context keys, fuz_schema's brand types, and the
+  dev/prod gate. Mirror the range in `devDependencies` so the library's own
+  build resolves it.
+- **An optional peer** (`peerDependenciesMeta`) is for a path many consumers
+  skip: a preprocessor, a server adapter, a module reached only by deep
+  import. A singleton may be optional only when a _required_ peer already
+  brings it in: `svelte` and `@sveltejs/kit` both depend on `esm-env`, so a
+  library requiring either can leave `esm-env` optional (mdz, fuz_ui). With
+  no such peer it is required (fuz_code), and npm installs it for the
+  consumer. A types-only package erased at build (`@types/estree`) can be an
+  optional peer either way.
+- **`dependencies`**: an implementation detail the library imports and never
+  hands across its API, such as the `magic-string` and `zimmerframe` inside a
+  Svelte preprocessor, or `svelte/compiler` used purely as a parser
+  (fuz_css). Never leave something published code imports in
+  `devDependencies` alone: every consumer that reaches the path breaks.
+- **`devDependencies`**: build and test only, never in `dist`.
+
+**An app, site, or template is not a library.** Nothing installs it, so
+everything is `dependencies` or `devDependencies`. An app that is also
+packaged as a library (zzz) classifies its imports as a library does.

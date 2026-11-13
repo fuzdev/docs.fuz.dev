@@ -4,14 +4,15 @@ description: fuz_util — Result, error helpers, Logger, Timings, concurrency, D
 
 # fuz_util
 
-Shared utilities from `@fuzdev/fuz_util` (zero deps; `@fuzdev/fuz_schema` and
-`esm-env` are required peers). Modules named below are paths under the package
-(`@fuzdev/fuz_util/result.ts`).
+`@fuzdev/fuz_util` is the foundation library: no runtime dependencies, with
+`@fuzdev/fuz_schema` and `esm-env` as required peers. Import each module by
+path (`@fuzdev/fuz_util/result.ts`). This page is what to reach for and the
+traps; each module's TSDoc is the reference.
 
 ## Result (`result.ts`)
 
-`Result<TValue, TError>` is `({ok: true} & TValue) | ({ok: false} & TError)`:
-properties sit directly on the result, not under `.value`/`.error` wrappers.
+`Result<TValue, TError>` is `({ok: true} & TValue) | ({ok: false} & TError)`.
+The data sits on the result itself, not under a wrapper.
 
 ```typescript
 const parse_config = (text: string): Result<{ value: Config }, { message: string }> => {
@@ -23,161 +24,116 @@ const parse_config = (text: string): Result<{ value: Config }, { message: string
 };
 
 const result = parse_config(text);
-if (result.ok) use(result.value); else log.error(result.message);
-const config = unwrap(parse_config(text)); // throws ResultError if !ok — requires the {value} convention
+if (result.ok) use(result.value);
+else log.error(result.message);
 ```
 
-Helpers: `OK` / `NOT_OK` (frozen `{ok: true}` / `{ok: false}` for results with
-no data); `unwrap()` (returns `.value`, throws `ResultError` carrying
-`.result`); `unwrap_error()` (returns the whole narrowed `{ok: false} & TError`,
-throws if ok).
+- **`Result` for a failure the caller is expected to handle** (parsing,
+  validation, a missing file); an exception for a programmer mistake or a
+  failure nothing can act on.
+- **Hand-written results carry `{value}` on success and `{message}` on
+  failure**, the shape `unwrap(result)` reads (it returns `.value` or throws a
+  `ResultError` holding the result). A domain error adds a discriminating
+  `kind` beside the message (see ./dependency-injection.md). The generated
+  RPC clients return `Result<{value}, {error}>` with a JSON-RPC error object.
+- `OK` and `NOT_OK` are the frozen results with no data. `unwrap_error`
+  returns the narrowed failure and throws on success.
+- In a test, `assert.ok(result.ok)` narrows.
 
-Conventions: spread data directly (`{ok: true, ...data}`); use `{value}` when
-`unwrap()` is expected and `{message}` for errors; prefer `Result` for
-expected failures (parsing, validation), exceptions for programmer mistakes
-and system failures. In tests, `assert.ok(result.ok)` narrows the union.
+## Errors (`error.ts`)
 
-## Error helpers (`error.ts`)
-
-- **`to_error_message(value, fallback?)`** — the standard `catch (err)`
-  normalizer: `value.message` for `Error`, else `fallback ?? String(value)`
-- **`unreachable(value: never)`** — exhaustive-match guard throwing
-  `UnreachableError` (catchable separately when a default case must be
-  distinguishable); usable where an expression is required (ternaries, Svelte
-  markup), unlike `throw`
+- **`to_error_message(value, fallback?)`** is the one normalizer for a caught
+  `unknown`: the `message` of an `Error`, else `fallback ?? String(value)`.
+- **`unreachable(value)`** ends an exhaustive match by throwing
+  `UnreachableError`. It is a call, so it fits where `throw` can't: a ternary,
+  Svelte markup.
 
 ## Logger (`log.ts`)
 
-```typescript
-const log = new Logger('my_module');
-const child_log = log.child('submodule'); // label 'my_module:submodule'; inherits level/colors/console
-```
+`new Logger('module')`, and `log.child('part')` for the label `module:part`.
+Level, colors, and console are instance state: a child inherits from its
+parent until it sets its own, and `root` reaches the top of the chain.
 
-Level resolution: `PUBLIC_LOG_LEVEL` env var → `'off'` under Vitest → `'debug'`
-in dev (`DEV` from `esm-env`) → `'info'` in prod. Levels: `off`, `error`,
-`warn`, `info`, `debug`. No static state — level, colors, and console are
-instance properties; children inherit until they set their own, and
-`clear_level_override()` / `clear_colors_override()` /
-`clear_console_override()` restore inheritance. The `root` getter walks to
-the root logger for global configuration. Colors are disabled under `NO_COLOR`
-or `CLAUDECODE`. Shared library modules take a logger via deps rather than
-owning one (./dependency-injection.md §Design Principles).
+- **A shared library module takes its logger from its caller**; the label
+  belongs to the consumer (see ./dependency-injection.md). fuz_app's server
+  modules accept an optional `log` and fall back to one they label.
+- **The default level is decided once, when the module loads**:
+  `PUBLIC_LOG_LEVEL` from `process.env`, else `'off'` under Vitest, else
+  `'debug'` in dev (`DEV` from `esm-env`) and `'info'` in production. An
+  invalid `PUBLIC_LOG_LEVEL` throws at import. Levels run `off`, `error`,
+  `warn`, `info`, `debug`.
+- Colors default on only when writing to the global `console` with stdout
+  and stderr both terminals (and in a browser), and off under `NO_COLOR`,
+  `NODE_DISABLE_COLORS`, `CLAUDECODE`, or `TERM=dumb`; `FORCE_COLOR`
+  overrides.
 
 ## Timings (`timings.ts`)
 
-```typescript
-const timings = new Timings();
-const stop = timings.start('operation'); // nestable
-await work();
-const elapsed_ms = stop(); // does not log
-```
-
-Duplicate keys auto-suffix (`operation_2`). `Timings` doesn't log —
-`print_timings(timings, log)` from `print.ts` outputs at debug level.
-`create_stopwatch(decimals?)` is the single-timer primitive (call the returned
-function for elapsed ms; pass `true` to reset). Gro's `TaskContext` carries a
-`Timings` for task performance.
+`const stop = timings.start('key')`, then `stop()` returns the elapsed
+milliseconds and records them. `Timings` never logs;
+`print_timings(timings, log)` (`print.ts`) does, at `debug`, so nothing
+prints at the production default. Starting a key that is still
+running records under `key_2`; starting one that has stopped overwrites its
+timing. Gro's `TaskContext` carries one.
 
 ## Concurrency (`async.ts`)
 
-Three bounded-concurrency functions over iterables. All require
-`concurrency >= 1`, accept an optional `AbortSignal`, pass `(item, index)` to
-`fn` (which may be sync), spawn the next item as each settles, and resolve
-immediately on empty input.
+Three bounded runners over an iterable. Each takes `concurrency >= 1`, calls
+`fn(item, index)`, and accepts an `AbortSignal`.
 
-| Function                 | Returns results | Fail behavior           | Use when               |
-| ------------------------ | --------------- | ----------------------- | ---------------------- |
-| `each_concurrent`        | No              | Fail-fast               | Side effects only      |
-| `map_concurrent`         | Yes (ordered)   | Fail-fast               | Transform + collect    |
-| `map_concurrent_settled` | Yes (settled)   | Collects all (no throw) | Best-effort collection |
+| Function                 | Results        | On a rejection                   |
+| ------------------------ | -------------- | -------------------------------- |
+| `each_concurrent`        | none           | stops starting items and rejects |
+| `map_concurrent`         | in input order | stops starting items and rejects |
+| `map_concurrent_settled` | settlements    | keeps going, never rejects       |
 
-**Fail-fast**: on first rejection, stop spawning and reject — partial results
-are lost; with `signal`, abort immediately. **Settled** follows
-`Promise.allSettled` — never rejects; on abort it resolves with partial
-results: completed items keep their settlements, in-flight items reject with
-the abort reason, never-pulled items are absent.
+Nothing is cancelled: calls already in flight run on and their outcomes are
+dropped. On abort the first two reject with the signal's reason. The settled
+form resolves on abort too, with what finished: completed items keep their
+settlements, in-flight ones reject with the abort reason, and items never
+started are absent.
 
-```typescript
-const results = await map_concurrent(file_paths, 5, async (path) => readFile(path, 'utf8'));
-// results[i] corresponds to file_paths[i]
-```
+Also: `AsyncSemaphore(permits)` to bound an arbitrary code path
+(`await acquire()`, then `try` with `release()` in `finally`; `Infinity` turns
+the limit off without touching call sites), `create_deferred<T>()`,
+`wait(ms)`, and `AsyncStatus` for UI state.
 
-Also: `AsyncSemaphore(permits)` for limiting arbitrary code paths (`acquire()`
-in `try`, `release()` in `finally`; `permits >= 0`, `Infinity` disables limiting
-without changing call sites); `create_deferred<T>()` →
-`{promise, resolve, reject}` (used by `run_dag()` and `throttle`); `wait`
-(delay); `is_promise` (thenable guard); `AsyncStatus`
-(`'initial' | 'pending' | 'success' | 'failure'`, for UI lifecycle).
+## DAG (`dag.ts`)
 
-## DAG execution (`dag.ts`)
+`run_dag({nodes, execute, max_concurrency?, stop_on_failure?})` runs nodes that
+name their `depends_on`, in parallel where the graph allows. `execute` throws
+to fail a node. The result reports `success` and per-node `results`; a node
+whose dependency failed is skipped, not run. `stop_on_failure` defaults to
+`true`.
 
-`run_dag()` executes dependency-graph nodes concurrently; nodes declare
-`depends_on`, independent nodes run in parallel up to `max_concurrency`
-(built on `AsyncSemaphore` + `Deferred`).
+## DOM (`dom.ts`)
 
-```typescript
-interface BuildStep extends DagNode { command: string; }
+`swallow(event, immediate = true, preventDefault = true)` prevents the default
+and stops propagation in one call; when to use it is in ./svelte-patterns.md
+§Events. `handle_target_value(cb)` wraps an input handler with the value
+pulled out, swallowing the event by default.
 
-const result = await run_dag<BuildStep>({
-	nodes,
-	execute: async (node) => { await run_command(node.command); },
-	max_concurrency: 4,
-	stop_on_failure: true // default
-});
-if (!result.success) log.error(result.error); // e.g. "2 node(s) failed"
-```
+## Types
 
-`DagNode` is `{id, depends_on?}` extending `Sortable` (`sort.ts`, topological
-validation). `DagOptions` adds `on_error`/`on_skip`/`should_skip`,
-`max_concurrency` (default `Infinity`), `stop_on_failure` (default `true`),
-`skip_validation`; `DagResult` aggregates per-node results with counts and
-`duration_ms`. Failed dependencies cascade — dependents are skipped with reason
-`'dependency failed'`.
+**Nominal types** come from `@fuzdev/fuz_schema/schema.ts`, beside the
+schema helpers that produce them.
 
-## DOM helpers (`dom.ts`)
+- **`Flavored<TValue, TName>` is the default.** The mark is optional, so a
+  plain value assigns without a cast and two different flavors don't assign to
+  each other. Use it for identifiers and units: fuz_util's `PathId`.
+- **`Branded<TValue, TName>` when a bare value must not pass.** A value gets
+  the type from a parse, a guard, or a cast: fuz_util's `FactHash`.
+- **With a schema, mark the schema**: `s.flavor(s.string, 'GitBranch')` or
+  `s.brand(…)`, and infer the type (see ./fuz-schema.md §Brands). A
+  `Flavored<s.Infer<typeof X>, 'X'>` alias over an unmarked schema (fuz_util's
+  `Url`, gro's `InputPath`) types the alias only: a schema composed from `X`
+  outputs the plain type. New code marks the schema.
 
-- **`swallow(event, immediate?, preventDefault?)`** — claims an event
-  (preventDefault + stopImmediatePropagation by default). Design principle and
-  usage: ./svelte-patterns.md §Event Handling.
-- **`handle_target_value(cb, swallow = true)`** — wraps an input handler with
-  value extraction: `<input oninput={handle_target_value((v) => { name = v; })} />`.
+**From `types.ts`**: `OmitStrict<T, K>` in place of `Omit`, which accepts keys
+that don't exist, so a typo compiles. `Assignable<T, K>` strips `readonly` for
+an initializer that must write a readonly field. `ClassConstructor<T>` and
+`ArrayElement<T>` do what they say.
 
-## Type utilities (`types.ts`)
-
-**Nominal typing.** `Flavored<TValue, TName>`, defined in
-`@fuzdev/fuz_schema/schema.ts` beside the `flavor`/`brand` schema helpers that
-produce the same types, is the primary approach: an _optional_ invisible
-brand, so unflavored base values assign without casting but different flavors
-are incompatible:
-
-```typescript
-type Email = Flavored<string, 'Email'>;
-type Address = Flavored<string, 'Address'>;
-const email1: Email = 'foo@bar.com'; // ok — plain string assigns
-const email2: Email = 'foo' as Address; // error — Address !== Email
-```
-
-Real uses: `PathId` (`path.ts`), `GitOrigin`/`GitBranch` (gro's `git.ts`, `flavor`
-schemas), color channel types (`colors.ts`), `Url` (`url.ts`, paired with a
-fuz_schema schema of the same name), `BlogPostId` (fuz_blog), `InputPath`
-(gro), `ReorderableId` (zzz). `Branded<TValue, TName>` (requires a cast, also
-from fuz_schema) is for values that must not assign from a bare base value:
-fuz_util's `FactHash` (`hash_schemas.ts`), produced only by hashing or
-`is_fact_hash`. A schema's `s.brand()` is the form when the value crosses a
-runtime boundary and should validate (`Uuid` in fuz_app; ./fuz-schema.md
-§Branded and Flavored Types).
-
-**Strict and distributive.** `OmitStrict<T, K extends keyof T>` — `Omit`
-that rejects non-keys (standard `Omit` lets typos compile); widely used.
-`PickUnion<T, K>` / `KeyofUnion<T>` — `Pick`/`keyof` that distribute over
-unions.
-
-**Class and element helpers.** `Assignable<T, K>` removes `readonly` (zzz's
-self-referential init: `(this as Assignable<typeof this, 'app'>).app = this`);
-`ClassConstructor<TInstance>` (zzz's Cell registry is
-`Map<string, ClassConstructor<Cell>>`); `ArrayElement<T>`.
-
-**Exported but unused**: `PartialExcept`, `PartialOnly`, `PartialValues`,
-`NotNull` have no references outside `types.ts`; `Defined` has one. Don't
-model new code on them — use an inline mapped type until a recurring need
-appears.
+**Don't model new code on** `PickUnion`, `KeyofUnion`, `PartialExcept`,
+`PartialOnly`, `PartialValues`, `NotNull`, or `Defined`: exported, with next
+to no callers. Write the mapped type inline until a need recurs.

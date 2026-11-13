@@ -117,24 +117,24 @@ skills/
 ├── fuz-stack/
 │   ├── SKILL.md                       # Main skill file (YAML frontmatter + instructions)
 │   ├── references/                    # Detailed documentation loaded as needed
-│   │   ├── code-generation.md         # Gro gen system (.gen.* files, dependencies, common patterns)
-│   │   ├── css-patterns.md            # fuz_css styling conventions and utility classes
+│   │   ├── code-generation.md         # Gro gen: .gen.* files, the gen export, inputs, where codegen is used
+│   │   ├── css-patterns.md            # fuz_css styling: default-reliance, the ladder, tokens, class rules, extraction
 │   │   ├── db-patterns.md             # Query modules, named-column projections, schema drift guard (TS + Rust)
-│   │   ├── dependency-injection.md    # Injectable *Deps interfaces, mock factories, composition patterns
-│   │   ├── documentation-system.md    # Docs pipeline, Tome system, layout architecture, project setup
-│   │   ├── fuz-schema.md              # fuz_schema conventions (strict objects, naming, brands, defaults, metadata)
+│   │   ├── dependency-injection.md    # Injectable *Deps interfaces, composition roots, layer contracts, test doubles
+│   │   ├── documentation-system.md    # Docs sites: the pipeline, tomes, project setup, code examples in docs
+│   │   ├── fuz-schema.md              # fuz_schema conventions (strict objects, naming, brands, defaults, metadata, parsing)
 │   │   ├── fuz-util.md                # fuz_util: Result, error helpers, Logger, Timings, concurrency, DAG, type utilities
-│   │   ├── mdz.md                     # mdz dialect: grammar surface, component/element registration, rendering seam, autolink, preprocessor
-│   │   ├── npm-dependencies.md        # Approved external npm package allowlist for TS/Svelte repos
-│   │   ├── path-references.md         # Path typography in docs (navigational vs src/lib module vs code-shaped)
+│   │   ├── mdz.md                     # mdz dialect: what parses, authoring traps, the rendering seam, autolinks, preprocessor
+│   │   ├── npm-dependencies.md        # Approved external npm packages, and peer vs dependency vs dev
+│   │   ├── path-references.md         # Path typography in docs (navigable vs module vs code-shaped), import specifier rules
 │   │   ├── rust-dependencies.md       # Approved crate allowlist, manifest conventions, isolate-by-crate
 │   │   ├── rust-patterns.md           # Rust workspace setup, the gate, lints, errors, type modeling, DI, testing, CLI, system safety
 │   │   ├── rust-perf.md               # Rust perf: measuring and gating changes, arenas, hot-path idioms, locks
 │   │   ├── rust-spine.md              # Servers on the Rust spine: run_app shape, server toolkit, env, actions, realtime, check-release
-│   │   ├── svelte-patterns.md         # Svelte 5 runes, contexts, snippets, attachments
-│   │   ├── task-patterns.md           # Gro task system (.task.ts, TaskContext, error handling)
-│   │   ├── testing-patterns.md        # Testing patterns, fixtures, mocks, assertions
-│   │   ├── tsdoc-comments.md          # TSDoc style guide: tags, conventions, drift detection
+│   │   ├── svelte-patterns.md         # Svelte 5 in the stack: state, deriveds, contexts, snippets, attachments, events
+│   │   ├── task-patterns.md           # Gro tasks: .task.ts modules, Args schemas, invoke_task, names vs paths, errors
+│   │   ├── testing-patterns.md        # Vitest patterns: file layout, assertions, DB tests, fixtures, test doubles
+│   │   ├── tsdoc-comments.md          # TSDoc style: what to write, tag forms, linking, where tags are dropped, drift
 │   │   ├── twin-impl.md               # TS ↔ Rust twin implementations: naming parity, enforcement, wire shapes, digests
 │   │   └── wasm-patterns.md           # Rust binding crates: WASM (wasm-bindgen, component model), N-API, C FFI, npm packaging
 └── grimoire/

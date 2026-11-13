@@ -59,9 +59,9 @@ The skill docs render through mdz's full grammar — headings, lists, tables,
 blockquotes, code blocks, horizontal rules, and inline formatting (bold, italic,
 strikethrough, links, inline code) all render correctly. mdz is a strict
 dialect, not a CommonMark/GFM superset: single-delimiter emphasis (`*x*`,
-intraword `_`) stays literal, and component/element tags render only when
-registered and take no attributes yet. See the fuz-stack skill's `mdz.md`
-reference for the full surface.
+intraword `_`) stays literal, a code span can't cross a line break, and
+component/element tags render only when registered. See the fuz-stack skill's
+`mdz.md` reference for the authoring traps.
 
 ## Adding a new skill
 

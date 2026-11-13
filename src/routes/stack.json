@@ -40,15 +40,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/gro",
-			"version": "0.233.0",
+			"version": "0.236.0",
 			"path": "gro",
 			"description": "security-first JS runtime and toolchain on V8",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
-			"module_count": 87,
-			"exported_module_count": 64,
-			"export_count": 453,
+			"module_count": 88,
+			"exported_module_count": 65,
+			"export_count": 461,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",
@@ -357,9 +357,9 @@
 			"glyph": "💤",
 			"homepage_url": "https://github.com/fuzdev/zzz",
 			"published": false,
-			"module_count": 242,
-			"exported_module_count": 239,
-			"export_count": 764,
+			"module_count": 266,
+			"exported_module_count": 263,
+			"export_count": 936,
 			"peer_dependencies": [
 				"@fuzdev/fuz_app",
 				"@fuzdev/fuz_schema",
@@ -383,7 +383,7 @@
 		{
 			"kind": "package",
 			"name": "svelte-docinfo",
-			"version": "0.17.0",
+			"version": "0.18.0",
 			"path": "svelte-docinfo",
 			"description": "static analysis for TypeScript and Svelte",
 			"glyph": "📜",
@@ -391,7 +391,7 @@
 			"published": true,
 			"module_count": 38,
 			"exported_module_count": 36,
-			"export_count": 333,
+			"export_count": 373,
 			"peer_dependencies": [],
 			"runtime_dependencies": [
 				"@fuzdev/fuz_schema"

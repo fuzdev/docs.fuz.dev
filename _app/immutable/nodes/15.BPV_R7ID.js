@@ -1,0 +1,1 @@
+import{ft as e,pt as t}from"../chunks/CKoNd_8S.js";import{l as n,t as r}from"../chunks/9_9NMuUj.js";import{t as i}from"../chunks/BsgscAip.js";import{t as a}from"../chunks/aiQWtvrh.js";function o(o,s){t(s,!0),i(o,{get codeblock(){return n},children:(e,t)=>{r(e,{get content(){return a.content},base:`/skills/fuz-stack/`})},$$slots:{default:!0}}),e()}export{o as component};

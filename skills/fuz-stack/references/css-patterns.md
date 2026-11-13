@@ -36,11 +36,19 @@ the component.
 
 - **`row` and `row_wrap` zero their children's margins**, so space them with
   `gap_*`.
-- **`column` does not.** Its children keep their flow margins, and in a flex
-  column margins add where normal flow collapses them, so `column gap_md`
-  around paragraphs, headings, lists, or form controls spaces them twice. A
-  vertical stack of flow elements needs no class. `column` and `gap_*` are
-  for children with no margin of their own (`div`s, buttons).
+- **`column` does not.** Its children keep their flow margins, so a `gap_*`
+  on a `column` is added to them: a paragraph, list, or label sits a gap
+  further from the next child than a `div` beside it does, and a heading's
+  top margin stops collapsing into the margin above it. A vertical stack of
+  flow elements needs no class. `column` and `gap_*` are for children with
+  no margin of their own (`div`s, buttons, inputs); a flow element that has
+  to sit in one takes `mb_0` (`my_0` on a heading).
+- **A list item carries its own margin** in a styled `ul`, `ol`, or `menu`,
+  and resetting the list's `list-style`, `padding`, and `margin` leaves it
+  in place. A list laid out as a stack takes `unstyled`:
+  `<ul class="unstyled column gap_xs">`.
+- **`fieldset` is already a flex column**, so `column` adds nothing to it
+  and a `gap_*` is added to its labels' margins the same way.
 - **A heading that opens a padded box** (`.panel`, `.pane`, `aside`, `li`,
   `blockquote`, `fieldset`, `dialog`, a table cell) drops its top margin.
 - **Density is one class**: a size composite on a container (§Composites)

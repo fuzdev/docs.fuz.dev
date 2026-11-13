@@ -426,10 +426,11 @@ Unit tests in `#[cfg(test)] mod tests`, integration tests in `tests/`.
 - **Servers on the spine**: the TS cross-backend suite (see ./twin-impl.md)
   drives the server's `testing_*` sibling binary (see ./rust-spine.md).
 - **Real-Postgres suites are `#[ignore]`**, each reading a `*_TEST_URL`, run
-  with `--ignored --test-threads=1` (a suite shares one
-  database it resets per test). Write and run them locally. A crate that
-  gains one joins the CI job's `-p` list by hand; nothing checks that list,
-  and a missing entry leaves the job green with the suite never run.
+  with `--ignored --test-threads=1` (a suite shares one database it resets
+  per test). Write and run them locally. A crate that gains one joins the CI
+  job's `-p` list by hand, and a missing entry leaves the job green with the
+  suite never run, so a test holds that list to the tree (fuz's
+  `db_suite_lists.rs`). A workspace with such a job has one.
 - **A gated suite never passes by skipping.** A test that needs an external
   program returns early where it's absent, and one sentinel test fails
   naming every missing program unless an explicit `*_ALLOW_NO_<NAME>=1`

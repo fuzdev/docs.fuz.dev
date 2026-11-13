@@ -56,7 +56,7 @@ thing exists, what depends on it, and what a caller would get wrong.
 | --- | --- |
 | `@param` | `@param name - description`, in parameter order; `@param options.field - …` for a property |
 | `@returns` | not `@return`; for an async function, what the promise resolves to |
-| `@throws` | `@throws ErrorType description`, the type first, even when it is `Error` |
+| `@throws` | `@throws ErrorType description`, the type first, backticked or bare, even when it is `Error` |
 | `@mutates` | `@mutates target - description` (stack-specific) |
 | `@example` | a fenced code block; `// =>` comments for results |
 | `@default` | on an interface field or component prop |
@@ -72,11 +72,10 @@ thing exists, what depends on it, and what a caller would get wrong.
 
 - **A destructured parameter can't be documented**, since tags match by
   parameter name and TS names it `__0`. Name the parameter.
-- **`@throws` reads its first word as the type**, and needs a description
-  after it. `@throws if the file is missing` records `if` as the type, a
-  backticked type isn't read as one, and a lone `@throws Error` records no
-  type. A hyphen after the type is fine (`@throws Error - if …`, gro's
-  form).
+- **`@throws` reads its first word as the type**, bare or backticked, and
+  needs a description after it. `@throws if the file is missing` records `if`
+  as the type, and a lone `@throws Error` records no type. A hyphen after
+  the type is fine (`@throws Error - if …`, gro's form).
 - **`@mutates` names what a reader wouldn't guess**: the columns, the
   cascade, the side channel.
 
@@ -126,14 +125,16 @@ anything else stays code (see ./mdz.md).
    * @see [svelte-docinfo](https://github.com/fuzdev/svelte-docinfo) for the analysis library
    */
   ```
+- **An `@` after whitespace starts a tag, even mid-sentence.** Backtick a
+  tag name wherever it appears in prose or in link text: a markdown link
+  whose text holds a bare `@module` is cut in two at it.
 - **Backtick an HTTP route**: `POST /login`. A bare `/login` after a
   space is an internal link, and a link to a page that doesn't exist fails
   the prerender.
 - **Links work in descriptions, `@param`, `@returns`, `@example`, and
   `@see`.** `@throws`, `@mutates`, `@deprecated`, `@internal`, and `@since`
   render as plain text, backticks included. Backtick there anyway, for the
-  reader of the source, except the type that opens a `@throws`, which is a
-  bare word.
+  reader of the source.
 - **Never point outside the repo.** Published API docs stand alone, so a
   `../other-repo` path is dead (see ./path-references.md). Credit outside
   work in prose or with a URL.

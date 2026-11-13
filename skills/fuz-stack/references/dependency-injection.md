@@ -226,8 +226,9 @@ the platform and builds the bundle once.
   single-runtime on purpose, which say so at the top.
 - **A logger a function needs is a required dep.** A shared module can't own
   a `Logger`: the label is the consumer's. An optional `log?` that only adds
-  diagnostics is fine. fuz_app's `dev/setup.ts` helpers default theirs for
-  CLI output, which is not the shape to copy.
+  diagnostics is fine, and so is an optional status sink with a plain
+  console default, as fuz_app's `dev/setup.ts` helpers take in their options:
+  it prints progress and has no label to own.
 - **A capability whose absence skips a security effect is required, and its
   no-op has a name.** With an optional `connection_closer?`, a revocation
   handed none still succeeds and leaves the connections open. fuz_app makes

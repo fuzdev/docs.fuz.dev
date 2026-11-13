@@ -127,10 +127,10 @@ conflict. Resolve one by renaming the side that isn't the primary API:
 - **`src/lib/`** is exportable code, **`src/routes/`** is the SvelteKit app,
   and **`src/test/`** is every test, mirroring `lib/`. Tests are never
   beside the source.
-- **No barrels.** Import each module by its path
+- **No barrels, with a few exceptions.** Import each module by its path
   (`@fuzdev/fuz_app/env/load.ts`, `@fuzdev/gro/task.ts`); package `exports`
-  are wildcards. gro's bare `@fuzdev/gro` entry re-exports a few types;
-  prefer the module paths.
+  are wildcards. The exceptions are gro's bare `@fuzdev/gro` entry, which
+  re-exports a few types for task and gen files, and svelte-docinfo's index.
 - **No re-exports.** A symbol has one module, and callers import it from
   there. Two paths to one symbol drift and hide its source. The exceptions
   are modules whose job is to aggregate or wrap: a generated registry, a

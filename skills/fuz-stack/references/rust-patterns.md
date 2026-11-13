@@ -121,9 +121,21 @@ unwrap_used = "warn"
 
 - **Suppress with `#[expect(lint, reason = "…")]`, not `#[allow]`.** `expect`
   warns once the lint stops firing, so a suppression can't outlive its cause.
-  `#[allow]` is for a lint that fires only under some `cfg` or inside macro
-  output. tsv and gro are on `expect` throughout; other workspaces still
-  carry `#[allow]`, and new suppressions there use `expect`.
+  The reason is a claim about the code and is checked like one: a fulfilled
+  `missing_const_for_fn` expectation disproves "calls non-const methods".
+  Where no true reason exists, fix the lint (backtick the doc word, add the
+  `# Errors` section, derive `Debug`).
+- **`#[allow]` is for a lint that fires in only some builds of the item**:
+  under one `cfg`, feature, target, or toolchain; in the lib build and not
+  the test build; in some of the test binaries that compile a shared
+  `tests/common` module (`dead_code` there goes on each helper, not on the
+  module); or inside macro output (an `expect` on a `#[wasm_bindgen]` item
+  never registers as fulfilled). It carries a lead comment saying which:
+  ``// `allow`, not `expect`: …``.
+- **The `clippy.toml` test carve-out covers `#[test]` fns and `#[cfg(test)]`
+  modules**, so a suppression of `unwrap_used`, `expect_used`, or `panic`
+  there is dead. A helper outside a `#[test]` fn in `tests/*.rs` isn't test
+  code to clippy and still takes one.
 - **A workspace may diverge on purpose** (tsv's parser-shaped block, the
   cast-lint allows of numeric code). Compare a crate against its own
   workspace's block, not this one.
@@ -201,14 +213,17 @@ fn main() -> ExitCode {
 - **A variant keeps its cause in `#[source]`, not in its message**, and the
   print site prints the whole chain. `{e}` alone drops the reason (the errno,
   the refused connection). `fuz_sys::cli::format_error_chain` joins the
-  causes with `: `, skips one the text already shows, and bounds and escapes
-  each; `report_failure(&e, hint, code)` prints both lines and returns the
-  `ExitCode`. A workspace without `fuz_sys` writes the same walk once.
+  causes with `: `, skips one the text so far already ends with, and bounds
+  and escapes each; `report_failure(&e, hint, code)` prints both lines and
+  returns the `ExitCode`. A workspace without `fuz_sys` writes the same walk
+  once. The skip matches a trailing repeat only: a message that carries its
+  cause first or mid-sentence (`"{source}: {path}"`) prints it twice.
 - **Log the chain too.** In `tracing`, record the error as a value
   (`let error: &(dyn Error + 'static) = &e; warn!(error, "…")`) or as
   `error = %format_error_chain(&e)`. `error = %e` logs the top message alone,
-  and `?e` prints a `Debug` dump. Many existing sites use those two; new
-  ones don't.
+  and `?e` prints a `Debug` dump. A handler that logs and then returns the
+  plain error response routes through `fuz_http`'s `*_with_source` forms,
+  which log the chain (see ./rust-spine.md).
 - **A cause that must not be printed stays out of `source()`**: a URL that
   can carry a credential, text the error's own message already shows bounded.
 - **Untrusted text is escaped in the `Display` of the type that holds it**

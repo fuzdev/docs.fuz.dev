@@ -15,9 +15,6 @@ rune fields, provided through context.
   an object or array mutated in place** (`push`, a property write, `bind:` on
   a property). Mutating a raw value changes it and updates nothing. For a
   primitive the two behave the same.
-- **Most fields in the stack are raw**: values are replaced far more often
-  than mutated, and zzz's Cells default their schema fields to raw. Match the
-  neighbors: in a class of raw fields, a reassigned-only field is raw.
 - **A field assigned in the constructor is declared with `!`**:
 
   ```typescript

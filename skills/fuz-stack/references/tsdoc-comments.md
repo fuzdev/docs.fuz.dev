@@ -54,14 +54,13 @@ thing exists, what depends on it, and what a caller would get wrong.
 
 | Tag | Form |
 | --- | --- |
-| description | complete sentences ending in a period; a blank line between summary and detail |
 | `@param` | `@param name - description`, in parameter order; `@param options.field - …` for a property |
 | `@returns` | not `@return`; for an async function, what the promise resolves to |
 | `@throws` | `@throws ErrorType description`, the type first, even when it is `Error` |
 | `@mutates` | `@mutates target - description` (stack-specific) |
 | `@example` | a fenced code block; `// =>` comments for results |
 | `@default` | on an interface field or component prop |
-| `@see` | the reference first and bare, then prose (§Links) |
+| `@see` | the reference first, then prose (§Links) |
 | `@cssprop` | `@cssprop --name - description`, in a component's doc comment |
 | `@internal` | not stable API; stays documented, with a note on who uses it |
 | `@nodocs` | removed from docs and from the flat-namespace check (stack-specific) |
@@ -71,9 +70,6 @@ thing exists, what depends on it, and what a caller would get wrong.
 `@example`, `@deprecated`, `@see`, `@since`, `@default`, `@internal`,
 `@nodocs`.
 
-- **A single-sentence `@param` or `@returns` is a lowercase fragment with no
-  period** (`@param foo - the value to clamp`). Several sentences are
-  capitalized with periods. Acronyms and proper names keep their capitals.
 - **A destructured parameter can't be documented**, since tags match by
   parameter name and TS names it `__0`. Name the parameter.
 - **`@throws` reads its first word as the type**, and needs a description
@@ -117,23 +113,19 @@ anything else stays code (see ./mdz.md).
   `actions/action_rpc.ts`. A `./` prefix, a `.js` extension, a
   `src/lib/` prefix, or the bare filename of a nested module all miss
   silently. A top-level module is its filename.
-- **`@see` is the exception: write its reference bare.** The renderer
-  backticks the first whitespace-delimited token of a `@see` itself, so a
-  backticked one comes out doubled and unlinked, and a comma glued to the
-  reference breaks it. Identifiers in the prose after it still take
-  backticks. Most existing `@see` lines backtick the reference; fix one when
-  you touch it.
+- **A `@see` opens with its reference**, backticked like any other
+  identifier, then prose. A URL or a markdown link can open one too.
 
   ```typescript
   /**
-   * @see each_concurrent for the side-effect variant
-   * @see actions/action_rpc.ts for the JSON-RPC dispatcher
+   * @see `each_concurrent` for the side-effect variant
+   * @see `actions/action_rpc.ts` for the JSON-RPC dispatcher
    * @see https://fuz.dev for the project
-      * @see [svelte-docinfo](https://github.com/fuzdev/svelte-docinfo) for the analysis library
+   * @see [svelte-docinfo](https://github.com/fuzdev/svelte-docinfo) for the analysis library
    */
   ```
 
-    A `{@link …}` works only as the whole of a `@see` (`{@link url|text}`,
+  A `{@link …}` works only as the whole of a `@see` (`{@link url|text}`,
   `{@link url text}`, or `{@link Name}`). Prose after it breaks the link:
   use the markdown form.
 - **Backtick an HTTP route**: `POST /login`. A bare `/login` after a

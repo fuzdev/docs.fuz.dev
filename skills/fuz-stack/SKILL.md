@@ -105,9 +105,7 @@ The name's form is chosen by what disambiguates it in a flat namespace:
 | `query_table_verb`    | `query_session_get_valid` | a SQL query function            |
 
 The file says which: `git.ts` holds `git_*`, `string.ts` holds action-first
-names. Common verbs: `create`, `to`, `is`, `has`, `parse`, `format`,
-`resolve`, `generate`, `load`, `find`, `render`, and `assert` for a test
-helper.
+names.
 
 ### Flat namespace
 
@@ -150,16 +148,12 @@ conflict. Resolve one by renaming the side that isn't the primary API:
 
 ### Code style
 
-- **Strict TypeScript, Svelte 5 runes, tabs, 100 columns.** `gro format`
-  (tsv) formats; don't hand-format.
+- **Formatting is `gro format`'s** (tsv). Don't hand-format.
 - **An import names the real file**: `./bar.ts`, `./Foo.svelte`, never `.js`
   for a `.ts` file. `src/lib` imports relatively. Outside it, `#lib/*` and
   `#routes/*` reach into those trees and a file in the same directory is
   imported relatively. Another package is `@fuzdev/pkg/foo.ts`. Rules and
   reasons: ./references/path-references.md §Import specifiers.
-- **Comments**: a doc comment (`/** */`) is sentences with periods. An inline
-  `//` comment is a lowercase fragment with no period, in new code; older
-  files mix both.
 
 ### The gate
 
@@ -195,8 +189,7 @@ gro sync        # svelte-kit sync + package.json exports; run when check says th
   `kebab-case` and never take a fuz_css class name.
 - **Svelte** — runes only. Shared state is a class with rune fields, shared
   through `create_context` from `@fuzdev/fuz_ui/context_helpers.ts`, never
-  module-level runes. `$state.raw()` for a value that is only reassigned,
-  `$state()` for one mutated in place.
+  module-level runes.
 - **Schemas** — `@fuzdev/fuz_schema` is the one schema library. `s.object`
   rejects unknown keys and is the default. A schema and its type share a
   PascalCase name. `s.parse` at a boundary, `s.parse_or_throw` for an
@@ -217,8 +210,7 @@ gro sync        # svelte-kit sync + package.json exports; run when check says th
   taking `QueryDeps`, and every read projected through the table's `*_COLUMNS`
   const, never `SELECT *`.
 - **TSDoc** — say why, not what. Backtick every identifier; on API pages
-  they become links. The one exception is the reference that opens a `@see`,
-  which is written bare. `@param name - description`, `@returns`,
+  they become links. `@param name - description`, `@returns`,
   `@throws ErrorType description`, and `@mutates target - description` for a
   mutation a reader wouldn't guess.
 - **Docs prose** — a bare `./` or `../` path is a promise that it resolves on

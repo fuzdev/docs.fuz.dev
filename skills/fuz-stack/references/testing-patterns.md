@@ -44,8 +44,7 @@ describe the file.
 
 ## Structure
 
-- `describe` blocks, one level or two (feature, then scenario), and `test()`,
-  not `it()`.
+- `describe` blocks and `test()`, not `it()`.
 - **Table tests use labeled tuples**, with `null` for a missing input. A case
   with its own extra assertions stays a standalone test.
 

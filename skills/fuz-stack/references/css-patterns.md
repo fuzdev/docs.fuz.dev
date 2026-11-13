@@ -71,8 +71,6 @@ rung 1 against the rest, and classes against `<style>`.
   (`<div class="callout">` to `<aside>`) is good. Turning a working `<style>`
   block into a long class string is churn: state machines, animations,
   `@media`, parent-child selectors, and positioning stay in `<style>`.
-- **A long class string is a smell.** One or two classes is typical; past
-  six, write the `<style>` block.
 
 | Need                                       | Use                                  |
 | ------------------------------------------ | ------------------------------------ |

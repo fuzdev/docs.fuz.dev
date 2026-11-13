@@ -107,8 +107,10 @@ thing exists, what depends on it, and what a caller would get wrong.
 page a backticked name that matches a declaration or module becomes a link;
 anything else stays code (see ./mdz.md).
 
-- **Not `{@link Name}`.** Inline `{@link}` is kept raw and renders as the
-  literal text.
+- **No `{@link}`.** An identifier is backticked. A URL is written bare, or
+  as a markdown link when it needs text:
+  `[svelte-docinfo](https://github.com/fuzdev/svelte-docinfo)`. An inline
+  `{@link}` is kept raw: its braces and `@link` show as text.
 - **A module is its `src/lib`-relative path with the source extension**:
   `actions/action_rpc.ts`. A `./` prefix, a `.js` extension, a
   `src/lib/` prefix, or the bare filename of a nested module all miss
@@ -124,17 +126,14 @@ anything else stays code (see ./mdz.md).
    * @see [svelte-docinfo](https://github.com/fuzdev/svelte-docinfo) for the analysis library
    */
   ```
-
-  A `{@link …}` works only as the whole of a `@see` (`{@link url|text}`,
-  `{@link url text}`, or `{@link Name}`). Prose after it breaks the link:
-  use the markdown form.
 - **Backtick an HTTP route**: `POST /login`. A bare `/login` after a
   space is an internal link, and a link to a page that doesn't exist fails
   the prerender.
 - **Links work in descriptions, `@param`, `@returns`, `@example`, and
   `@see`.** `@throws`, `@mutates`, `@deprecated`, `@internal`, and `@since`
   render as plain text, backticks included. Backtick there anyway, for the
-  reader of the source.
+  reader of the source, except the type that opens a `@throws`, which is a
+  bare word.
 - **Never point outside the repo.** Published API docs stand alone, so a
   `../other-repo` path is dead (see ./path-references.md). Credit outside
   work in prose or with a URL.

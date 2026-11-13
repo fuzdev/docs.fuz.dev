@@ -210,7 +210,8 @@ gro sync        # svelte-kit sync + package.json exports; run when check says th
   taking `QueryDeps`, and every read projected through the table's `*_COLUMNS`
   const, never `SELECT *`.
 - **TSDoc** — say why, not what. Backtick every identifier; on API pages
-  they become links. `@param name - description`, `@returns`,
+  they become links. A URL is bare or a markdown link, never `{@link}`.
+  `@param name - description`, `@returns`,
   `@throws ErrorType description`, and `@mutates target - description` for a
   mutation a reader wouldn't guess.
 - **Docs prose** — a bare `./` or `../` path is a promise that it resolves on

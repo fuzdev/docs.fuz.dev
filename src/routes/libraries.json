@@ -19012,7 +19012,7 @@
 							"kind": "type",
 							"docComment": "The kind of a filesystem entry. `stat` with `follow` (the default) never\nreturns `'symlink'`; `stat` without it and `list` do.",
 							"typeSignature": "FileKind",
-							"sourceLine": 117,
+							"sourceLine": 118,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "FileKind",
@@ -19045,7 +19045,7 @@
 							"kind": "interface",
 							"docComment": "What `stat` reports about an entry.",
 							"typeSignature": "FileInfo",
-							"sourceLine": 122,
+							"sourceLine": 123,
 							"members": [
 								{
 									"name": "kind",
@@ -19103,7 +19103,7 @@
 							"kind": "interface",
 							"docComment": "One entry of a directory listing, its kind read without following a symlink.",
 							"typeSignature": "DirEntry",
-							"sourceLine": 141,
+							"sourceLine": 142,
 							"members": [
 								{
 									"name": "name",
@@ -19147,7 +19147,7 @@
 							"name": "FsStatOptions",
 							"kind": "interface",
 							"typeSignature": "FsStatOptions",
-							"sourceLine": 146,
+							"sourceLine": 147,
 							"members": [
 								{
 									"name": "follow",
@@ -19163,7 +19163,7 @@
 							"kind": "interface",
 							"docComment": "The times `set_times` gives an entry, in milliseconds since the epoch, as `FileInfo.mtime_ms`.\nEach is a finite number from `0` to `8.64e15`, the range of a `Date`, else a `TypeError`,\nand the filesystem may clamp a time beyond its own range.\nThe Node implementation passes seconds as a double that libuv truncates, to a microsecond\non libuv 1.51 (Node 24.14) and to a nanosecond on 1.52.1 (Node 26.13): on the microsecond step an integer is\nstored exactly through 2242, and on the nanosecond step within half the double's spacing\n(119ns from 2004 to 2038), so `stat` can show an integer one step of its own double off\nwhere that spacing is the coarser, as from 2038-01-19 to 2039-09-07.",
 							"typeSignature": "FsTimes",
-							"sourceLine": 163,
+							"sourceLine": 164,
 							"members": [
 								{
 									"name": "mtime_ms",
@@ -19184,7 +19184,7 @@
 							"name": "FsWriteOptions",
 							"kind": "interface",
 							"typeSignature": "FsWriteOptions",
-							"sourceLine": 174,
+							"sourceLine": 175,
 							"members": [
 								{
 									"name": "create_new",
@@ -19206,7 +19206,7 @@
 							"name": "FsMkdirOptions",
 							"kind": "interface",
 							"typeSignature": "FsMkdirOptions",
-							"sourceLine": 186,
+							"sourceLine": 187,
 							"members": [
 								{
 									"name": "recursive",
@@ -19228,7 +19228,7 @@
 							"name": "FsRemoveOptions",
 							"kind": "interface",
 							"typeSignature": "FsRemoveOptions",
-							"sourceLine": 197,
+							"sourceLine": 198,
 							"members": [
 								{
 									"name": "recursive",
@@ -19250,7 +19250,7 @@
 							"name": "FsCopyOptions",
 							"kind": "interface",
 							"typeSignature": "FsCopyOptions",
-							"sourceLine": 209,
+							"sourceLine": 210,
 							"members": [
 								{
 									"name": "recursive",
@@ -19266,7 +19266,7 @@
 							"kind": "interface",
 							"docComment": "A read-only handle on a directory. Every path is relative to it.",
 							"typeSignature": "FsReadDir",
-							"sourceLine": 219,
+							"sourceLine": 220,
 							"members": [
 								{
 									"name": "path",
@@ -19618,7 +19618,7 @@
 							"kind": "interface",
 							"docComment": "A read-write handle on a directory. Every path is relative to it.",
 							"typeSignature": "FsDir",
-							"sourceLine": 274,
+							"sourceLine": 275,
 							"extends": [
 								"FsReadDir"
 							],
@@ -20199,7 +20199,7 @@
 							"kind": "interface",
 							"docComment": "The fs host module's root: the project directory and the ways to reach others.",
 							"typeSignature": "Fs",
-							"sourceLine": 353,
+							"sourceLine": 354,
 							"members": [
 								{
 									"name": "project",
@@ -20237,6 +20237,37 @@
 											{
 												"kind": "reference",
 												"name": "FsDir"
+											}
+										]
+									}
+								},
+								{
+									"name": "real_path",
+									"kind": "function",
+									"docComment": "The real path of an absolute path, every symlink followed, with `open_dir`'s reach:\nany absolute path, checked against no grant. Beneath a handle a real path is the\nhandle's `path` and the confined walk, so handles have no such op.\nA real path that isn't UTF-8 fails with `io_error`, since no string spells it.",
+									"typeSignature": "(path: string): Promise<string>",
+									"throws": [
+										{
+											"description": "`TypeError` - for a relative path, or one holding a NUL byte or a lone surrogate"
+										},
+										{
+											"description": "`FsError` - `not_found`, also for a dangling symlink; `not_a_directory` for a path\nthrough a file; `permission_denied`; `io_error` for a symlink loop or any other failure"
+										}
+									],
+									"parameters": [
+										{
+											"name": "path",
+											"type": "string"
+										}
+									],
+									"returnType": "Promise<string>",
+									"returnTypeInfo": {
+										"kind": "reference",
+										"name": "Promise",
+										"typeArgs": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
 											}
 										]
 									}
@@ -20287,10 +20318,10 @@
 							"kind": "variable",
 							"docComment": "The fs host module's root handle. Import it where authority enters\n(a task, a script, an entry module) and hand narrower handles down.",
 							"typeSignature": "Fs",
-							"sourceLine": 1391
+							"sourceLine": 1402
 						}
 					],
-					"moduleComment": "The fs host module: filesystem access through directory handles.\n\nCode reaches the filesystem only through an `FsDir` (or the read-only `FsReadDir`),\na handle on one directory that resolves relative paths beneath it, the shape of\ncap-std and WASI preopens. The import is the capability, and handing a narrower\nhandle (`dir.dir('sub')`, `dir.readonly()`) down the call graph is how authority narrows.\n`fs.project` is the project directory, `fs.open_dir` opens any other directory,\nand `fs.temp_dir` makes a fresh one that removes itself on `await using`.\nOnly `fs` and other handles make handles, and handles and their prototypes are frozen,\nso a handle's `constructor` makes nothing and no holder can patch another's ops.\nThey and `fs` are null-prototype, so awaiting one adopts no polluted `Object.prototype.then`.\nEach op reads its handle's state from private fields, never `path`, so an op called\non any other object throws `TypeError`.\n\nPaths beneath a handle are relative and `/`-separated, and resolve as `openat2` with\n`RESOLVE_BENEATH` does. An absolute path, or one whose `..` segments climb above the\nhandle, fails with `outside_root`. So does an absolute symlink, and a relative one\nwhose target climbs above the handle, even when it would land back inside\n(`../root/real`). The path's own `..` segments resolve lexically, before any symlink,\nso `link/..` is the handle's own directory whatever `link` points at; the runtime's\nnative op resolves them the same way before calling the kernel. A trailing `/`\nmeans a directory, as in the kernel: `stat('a.txt/')` and `read('a.txt/')` fail with\n`not_a_directory`, `write('new.txt/')` fails, and `remove` and `rename` refuse a\nsymlink named with a trailing `/` (`not_a_directory`), never acting on its target.\n`remove` and `rename` refuse the handle's own directory with `io_error`.\nSymlink targets, real paths, and listed names are read as bytes, and one that isn't UTF-8 fails\nwith `io_error`, since no string names what the kernel would reach.\nA symlink's target is data: `symlink` stores any target verbatim and `read_link` returns it,\nand following a link is what's confined, by whichever handle reaches it.\n\nErrors are typed: each op throws an `FsError` (`fs_error.ts`) whose `kind` names the\nfailure, and `is_fs_error` recognizes one from any copy of Gro. Each op's one expected failure\nreturns a value instead of throwing: `stat` returns `null` on `not_found`,\n`exists` returns `false`, `read_if_exists` and `read_text_if_exists` return `null`,\n`remove({missing_ok})` and `mkdir({exists_ok})` return normally,\nand `write({create_new})` and `symlink` return `'exists'`. Every other kind still throws,\nso a permission or I/O error is never mistaken for a missing file.\n\nThis is the Node implementation, which runs on the Node Gro. Its gaps against\nthe runtime's builtin, which it documents rather than the API weakening to match:\n\n- Confinement is a check, then an open: the path is walked beneath the handle's\n  directory one component at a time, reading each symlink, then the op runs on the\n  path the walk found, `read_link`, `set_times`, `set_mode`, and `symlink` included.\n  A symlink swapped in between escapes, since Node has no `openat2`.\n  The twin is a review signal, not a boundary.\n- A handle is bound to its directory's path, not its inode: a handle whose directory\n  is moved or replaced follows the path, refused only when the path's real location\n  changed (`outside_root`) or is gone (`not_found`). The runtime's handle holds a\n  descriptor and keeps the directory it opened.\n- Intrinsics stay pollutable: code that patches `String.prototype`, `Array.prototype`,\n  or `Promise` after this module loads runs inside its ops. The walk refuses a segment\n  holding a `/`, so a forged segment can't climb out, and the Node functions it calls\n  are copied at load, so `syncBuiltinESMExports` can't rebind them.\n- A handle opened on `/proc` follows its magic links, which the kernel resolves\n  without a path the walk can check.\n- `fs.open_dir` takes any absolute path, checked against no grant.\n- Any module can import `node:fs`, so a narrowed handle bounds only code that\n  uses the handles.\n- `fs.project` is the working directory when this module loads, the same source\n  as Gro's `paths.root`; `getcwd` returns a path with symlinks resolved. Importing\n  the module throws when the working directory has been removed, or when its path\n  isn't UTF-8, which Node would report lossily as a different path.",
+					"moduleComment": "The fs host module: filesystem access through directory handles.\n\nCode reaches the filesystem only through an `FsDir` (or the read-only `FsReadDir`),\na handle on one directory that resolves relative paths beneath it, the shape of\ncap-std and WASI preopens. The import is the capability, and handing a narrower\nhandle (`dir.dir('sub')`, `dir.readonly()`) down the call graph is how authority narrows.\n`fs.project` is the project directory, `fs.open_dir` opens any other directory,\n`fs.real_path` resolves any absolute path's symlinks, and `fs.temp_dir` makes a fresh\ndirectory that removes itself on `await using`.\nOnly `fs` and other handles make handles, and handles and their prototypes are frozen,\nso a handle's `constructor` makes nothing and no holder can patch another's ops.\nThey and `fs` are null-prototype, so awaiting one adopts no polluted `Object.prototype.then`.\nEach op reads its handle's state from private fields, never `path`, so an op called\non any other object throws `TypeError`.\n\nPaths beneath a handle are relative and `/`-separated, and resolve as `openat2` with\n`RESOLVE_BENEATH` does. An absolute path, or one whose `..` segments climb above the\nhandle, fails with `outside_root`. So does an absolute symlink, and a relative one\nwhose target climbs above the handle, even when it would land back inside\n(`../root/real`). The path's own `..` segments resolve lexically, before any symlink,\nso `link/..` is the handle's own directory whatever `link` points at; the runtime's\nnative op resolves them the same way before calling the kernel. A trailing `/`\nmeans a directory, as in the kernel: `stat('a.txt/')` and `read('a.txt/')` fail with\n`not_a_directory`, `write('new.txt/')` fails, and `remove` and `rename` refuse a\nsymlink named with a trailing `/` (`not_a_directory`), never acting on its target.\n`remove` and `rename` refuse the handle's own directory with `io_error`.\nSymlink targets, real paths, and listed names are read as bytes, and one that isn't UTF-8 fails\nwith `io_error`, since no string names what the kernel would reach.\nA symlink's target is data: `symlink` stores any target verbatim and `read_link` returns it,\nand following a link is what's confined, by whichever handle reaches it.\n\nErrors are typed: each op throws an `FsError` (`fs_error.ts`) whose `kind` names the\nfailure, and `is_fs_error` recognizes one from any copy of Gro. Each op's one expected failure\nreturns a value instead of throwing: `stat` returns `null` on `not_found`,\n`exists` returns `false`, `read_if_exists` and `read_text_if_exists` return `null`,\n`remove({missing_ok})` and `mkdir({exists_ok})` return normally,\nand `write({create_new})` and `symlink` return `'exists'`. Every other kind still throws,\nso a permission or I/O error is never mistaken for a missing file.\n\nThis is the Node implementation, which runs on the Node Gro. Its gaps against\nthe runtime's builtin, which it documents rather than the API weakening to match:\n\n- Confinement is a check, then an open: the path is walked beneath the handle's\n  directory one component at a time, reading each symlink, then the op runs on the\n  path the walk found, `read_link`, `set_times`, `set_mode`, and `symlink` included.\n  A symlink swapped in between escapes, since Node has no `openat2`.\n  The twin is a review signal, not a boundary.\n- A handle is bound to its directory's path, not its inode: a handle whose directory\n  is moved or replaced follows the path, refused only when the path's real location\n  changed (`outside_root`) or is gone (`not_found`). The runtime's handle holds a\n  descriptor and keeps the directory it opened.\n- Intrinsics stay pollutable: code that patches `String.prototype`, `Array.prototype`,\n  or `Promise` after this module loads runs inside its ops. The walk refuses a segment\n  holding a `/`, so a forged segment can't climb out, and the Node functions it calls\n  are copied at load, so `syncBuiltinESMExports` can't rebind them.\n- A handle opened on `/proc` follows its magic links, which the kernel resolves\n  without a path the walk can check.\n- `fs.open_dir` and `fs.real_path` take any absolute path, checked against no grant.\n- Any module can import `node:fs`, so a narrowed handle bounds only code that\n  uses the handles.\n- `fs.project` is the working directory when this module loads, the same source\n  as Gro's `paths.root`; `getcwd` returns a path with symlinks resolved. Importing\n  the module throws when the working directory has been removed, or when its path\n  isn't UTF-8, which Node would report lossily as a different path.",
 					"dependencies": [
 						"fs_error.ts"
 					],
@@ -24654,14 +24685,14 @@
 						{
 							"name": "GithubPullRequest",
 							"kind": "type",
-							"typeSignature": "{ url: string; id: number; html_url: string; number: number; user: { login: string; } & Record<string, unknown>; } & Record<string, unknown>",
+							"typeSignature": "{ number: number; url: string; id: number; html_url: string; user: { login: string; } & Record<string, unknown>; } & Record<string, unknown>",
 							"sourceLine": 21,
 							"typeInfo": {
 								"kind": "intersection",
 								"members": [
 									{
 										"kind": "object",
-										"text": "{ url: string; id: number; html_url: string; number: number; user: { login: string; } & Record<string, unknown>; }"
+										"text": "{ number: number; url: string; id: number; html_url: string; user: { login: string; } & Record<string, unknown>; }"
 									},
 									{
 										"kind": "reference",
@@ -24681,6 +24712,11 @@
 							},
 							"members": [
 								{
+									"name": "number",
+									"kind": "variable",
+									"typeSignature": "number"
+								},
+								{
 									"name": "url",
 									"kind": "variable",
 									"typeSignature": "string"
@@ -24694,11 +24730,6 @@
 									"name": "html_url",
 									"kind": "variable",
 									"typeSignature": "string"
-								},
-								{
-									"name": "number",
-									"kind": "variable",
-									"typeSignature": "number"
 								},
 								{
 									"name": "user",
@@ -24784,7 +24815,7 @@
 									"optional": true
 								}
 							],
-							"returnType": "Promise<({ url: string; id: number; html_url: string; number: number; user: { login: string; } & Record<string, unknown>; } & Record<string, unknown>)[] | null>",
+							"returnType": "Promise<({ number: number; url: string; id: number; html_url: string; user: { login: string; } & Record<string, unknown>; } & Record<string, unknown>)[] | null>",
 							"returnTypeInfo": {
 								"kind": "reference",
 								"name": "Promise",
@@ -34195,7 +34226,7 @@
 						{
 							"name": "afterNavigate",
 							"kind": "variable",
-							"typeSignature": "(callback: (navigation: (NavigationGoto & { type: \"link\" | \"goto\" | \"enter\" | \"form\" | \"popstate\"; willUnload: false; }) | (NavigationFormSubmit & { type: \"link\" | ... 3 more ... | \"popstate\"; willUnload: false; }) | (NavigationPopState & { ...; }) | (NavigationLink & { ...; }) | (NavigationEnter & { ...; })) => voi...",
+							"typeSignature": "(callback: (navigation: (NavigationGoto & { type: \"goto\" | \"enter\" | \"form\" | \"link\" | \"popstate\"; willUnload: false; }) | (NavigationFormSubmit & { type: \"goto\" | ... 3 more ... | \"popstate\"; willUnload: false; }) | (NavigationPopState & { ...; }) | (NavigationLink & { ...; }) | (NavigationEnter & { ...; })) => voi...",
 							"sourceLine": 22
 						},
 						{
@@ -34231,7 +34262,7 @@
 						{
 							"name": "onNavigate",
 							"kind": "variable",
-							"typeSignature": "(callback: (navigation: (NavigationGoto & { type: \"link\" | \"goto\" | \"form\" | \"popstate\"; willUnload: false; }) | (NavigationFormSubmit & { type: \"link\" | \"goto\" | \"form\" | \"popstate\"; willUnload: false; }) | (NavigationPopState & { ...; }) | (NavigationLink & { ...; })) => MaybePromise<...>) => void",
+							"typeSignature": "(callback: (navigation: (NavigationGoto & { type: \"goto\" | \"form\" | \"link\" | \"popstate\"; willUnload: false; }) | (NavigationFormSubmit & { type: \"goto\" | \"form\" | \"link\" | \"popstate\"; willUnload: false; }) | (NavigationPopState & { ...; }) | (NavigationLink & { ...; })) => MaybePromise<...>) => void",
 							"sourceLine": 28
 						},
 						{
@@ -36287,7 +36318,7 @@
 							"kind": "interface",
 							"docComment": "A change to an entry beneath a watched directory.",
 							"typeSignature": "WatchChange",
-							"sourceLine": 105,
+							"sourceLine": 106,
 							"members": [
 								{
 									"name": "kind",
@@ -36343,7 +36374,7 @@
 							"kind": "interface",
 							"docComment": "Changes beneath `path` may have been missed, so its state is to be read again.",
 							"typeSignature": "WatchRescan",
-							"sourceLine": 124,
+							"sourceLine": 125,
 							"members": [
 								{
 									"name": "kind",
@@ -36369,7 +36400,7 @@
 							"kind": "type",
 							"docComment": "What a `Watcher` yields.",
 							"typeSignature": "WatchEvent",
-							"sourceLine": 135,
+							"sourceLine": 136,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "WatchEvent",
@@ -36390,7 +36421,7 @@
 							"kind": "interface",
 							"docComment": "The options of `watch.dir`.",
 							"typeSignature": "WatchDirOptions",
-							"sourceLine": 140,
+							"sourceLine": 141,
 							"members": [
 								{
 									"name": "recursive",
@@ -36420,7 +36451,7 @@
 							"kind": "interface",
 							"docComment": "A running watch: an async iterable of its events, read once.",
 							"typeSignature": "Watcher",
-							"sourceLine": 161,
+							"sourceLine": 162,
 							"extends": [
 								"AsyncIterable<WatchEvent>",
 								"AsyncDisposable"
@@ -36454,7 +36485,7 @@
 							"kind": "interface",
 							"docComment": "The watch host module's root.",
 							"typeSignature": "Watch",
-							"sourceLine": 171,
+							"sourceLine": 172,
 							"members": [
 								{
 									"name": "dir",
@@ -36466,7 +36497,7 @@
 											"description": "`FsError` - `not_found`, `not_a_directory`, `permission_denied`, `outside_root`, or\n`io_error`, as listing the handle's directory throws, and for a directory removed or replaced\nbefore the watch is in place"
 										},
 										{
-											"description": "`TypeError` - for a handle without an absolute `path`, or an invalid option"
+											"description": "`TypeError` - for a `dir` that isn't a handle this copy of `fs` made, a forged\nobject or another copy's handle, or an invalid option"
 										},
 										{
 											"type": "the",
@@ -36507,7 +36538,7 @@
 							"sourceLine": 604
 						}
 					],
-					"moduleComment": "The watch host module: changes beneath an fs handle, as an async iterator of events.\n\n`watch.dir(dir, options?)` watches the directory a handle is on and resolves once the\nwatch is in place, reporting no entry that was already there. Each event's `path` is\nrelative to the handle and `/`-separated, the handle's own directory `''`, so a path from\nan event goes straight back to the handle's ops. The handle is the grant: a read-only one\nis enough, and nothing beyond it is watched or reported.\n\nEvents are `add`, `update`, and `delete`, each with `is_directory`, and `rescan`, which\nsays changes beneath a path may have been missed and its state is to be read again:\nthe events not yet read overflowed `max_pending`, or a directory couldn't be watched.\nThey're hints for a caller to act on, not a log to replay:\n\n- A symlink is an entry like a file, `is_directory: false`, never followed, as `fs_search`\n  treats one: what it points at is never watched, so a change there reports nothing,\n  and replacing the link reports the link itself.\n- A rename is a `delete` of the old path and an `add` of the new, unpaired,\n  and a file replaced by a rename over it (an atomic save) may be an `update` or a\n  `delete` then an `add`.\n- Events for one directory arrive in the order they happened; across directories there's no order.\n- A directory created or moved in is an `add`, then an `add` for each entry found in it\n  once its own watch is in place. An entry created and removed before then is never seen,\n  and one created as the watch lands may be reported twice.\n- A directory removed or moved out is a `delete`, and its entries may or may not have\n  `delete`s of their own.\n- `update` is a change to a non-directory's contents or metadata; a directory's own\n  changes show as its entries' events.\n- Debouncing is the caller's.\n\nEvents not yet read are buffered up to `max_pending`, by default 4096. Past it they're\ndropped for one `rescan` of `''`, as a kernel's event queue overflows, and the events\nafter it are dropped until that `rescan` is read, since reading the tree then sees them.\n\nA watcher ends when it's closed (`close()`, `await using`, or leaving its `for await`),\nwhen its `signal` aborts, or when the watched directory is removed, moved, or replaced.\nClosing or aborting ends the iteration and drops the events not yet read; a watched\ndirectory that's gone delivers what was queued, then the iteration throws `FsError`\n`not_found`. An open watcher keeps the process alive, as a listening server does, and\nonce it has ended nothing of it does.\n\nWatchers and their iterators are frozen and null-prototype, and hold their state in\nprivate fields, so a method called on any other object throws `TypeError`.\nEvents and iterator results are frozen null-prototype records,\nso a polluted `Object.prototype.then` is never consulted on the way to the reader.\n\nThis is the Node implementation, which runs on the Node Gro, over chokidar's\nper-directory native backend, symlinks never followed. Its gaps against the runtime's\nbuiltin, which it documents rather than the API weakening to match:\n\n- The handle is read for its `path`, and the watch is on that path, so a forged handle is\n  any object with an absolute `path` whose `list` resolves.\n  The runtime's builtin watches the directory the handle holds by descriptor.\n- The watch is bound to the directory's path, not its inode, as an fs handle is, so a moved\n  watched directory ends the watch as a removed one does, where the runtime's keeps\n  watching the directory it opened.\n- Chokidar checks an entry with `lstat` and then watches and reads it by path, so a directory\n  swapped for a symlink in between is watched through the link. The watcher checks each path\n  before chokidar descends into it and before reporting it, the root still the directory the\n  watch started on and each directory on the way still a directory, a check then a use as fs's\n  walk is: a swap between the two escapes, and chokidar can be left watching the directory\n  a swapped-in link points at, never beneath it, and the directories beneath one renamed away\n  for the link, their events dropped.\n  The runtime's builtin watches by descriptor, so no path is resolved after the scan.\n- The root is told apart by device and inode, which a filesystem can reuse: on ext4 a watched\n  directory removed and another made at once at its path usually gets its inode, and the watch\n  then goes on in the new one, the directory the handle's path names, before the watch is in\n  place or after. The runtime's builtin ends on the removal itself.\n- An entry replaced at once by one of another type can go unreported, with no `rescan`:\n  a file replaced by a directory reports nothing, not even the directory's entries later,\n  and a directory replaced by a symlink is an `update` of the link.\n- Names are decoded as UTF-8 by Node, so a name that isn't UTF-8 may go unreported, or arrive\n  with `U+FFFD` in place of its bytes, naming no entry the handle reaches, and listing its\n  directory through the handle fails with `io_error`.\n- Node exposes no kernel overflow, so a `rescan` comes only from `max_pending` and a\n  directory chokidar couldn't watch, never from events the kernel dropped. A directory that\n  can't be read when the watch starts stays unwatched after it's readable.\n- Any module can import `node:fs` and call `watch` on any path, so a handle bounds only\n  code that uses it, a review signal, not a boundary.",
+					"moduleComment": "The watch host module: changes beneath an fs handle, as an async iterator of events.\n\n`watch.dir(dir, options?)` watches the directory a handle is on and resolves once the\nwatch is in place, reporting no entry that was already there. Each event's `path` is\nrelative to the handle and `/`-separated, the handle's own directory `''`, so a path from\nan event goes straight back to the handle's ops. The handle is the grant: a read-only one\nis enough, and nothing beyond it is watched or reported.\n\nEvents are `add`, `update`, and `delete`, each with `is_directory`, and `rescan`, which\nsays changes beneath a path may have been missed and its state is to be read again:\nthe events not yet read overflowed `max_pending`, or a directory couldn't be watched.\nThey're hints for a caller to act on, not a log to replay:\n\n- A symlink is an entry like a file, `is_directory: false`, never followed, as `fs_search`\n  treats one: what it points at is never watched, so a change there reports nothing,\n  and replacing the link reports the link itself.\n- A rename is a `delete` of the old path and an `add` of the new, unpaired,\n  and a file replaced by a rename over it (an atomic save) may be an `update` or a\n  `delete` then an `add`.\n- Events for one directory arrive in the order they happened; across directories there's no order.\n- A directory created or moved in is an `add`, then an `add` for each entry found in it\n  once its own watch is in place. An entry created and removed before then is never seen,\n  and one created as the watch lands may be reported twice.\n- A directory removed or moved out is a `delete`, and its entries may or may not have\n  `delete`s of their own.\n- `update` is a change to a non-directory's contents or metadata; a directory's own\n  changes show as its entries' events.\n- Debouncing is the caller's.\n\nEvents not yet read are buffered up to `max_pending`, by default 4096. Past it they're\ndropped for one `rescan` of `''`, as a kernel's event queue overflows, and the events\nafter it are dropped until that `rescan` is read, since reading the tree then sees them.\n\nA watcher ends when it's closed (`close()`, `await using`, or leaving its `for await`),\nwhen its `signal` aborts, or when the watched directory is removed, moved, or replaced.\nClosing or aborting ends the iteration and drops the events not yet read; a watched\ndirectory that's gone delivers what was queued, then the iteration throws `FsError`\n`not_found`. An open watcher keeps the process alive, as a listening server does, and\nonce it has ended nothing of it does.\n\nWatchers and their iterators are frozen and null-prototype, and hold their state in\nprivate fields, so a method called on any other object throws `TypeError`.\nEvents and iterator results are frozen null-prototype records,\nso a polluted `Object.prototype.then` is never consulted on the way to the reader.\n\nThis is the Node implementation, which runs on the Node Gro, over chokidar's\nper-directory native backend, symlinks never followed. Its gaps against the runtime's\nbuiltin, which it documents rather than the API weakening to match:\n\n- A real handle is told by a registry in `internal/fs_handles.ts`, which the package doesn't\n  export, but code importing that file by its path can register any object, and the watch is on\n  that object's `path`. The runtime's builtin watches the directory the handle holds by descriptor.\n- The watch is bound to the directory's path, not its inode, as an fs handle is, so a moved\n  watched directory ends the watch as a removed one does, where the runtime's keeps\n  watching the directory it opened.\n- Chokidar checks an entry with `lstat` and then watches and reads it by path, so a directory\n  swapped for a symlink in between is watched through the link. The watcher checks each path\n  before chokidar descends into it and before reporting it, the root still the directory the\n  watch started on and each directory on the way still a directory, a check then a use as fs's\n  walk is: a swap between the two escapes, and chokidar can be left watching the directory\n  a swapped-in link points at, never beneath it, and the directories beneath one renamed away\n  for the link, their events dropped.\n  The runtime's builtin watches by descriptor, so no path is resolved after the scan.\n- The root is told apart by device and inode, which a filesystem can reuse: on ext4 a watched\n  directory removed and another made at once at its path usually gets its inode, and the watch\n  then goes on in the new one, the directory the handle's path names, before the watch is in\n  place or after. The runtime's builtin ends on the removal itself.\n- An entry replaced at once by one of another type can go unreported, with no `rescan`:\n  a file replaced by a directory reports nothing, not even the directory's entries later,\n  and a directory replaced by a symlink is an `update` of the link.\n- Names are decoded as UTF-8 by Node, so a name that isn't UTF-8 may go unreported, or arrive\n  with `U+FFFD` in place of its bytes, naming no entry the handle reaches, and listing its\n  directory through the handle fails with `io_error`.\n- Node exposes no kernel overflow, so a `rescan` comes only from `max_pending` and a\n  directory chokidar couldn't watch, never from events the kernel dropped. A directory that\n  can't be read when the watch starts stays unwatched after it's readable.\n- Any module can import `node:fs` and call `watch` on any path, so a handle bounds only\n  code that uses it, a review signal, not a boundary.",
 					"dependencies": [
 						"fs.ts",
 						"fs_error.ts"
@@ -211223,16 +211254,21 @@
 							"name": "BlogFeedItem",
 							"kind": "type",
 							"docComment": "A feed entry, derived from a `BlogPostMetadata` by `resolve_blog_feed_item`.\nStrict, so a leaked consumer field fails the generated feed's validation.",
-							"typeSignature": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }",
+							"typeSignature": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }",
 							"sourceLine": 85,
 							"members": [
 								{
-									"name": "tags",
+									"name": "id",
 									"kind": "variable",
-									"typeSignature": "string[]"
+									"typeSignature": "string"
 								},
 								{
 									"name": "title",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "url",
 									"kind": "variable",
 									"typeSignature": "string"
 								},
@@ -211252,14 +211288,9 @@
 									"typeSignature": "string"
 								},
 								{
-									"name": "id",
+									"name": "tags",
 									"kind": "variable",
-									"typeSignature": "string"
-								},
-								{
-									"name": "url",
-									"kind": "variable",
-									"typeSignature": "string"
+									"typeSignature": "string[]"
 								},
 								{
 									"name": "pathname",
@@ -211283,27 +211314,9 @@
 							"name": "BlogFeed",
 							"kind": "type",
 							"docComment": "A blog's complete feed, generated by `gro gen` into `src/routes/<dirname>/feed.ts`:\nthe configured `BlogFeedMetadata`, the derived `atom.feed_url`, and the post entries.",
-							"typeSignature": "{ atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }",
+							"typeSignature": "{ id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { id: string; ... 8 more ...; slug: string; }[]; atom: { ...; }; }",
 							"sourceLine": 96,
 							"members": [
-								{
-									"name": "atom",
-									"kind": "variable",
-									"typeSignature": "{ feed_url: string; }"
-								},
-								{
-									"name": "items",
-									"kind": "variable",
-									"typeSignature": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]",
-									"typeInfo": {
-										"kind": "array",
-										"element": {
-											"kind": "reference",
-											"name": "BlogFeedItem",
-											"module": "blog.ts"
-										}
-									}
-								},
 								{
 									"name": "id",
 									"kind": "variable",
@@ -211338,6 +211351,24 @@
 									"name": "author",
 									"kind": "variable",
 									"typeSignature": "{ name: string; url?: string | undefined; email?: string | undefined; }"
+								},
+								{
+									"name": "items",
+									"kind": "variable",
+									"typeSignature": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "BlogFeedItem",
+											"module": "blog.ts"
+										}
+									}
+								},
+								{
+									"name": "atom",
+									"kind": "variable",
+									"typeSignature": "{ feed_url: string; }"
 								}
 							],
 							"mergedValue": true
@@ -211374,7 +211405,7 @@
 									"description": "the author-defined post metadata"
 								}
 							],
-							"returnType": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }",
+							"returnType": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }",
 							"returnTypeInfo": {
 								"kind": "reference",
 								"name": "BlogFeedItem"
@@ -211598,7 +211629,7 @@
 							"name": "blog_feed_context",
 							"kind": "variable",
 							"docComment": "Provides a blog's generated `BlogFeed` to its subtree, read by `BlogPost`\nand set in the blog's own `src/routes/<dirname>/+layout.svelte`.\nKept apart from `blog.ts` so the schemas, the registry, and the build helpers don't import fuz_ui and Svelte.",
-							"typeSignature": "{ get: (error_message?: string | undefined) => { atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }; get_maybe: () ...",
+							"typeSignature": "{ get: (error_message?: string | undefined) => { id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { ...; }[]; atom: { ...; }; }; get_maybe: () => { ...; } | undefined; set: (va...",
 							"sourceLine": 10
 						}
 					],
@@ -213142,12 +213173,12 @@
 							"name": "find_blog_feed_item_by_param",
 							"kind": "function",
 							"docComment": "Finds a feed's item by the param of the generated redirect route, which must\nbe a bare post id like `1` - `01` and `1.0` find nothing.",
-							"typeSignature": "(feed: { atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }, param: string): { ...; } | undefined",
+							"typeSignature": "(feed: { id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { ...; }[]; atom: { ...; }; }, param: string): { ...; } | undefined",
 							"sourceLine": 20,
 							"parameters": [
 								{
 									"name": "feed",
-									"type": "{ atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }",
+									"type": "{ id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { id: string; ... 8 more ...; slug: string; }[]; atom: { ...; }; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "BlogFeed"
@@ -213158,7 +213189,7 @@
 									"type": "string"
 								}
 							],
-							"returnType": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; } | undefined",
+							"returnType": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; } | undefined",
 							"returnTypeInfo": {
 								"kind": "union",
 								"members": [
@@ -213177,12 +213208,12 @@
 							"name": "to_blog_post_redirect_entries",
 							"kind": "function",
 							"docComment": "The `entries` of the generated `[post=blog_post_id]` route: every post's bare id,\nso prerendering writes a redirect page for each.",
-							"typeSignature": "(feed: { atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }): { ...; }[]",
+							"typeSignature": "(feed: { id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { ...; }[]; atom: { ...; }; }): { ...; }[]",
 							"sourceLine": 33,
 							"parameters": [
 								{
 									"name": "feed",
-									"type": "{ atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }",
+									"type": "{ id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { id: string; ... 8 more ...; slug: string; }[]; atom: { ...; }; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "BlogFeed"
@@ -213195,7 +213226,7 @@
 							"name": "blog_post_redirect",
 							"kind": "function",
 							"docComment": "The `load` of the generated `[post=blog_post_id]` route: redirects a bare post id to the\npost's canonical path, or 404s. Prerendering writes the redirect as a page\nwith a meta refresh.",
-							"typeSignature": "(feed: { atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }, param: string): never",
+							"typeSignature": "(feed: { id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { ...; }[]; atom: { ...; }; }, param: string): never",
 							"sourceLine": 45,
 							"throws": [
 								{
@@ -213210,7 +213241,7 @@
 							"parameters": [
 								{
 									"name": "feed",
-									"type": "{ atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }",
+									"type": "{ id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { id: string; ... 8 more ...; slug: string; }[]; atom: { ...; }; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "BlogFeed"
@@ -213254,7 +213285,7 @@
 								},
 								{
 									"name": "item",
-									"type": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }",
+									"type": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "BlogFeedItem"
@@ -213279,7 +213310,7 @@
 								},
 								{
 									"name": "meta",
-									"type": "Snippet<[item: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }, post: T]>",
+									"type": "Snippet<[item: { id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }, post: T]>",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "Snippet",
@@ -213310,7 +213341,7 @@
 									"parameters": [
 										{
 											"name": "item",
-											"type": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }",
+											"type": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }",
 											"typeInfo": {
 												"kind": "reference",
 												"name": "BlogFeedItem"
@@ -213329,7 +213360,7 @@
 								},
 								{
 									"name": "comments",
-									"type": "Snippet<[item: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }, post: T]>",
+									"type": "Snippet<[item: { id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }, post: T]>",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "Snippet",
@@ -213360,7 +213391,7 @@
 									"parameters": [
 										{
 											"name": "item",
-											"type": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }",
+											"type": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }",
 											"typeInfo": {
 												"kind": "reference",
 												"name": "BlogFeedItem"
@@ -213396,7 +213427,7 @@
 							"props": [
 								{
 									"name": "item",
-									"type": "{ tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }",
+									"type": "{ id: string; title: string; url: string; date_published: string; date_modified: string; summary: string; tags: string[]; pathname: string; blog_post_id: number; slug: string; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "BlogFeedItem"
@@ -213423,7 +213454,7 @@
 							"props": [
 								{
 									"name": "feed",
-									"type": "{ atom: { feed_url: string; }; items: { tags: string[]; title: string; date_published: string; date_modified: string; summary: string; id: string; url: string; pathname: string; blog_post_id: number; slug: string; }[]; ... 6 more ...; author: { ...; }; }",
+									"type": "{ id: string; title: string; home_page_url: string; description: string; icon: string; favicon: string; author: { name: string; url?: string | undefined; email?: string | undefined; }; items: { id: string; ... 8 more ...; slug: string; }[]; atom: { ...; }; }",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "BlogFeed"
@@ -215369,7 +215400,7 @@
 							"name": "git_add",
 							"kind": "function",
 							"docComment": "Adds files to git staging area and throws if anything goes wrong.",
-							"typeSignature": "(git: SpawnProgram, files: string | string[], options?: SpawnCallOptions | undefined): Promise<void>",
+							"typeSignature": "(git: SpawnProgram, files: string | string[], options?: any): Promise<void>",
 							"sourceLine": 17,
 							"parameters": [
 								{
@@ -215398,7 +215429,7 @@
 								},
 								{
 									"name": "options",
-									"type": "SpawnCallOptions",
+									"type": "any",
 									"optional": true
 								}
 							],
@@ -215418,7 +215449,7 @@
 							"name": "git_commit",
 							"kind": "function",
 							"docComment": "Commits `files` alone with a message, leaving anything else staged out of\nthe commit, and throws if anything goes wrong. `files` must be non-empty:\nan empty list would commit the whole index.",
-							"typeSignature": "(git: SpawnProgram, message: string, files: string[], options?: SpawnCallOptions | undefined): Promise<void>",
+							"typeSignature": "(git: SpawnProgram, message: string, files: string[], options?: any): Promise<void>",
 							"sourceLine": 37,
 							"parameters": [
 								{
@@ -215435,7 +215466,7 @@
 								},
 								{
 									"name": "options",
-									"type": "SpawnCallOptions",
+									"type": "any",
 									"optional": true
 								}
 							],
@@ -215983,12 +216014,12 @@
 							"name": "gitops_config_leaked_private_repos",
 							"kind": "function",
 							"docComment": "The private repos a public host package must not publish. `gitops_sync` writes\nevery configured repo's GitHub metadata into the host project's generated\n`repos.json` — a public site's data when the host package is public — so a\nprivate repo in that config would leak. Empty when the host is private.",
-							"typeSignature": "(entries: readonly { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[], host_is_private: boolean): { ...; }[]",
+							"typeSignature": "(entries: readonly { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[], host_is_private: boolean): { ...; }[]",
 							"sourceLine": 42,
 							"parameters": [
 								{
 									"name": "entries",
-									"type": "readonly { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[]",
+									"type": "readonly { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; vi...",
 									"typeInfo": {
 										"kind": "array",
 										"element": {
@@ -216005,7 +216036,7 @@
 									"description": "whether the host `package.json` sets `private: true`"
 								}
 							],
-							"returnType": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[]",
+							"returnType": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 							"returnTypeInfo": {
 								"kind": "array",
 								"element": {
@@ -216581,7 +216612,7 @@
 									"name": "entry",
 									"kind": "variable",
 									"docComment": "The repo's registry entry as `repos status --json` reported it: its\n`branch`, `visibility`, `ci`, and `archived`, and its git state.",
-									"typeSignature": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }",
+									"typeSignature": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "ReposEntryStatus"
@@ -216678,7 +216709,7 @@
 									"name": "entry",
 									"kind": "variable",
 									"docComment": "The repo's registry entry as `repos status --json` reported it.",
-									"typeSignature": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }",
+									"typeSignature": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "ReposEntryStatus"
@@ -220470,7 +220501,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+										"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
 									},
 									{
 										"kind": "object",
@@ -220478,7 +220509,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | ... 12 more ... | { ...; }; }"
+										"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | ... 12 more ... | { ...; }; }"
 									}
 								]
 							}
@@ -220498,7 +220529,7 @@
 								{
 									"name": "entry",
 									"kind": "variable",
-									"typeSignature": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; } | null",
+									"typeSignature": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "union",
 										"members": [
@@ -220549,7 +220580,7 @@
 												},
 												{
 													"kind": "object",
-													"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+													"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
 												},
 												{
 													"kind": "object",
@@ -220557,7 +220588,7 @@
 												},
 												{
 													"kind": "object",
-													"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | ... 12 more ... | { ...; }; }"
+													"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | ... 12 more ... | { ...; }; }"
 												}
 											]
 										}
@@ -220569,12 +220600,12 @@
 							"name": "repo_readiness_at_rest",
 							"kind": "function",
 							"docComment": "The ways an entry's primary checkout isn't at rest where the registry puts\nit, from its `at_rest` facts: empty when it is.",
-							"typeSignature": "(entry: { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }): RepoReadinessProblem[]",
+							"typeSignature": "(entry: { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_check: { ...; } | ... 2 more ... | null; }): RepoReadinessProblem[]",
 							"sourceLine": 75,
 							"parameters": [
 								{
 									"name": "entry",
-									"type": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }",
+									"type": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "ReposEntryStatus"
@@ -220615,7 +220646,7 @@
 										},
 										{
 											"kind": "object",
-											"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+											"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
 										},
 										{
 											"kind": "object",
@@ -220623,7 +220654,7 @@
 										},
 										{
 											"kind": "object",
-											"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | ... 12 more ... | { ...; }; }"
+											"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | ... 12 more ... | { ...; }; }"
 										}
 									]
 								}
@@ -220634,12 +220665,12 @@
 							"name": "repo_readiness_for_publish",
 							"kind": "function",
 							"docComment": "The ways an entry isn't ready for a release step to rewrite or publish it:\nnot at rest (`repo_readiness_at_rest`) other than its followed branch being\nahead of origin, its fetch failed, another live session works in its\nprimary checkout, or it has a `needs_human` reason. Ahead is ready: origin's\ntip is an ancestor of the branch, so the plan misses nothing and `gro\npublish`'s push stays a fast-forward, pushing those commits with the\nrelease. A reason restating\nan at-rest problem (the primary's operation or detached HEAD) is left out,\nand a `default_branch_*` reason stands in for the followed-branch problem\nit explains.",
-							"typeSignature": "(entry: { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }): RepoReadinessProblem[]",
+							"typeSignature": "(entry: { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_check: { ...; } | ... 2 more ... | null; }): RepoReadinessProblem[]",
 							"sourceLine": 110,
 							"parameters": [
 								{
 									"name": "entry",
-									"type": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }",
+									"type": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "ReposEntryStatus"
@@ -220680,7 +220711,7 @@
 										},
 										{
 											"kind": "object",
-											"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+											"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
 										},
 										{
 											"kind": "object",
@@ -220688,7 +220719,7 @@
 										},
 										{
 											"kind": "object",
-											"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | ... 12 more ... | { ...; }; }"
+											"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | ... 12 more ... | { ...; }; }"
 										}
 									]
 								}
@@ -220756,7 +220787,7 @@
 											},
 											{
 												"kind": "object",
-												"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+												"text": "{ kind: \"fetch_failed\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
 											},
 											{
 												"kind": "object",
@@ -220764,7 +220795,7 @@
 											},
 											{
 												"kind": "object",
-												"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | ... 12 more ... | { ...; }; }"
+												"text": "{ kind: \"needs_human\"; reason: { kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | ... 12 more ... | { ...; }; }"
 											}
 										]
 									},
@@ -220855,12 +220886,12 @@
 							"name": "repo_readiness_for_gen",
 							"kind": "function",
 							"docComment": "An entry's problems for `gitops_sync`, split by what they do to the run:\n`refused` stops it, `warned` is logged. Off its branch, dirty, or mid-operation\nrefuses, since the site would show that working tree's modules beside origin's\nCI — unless `allow_dirty`, which reads the repo as it sits and warns instead.\nA checkout that can't be read, or an entry following no branch (only a\nreference follows none, and the config refuses references), always\nrefuses. The followed branch not in sync\nwith origin (behind, say: CI is origin's tip, the modules the local tree) and\na failed fetch (the last fetch's view stands) warn. Busy sessions and\n`needs_human` reasons don't matter: generating writes nothing in the repo.",
-							"typeSignature": "(entry: { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }, options?: { ...; }): { ...; }",
+							"typeSignature": "(entry: { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_check: { ...; } | ... 2 more ... | null; }, options?: { ...; }): { ...; }",
 							"sourceLine": 298,
 							"parameters": [
 								{
 									"name": "entry",
-									"type": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }",
+									"type": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "reference",
 										"name": "ReposEntryStatus"
@@ -220950,12 +220981,12 @@
 							"name": "repos_not_at_rest",
 							"kind": "function",
 							"docComment": "The repos not at rest, for the read-only diagnostics' readiness block.",
-							"typeSignature": "(entries: readonly { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[]): RepoReadiness[]",
+							"typeSignature": "(entries: readonly { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[]): RepoReadiness[]",
 							"sourceLine": 384,
 							"parameters": [
 								{
 									"name": "entries",
-									"type": "readonly { key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[]",
+									"type": "readonly { kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; vi...",
 									"typeInfo": {
 										"kind": "array",
 										"element": {
@@ -221130,7 +221161,7 @@
 							"name": "ReposUnavailable",
 							"kind": "type",
 							"docComment": "Why busy detection can't vouch for every live session.",
-							"typeSignature": "{ kind: \"home_unknown\"; } | { kind: \"relative_config_dir\"; path: string; } | { kind: \"unreadable\"; path: string; error: string; } | { kind: \"unparseable\"; path: string; error: string; } | { kind: \"foreign_pid_domain\"; path: string; pid_domain: string; source: \"session_file\" | \"roster_worker\"; }",
+							"typeSignature": "{ kind: \"home_unknown\"; } | { kind: \"relative_config_dir\"; path: string; } | { kind: \"unreadable\"; path: string; error: string; } | { kind: \"unparseable\"; path: string; error: string; } | { source: \"session_file\" | \"roster_worker\"; kind: \"foreign_pid_domain\"; path: string; pid_domain: string; }",
 							"sourceLine": 80,
 							"typeInfo": {
 								"kind": "union",
@@ -221153,7 +221184,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"foreign_pid_domain\"; path: string; pid_domain: string; source: \"session_file\" | \"roster_worker\"; }"
+										"text": "{ source: \"session_file\" | \"roster_worker\"; kind: \"foreign_pid_domain\"; path: string; pid_domain: string; }"
 									}
 								]
 							},
@@ -221174,7 +221205,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"unavailable\"; reason: { kind: \"home_unknown\"; } | { kind: \"relative_config_dir\"; path: string; } | { kind: \"unreadable\"; path: string; error: string; } | { kind: \"unparseable\"; path: string; error: string; } | { kind: \"foreign_pid_domain\"; path: string; pid_domain: string; source: \"session_file\" | \"roster_worker\"; }; }"
+										"text": "{ kind: \"unavailable\"; reason: { kind: \"home_unknown\"; } | { kind: \"relative_config_dir\"; path: string; } | { kind: \"unreadable\"; path: string; error: string; } | { kind: \"unparseable\"; path: string; error: string; } | { source: \"session_file\" | \"roster_worker\"; kind: \"foreign_pid_domain\"; path: string; pid_domain: string; }; }"
 									}
 								]
 							},
@@ -221563,7 +221594,7 @@
 							"name": "ReposCloneVerdict",
 							"kind": "type",
 							"docComment": "What sync does about a missing entry: clone it, or why not yet.",
-							"typeSignature": "{ kind: \"act\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; } | { kind: \"held\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; by: \"entry\" | ... 1 more ... | \"busy\"; }",
+							"typeSignature": "{ kind: \"act\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; } | { kind: \"held\"; by: \"entry\" | \"unprobed_worktree\" | \"busy\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; }",
 							"sourceLine": 186,
 							"typeInfo": {
 								"kind": "union",
@@ -221574,7 +221605,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"held\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; by: \"entry\" | \"unprobed_worktree\" | \"busy\"; }"
+										"text": "{ kind: \"held\"; by: \"entry\" | \"unprobed_worktree\" | \"busy\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; }"
 									}
 								]
 							},
@@ -221704,7 +221735,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"held\"; action: { kind: \"push\"; commits: number; } | { kind: \"fast_forward\"; commits: number; } | { kind: \"move\"; } | { kind: \"rebase\"; ahead: number; behind: number; }; by: \"entry\" | \"pinned\" | \"push_url\" | \"fetch_failed\" | \"dirty_checkout\" | \"unprobed_worktree\" | \"several_checkouts\" | \"busy\" | \"busy_unknown\" | \"lfs_objects\" | \"lfs_unscanned\"; }"
+										"text": "{ kind: \"held\"; by: \"entry\" | \"pinned\" | \"push_url\" | \"fetch_failed\" | \"dirty_checkout\" | \"unprobed_worktree\" | \"several_checkouts\" | \"busy\" | \"busy_unknown\" | \"lfs_objects\" | \"lfs_unscanned\"; action: { kind: \"push\"; commits: number; } | { kind: \"fast_forward\"; commits: number; } | { kind: \"move\"; } | { kind: \"rebase\"; ahead: number; behind: number; }; }"
 									},
 									{
 										"kind": "object",
@@ -221863,39 +221894,9 @@
 							"name": "ReposCheckout",
 							"kind": "type",
 							"docComment": "One checkout of a repo: its primary, or a linked worktree probed.",
-							"typeSignature": "{ path: string; primary: boolean; head: { kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; }; uncommitted: { staged: number; unstaged: number; untracked: number; conflicted: number; }; ... 4 more ...; busy: { ...; }[]; }",
+							"typeSignature": "{ in_progress: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\" | null; path: string; busy: { pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]; ... 5 more ...; submodules: boolean | null; }",
 							"sourceLine": 282,
 							"members": [
-								{
-									"name": "path",
-									"kind": "variable",
-									"typeSignature": "string"
-								},
-								{
-									"name": "primary",
-									"kind": "variable",
-									"typeSignature": "boolean"
-								},
-								{
-									"name": "head",
-									"kind": "variable",
-									"typeSignature": "{ kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; }",
-									"typeInfo": {
-										"kind": "reference",
-										"name": "ReposHead",
-										"module": "repos_status.ts"
-									}
-								},
-								{
-									"name": "uncommitted",
-									"kind": "variable",
-									"typeSignature": "{ staged: number; unstaged: number; untracked: number; conflicted: number; }",
-									"typeInfo": {
-										"kind": "reference",
-										"name": "ReposUncommitted",
-										"module": "repos_status.ts"
-									}
-								},
 								{
 									"name": "in_progress",
 									"kind": "variable",
@@ -221946,6 +221947,49 @@
 									}
 								},
 								{
+									"name": "path",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "busy",
+									"kind": "variable",
+									"typeSignature": "{ pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "ReposSession",
+											"module": "repos_status.ts"
+										}
+									}
+								},
+								{
+									"name": "primary",
+									"kind": "variable",
+									"typeSignature": "boolean"
+								},
+								{
+									"name": "head",
+									"kind": "variable",
+									"typeSignature": "{ kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; }",
+									"typeInfo": {
+										"kind": "reference",
+										"name": "ReposHead",
+										"module": "repos_status.ts"
+									}
+								},
+								{
+									"name": "uncommitted",
+									"kind": "variable",
+									"typeSignature": "{ staged: number; unstaged: number; untracked: number; conflicted: number; }",
+									"typeInfo": {
+										"kind": "reference",
+										"name": "ReposUncommitted",
+										"module": "repos_status.ts"
+									}
+								},
+								{
 									"name": "locked",
 									"kind": "variable",
 									"typeSignature": "boolean"
@@ -221971,19 +222015,6 @@
 												"text": "null"
 											}
 										]
-									}
-								},
-								{
-									"name": "busy",
-									"kind": "variable",
-									"typeSignature": "{ pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]",
-									"typeInfo": {
-										"kind": "array",
-										"element": {
-											"kind": "reference",
-											"name": "ReposSession",
-											"module": "repos_status.ts"
-										}
 									}
 								}
 							],
@@ -222038,16 +222069,11 @@
 							"name": "ReposBranchStatus",
 							"kind": "type",
 							"docComment": "One local branch and its verdict.",
-							"typeSignature": "{ name: string; upstream: string | null; worktree: string | null; symref: string | null; unique_commits: number; newest_commit_at: number; relation: { kind: \"in_sync\"; } | { kind: \"ahead\"; commits: number; } | ... 5 more ... | { ...; }; verdict: { ...; } | ... 4 more ... | { ...; }; }",
+							"typeSignature": "{ worktree: string | null; name: string; upstream: string | null; symref: string | null; unique_commits: number; newest_commit_at: number; relation: { kind: \"in_sync\"; } | { kind: \"ahead\"; commits: number; } | ... 5 more ... | { ...; }; verdict: { ...; } | ... 4 more ... | { ...; }; }",
 							"sourceLine": 308,
 							"members": [
 								{
-									"name": "name",
-									"kind": "variable",
-									"typeSignature": "string"
-								},
-								{
-									"name": "upstream",
+									"name": "worktree",
 									"kind": "variable",
 									"typeSignature": "string | null",
 									"typeInfo": {
@@ -222065,7 +222091,12 @@
 									}
 								},
 								{
-									"name": "worktree",
+									"name": "name",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "upstream",
 									"kind": "variable",
 									"typeSignature": "string | null",
 									"typeInfo": {
@@ -222246,19 +222277,9 @@
 							"name": "ReposGitDirHolds",
 							"kind": "type",
 							"docComment": "What an unprobed worktree's git dir holds that a prune would lose.",
-							"typeSignature": "{ submodules: boolean; worktree_refs: boolean; staged: boolean | null; }",
+							"typeSignature": "{ staged: boolean | null; submodules: boolean; worktree_refs: boolean; }",
 							"sourceLine": 335,
 							"members": [
-								{
-									"name": "submodules",
-									"kind": "variable",
-									"typeSignature": "boolean"
-								},
-								{
-									"name": "worktree_refs",
-									"kind": "variable",
-									"typeSignature": "boolean"
-								},
 								{
 									"name": "staged",
 									"kind": "variable",
@@ -222276,6 +222297,16 @@
 											}
 										]
 									}
+								},
+								{
+									"name": "submodules",
+									"kind": "variable",
+									"typeSignature": "boolean"
+								},
+								{
+									"name": "worktree_refs",
+									"kind": "variable",
+									"typeSignature": "boolean"
 								}
 							],
 							"mergedValue": true
@@ -222358,59 +222389,9 @@
 							"name": "ReposUnprobedWorktree",
 							"kind": "type",
 							"docComment": "A worktree of the repo that couldn't be probed.",
-							"typeSignature": "{ path: string; git_dir: string | null; head: { kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null; locked: boolean; in_progress: \"rebase\" | \"merge\" | \"cherry_pick\" | ... 4 more ... | null; why: { ...; } | ... 1 more ... | { ...; }; holds: { ...; } | null; }",
+							"typeSignature": "{ in_progress: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\" | null; path: string; head: { kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null; locked: boolean; git_dir: string | null; why: { ...; } | ... 1 more ... | { ...; }; holds: { ...; } | null; }",
 							"sourceLine": 369,
 							"members": [
-								{
-									"name": "path",
-									"kind": "variable",
-									"typeSignature": "string"
-								},
-								{
-									"name": "git_dir",
-									"kind": "variable",
-									"typeSignature": "string | null",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "intrinsic",
-												"text": "string"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "head",
-									"kind": "variable",
-									"typeSignature": "{ kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "object",
-												"text": "{ kind: \"branch\"; name: string; }"
-											},
-											{
-												"kind": "object",
-												"text": "{ kind: \"detached\"; commit: string; }"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "locked",
-									"kind": "variable",
-									"typeSignature": "boolean"
-								},
 								{
 									"name": "in_progress",
 									"kind": "variable",
@@ -222461,6 +222442,56 @@
 									}
 								},
 								{
+									"name": "path",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "head",
+									"kind": "variable",
+									"typeSignature": "{ kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "object",
+												"text": "{ kind: \"branch\"; name: string; }"
+											},
+											{
+												"kind": "object",
+												"text": "{ kind: \"detached\"; commit: string; }"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
+									"name": "locked",
+									"kind": "variable",
+									"typeSignature": "boolean"
+								},
+								{
+									"name": "git_dir",
+									"kind": "variable",
+									"typeSignature": "string | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
 									"name": "why",
 									"kind": "variable",
 									"typeSignature": "{ kind: \"prunable\"; } | { kind: \"missing\"; } | { kind: \"failed\"; error: string; }",
@@ -222473,7 +222504,7 @@
 								{
 									"name": "holds",
 									"kind": "variable",
-									"typeSignature": "{ submodules: boolean; worktree_refs: boolean; staged: boolean | null; } | null",
+									"typeSignature": "{ staged: boolean | null; submodules: boolean; worktree_refs: boolean; } | null",
 									"typeInfo": {
 										"kind": "union",
 										"members": [
@@ -222496,98 +222527,9 @@
 							"name": "ReposUnprobedWorktreeStatus",
 							"kind": "type",
 							"docComment": "An unprobed worktree (flattened) with its prune verdict and live sessions.",
-							"typeSignature": "{ prune: { kind: \"safe\"; } | { kind: \"loses\"; losses: ({ kind: \"operation\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"detached_head\"; } | ... 6 more ... | { ...; })[]; } | { ...; } | null; ... 7 more ...; holds: { ...; } | null; }",
+							"typeSignature": "{ in_progress: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\" | null; path: string; busy: { pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]; ... 5 more ...; prune: { ...; } | ... 2 more ... | null; }",
 							"sourceLine": 377,
 							"members": [
-								{
-									"name": "prune",
-									"kind": "variable",
-									"typeSignature": "{ kind: \"safe\"; } | { kind: \"loses\"; losses: ({ kind: \"operation\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"detached_head\"; } | { kind: \"unknown_head\"; } | ... 5 more ... | { ...; })[]; } | { ...; } | null",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "object",
-												"text": "{ kind: \"safe\"; }"
-											},
-											{
-												"kind": "object",
-												"text": "{ kind: \"loses\"; losses: ({ kind: \"operation\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"detached_head\"; } | { kind: \"unknown_head\"; } | { kind: \"missing_branch\"; name: string; } | { kind: \"submodules\"; } | { kind: \"worktree_refs\"; } | { kind: \"staged_changes\"; } | { kind: \"unmatched_git_dir\"; } | { kind: \"relative_gitdir\"; git_dir: string; })[]; }"
-											},
-											{
-												"kind": "object",
-												"text": "{ kind: \"moved\"; to: string[]; }"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "busy",
-									"kind": "variable",
-									"typeSignature": "{ pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]",
-									"typeInfo": {
-										"kind": "array",
-										"element": {
-											"kind": "reference",
-											"name": "ReposSession",
-											"module": "repos_status.ts"
-										}
-									}
-								},
-								{
-									"name": "path",
-									"kind": "variable",
-									"typeSignature": "string"
-								},
-								{
-									"name": "git_dir",
-									"kind": "variable",
-									"typeSignature": "string | null",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "intrinsic",
-												"text": "string"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "head",
-									"kind": "variable",
-									"typeSignature": "{ kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "object",
-												"text": "{ kind: \"branch\"; name: string; }"
-											},
-											{
-												"kind": "object",
-												"text": "{ kind: \"detached\"; commit: string; }"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "locked",
-									"kind": "variable",
-									"typeSignature": "boolean"
-								},
 								{
 									"name": "in_progress",
 									"kind": "variable",
@@ -222638,6 +222580,69 @@
 									}
 								},
 								{
+									"name": "path",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "busy",
+									"kind": "variable",
+									"typeSignature": "{ pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "ReposSession",
+											"module": "repos_status.ts"
+										}
+									}
+								},
+								{
+									"name": "head",
+									"kind": "variable",
+									"typeSignature": "{ kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "object",
+												"text": "{ kind: \"branch\"; name: string; }"
+											},
+											{
+												"kind": "object",
+												"text": "{ kind: \"detached\"; commit: string; }"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
+									"name": "locked",
+									"kind": "variable",
+									"typeSignature": "boolean"
+								},
+								{
+									"name": "git_dir",
+									"kind": "variable",
+									"typeSignature": "string | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
 									"name": "why",
 									"kind": "variable",
 									"typeSignature": "{ kind: \"prunable\"; } | { kind: \"missing\"; } | { kind: \"failed\"; error: string; }",
@@ -222650,7 +222655,7 @@
 								{
 									"name": "holds",
 									"kind": "variable",
-									"typeSignature": "{ submodules: boolean; worktree_refs: boolean; staged: boolean | null; } | null",
+									"typeSignature": "{ staged: boolean | null; submodules: boolean; worktree_refs: boolean; } | null",
 									"typeInfo": {
 										"kind": "union",
 										"members": [
@@ -222658,6 +222663,32 @@
 												"kind": "reference",
 												"name": "ReposGitDirHolds",
 												"module": "repos_status.ts"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
+									"name": "prune",
+									"kind": "variable",
+									"typeSignature": "{ kind: \"safe\"; } | { kind: \"loses\"; losses: ({ kind: \"operation\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"detached_head\"; } | { kind: \"unknown_head\"; } | ... 5 more ... | { ...; })[]; } | { ...; } | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "object",
+												"text": "{ kind: \"safe\"; }"
+											},
+											{
+												"kind": "object",
+												"text": "{ kind: \"loses\"; losses: ({ kind: \"operation\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"detached_head\"; } | { kind: \"unknown_head\"; } | { kind: \"missing_branch\"; name: string; } | { kind: \"submodules\"; } | { kind: \"worktree_refs\"; } | { kind: \"staged_changes\"; } | { kind: \"unmatched_git_dir\"; } | { kind: \"relative_gitdir\"; git_dir: string; })[]; }"
+											},
+											{
+												"kind": "object",
+												"text": "{ kind: \"moved\"; to: string[]; }"
 											},
 											{
 												"kind": "intrinsic",
@@ -222845,7 +222876,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"origin_refs_shared\"; remote: string; refspec: string; }"
+										"text": "{ kind: \"origin_refs_shared\"; refspec: string; remote: string; }"
 									},
 									{
 										"kind": "object",
@@ -222859,7 +222890,7 @@
 							"name": "ReposVisibilityCheck",
 							"kind": "type",
 							"docComment": "What an anonymous read of a repo declared private found.",
-							"typeSignature": "{ kind: \"leak\"; } | { kind: \"private\"; } | { kind: \"unknown\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { ...; }; } | ... 6 more ... | { ...; }; }",
+							"typeSignature": "{ kind: \"leak\"; } | { kind: \"private\"; } | { failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { ...; }; } | ... 6 more ... | { ...; }; kind: \"unknown\"; }",
 							"sourceLine": 451,
 							"typeInfo": {
 								"kind": "union",
@@ -222874,7 +222905,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"unknown\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+										"text": "{ failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; kind: \"unknown\"; }"
 									}
 								]
 							},
@@ -223012,7 +223043,7 @@
 							"name": "ReposNeedsHuman",
 							"kind": "type",
 							"docComment": "Why sync would stop on an entry and leave it to a person.",
-							"typeSignature": "{ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"origin_mismatch\"; origin: { ...; } | ... 1 more ... | { ...; }; expected: string; fix: { ...; } | ... 1 more ... | { ...; }; } |...",
+							"typeSignature": "{ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | { kind: \"origin_mismatch\"; fix: { ...; } | ... 1 more ... | { ...; }; origin: { ...; } | ... 1 more ... | { ...; }; expected: string; } |...",
 							"sourceLine": 527,
 							"typeInfo": {
 								"kind": "union",
@@ -223023,19 +223054,19 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; }"
+										"text": "{ kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; }"
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"origin_mismatch\"; origin: { kind: \"url\"; url: string; } | { kind: \"no_url\"; } | { kind: \"missing\"; }; expected: string; fix: { kind: \"add\"; } | { kind: \"set_url\"; } | { kind: \"by_hand\"; reason: \"outside_repo_file\" | \"valueless_url\" | \"empty_value\" | \"several_urls\"; }; }"
+										"text": "{ kind: \"origin_mismatch\"; fix: { kind: \"add\"; } | { kind: \"set_url\"; } | { kind: \"by_hand\"; reason: \"outside_repo_file\" | \"valueless_url\" | \"empty_value\" | \"several_urls\"; }; origin: { kind: \"url\"; url: string; } | { kind: \"no_url\"; } | { kind: \"missing\"; }; expected: string; }"
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"origin_not_https\"; fetch_url: string; expected: string; fix: { kind: \"add\"; } | { kind: \"set_url\"; } | { kind: \"by_hand\"; reason: \"outside_repo_file\" | \"valueless_url\" | \"empty_value\" | \"several_urls\"; } | null; }"
+										"text": "{ kind: \"origin_not_https\"; fix: { kind: \"add\"; } | { kind: \"set_url\"; } | { kind: \"by_hand\"; reason: \"outside_repo_file\" | \"valueless_url\" | \"empty_value\" | \"several_urls\"; } | null; expected: string; fetch_url: string; }"
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"fetch_url_mismatch\"; fetch_url: string; expected: string; fix: { kind: \"add\"; } | { kind: \"set_url\"; } | { kind: \"by_hand\"; reason: \"outside_repo_file\" | \"valueless_url\" | \"empty_value\" | \"several_urls\"; } | null; }"
+										"text": "{ kind: \"fetch_url_mismatch\"; fix: { kind: \"add\"; } | { kind: \"set_url\"; } | { kind: \"by_hand\"; reason: \"outside_repo_file\" | \"valueless_url\" | \"empty_value\" | \"several_urls\"; } | null; expected: string; fetch_url: string; }"
 									},
 									{
 										"kind": "object",
@@ -223059,15 +223090,15 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"checkout_unresolvable\"; checkout: string; path: string; error: string; }"
+										"text": "{ kind: \"checkout_unresolvable\"; path: string; error: string; checkout: string; }"
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"unlisted_git_dir\"; git_dir: string; head: { kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null; busy: { pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]; }"
+										"text": "{ kind: \"unlisted_git_dir\"; busy: { pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]; head: { kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; } | null; git_dir: string; }"
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"push_url_mismatch\"; push_urls: string[]; expected: string; }"
+										"text": "{ kind: \"push_url_mismatch\"; expected: string; push_urls: string[]; }"
 									},
 									{
 										"kind": "object",
@@ -223085,14 +223116,9 @@
 							"name": "ReposEntryStatus",
 							"kind": "type",
 							"docComment": "One registry entry's state.",
-							"typeSignature": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }",
+							"typeSignature": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 							"sourceLine": 556,
 							"members": [
-								{
-									"name": "key",
-									"kind": "variable",
-									"typeSignature": "string"
-								},
 								{
 									"name": "kind",
 									"kind": "variable",
@@ -223114,14 +223140,55 @@
 									}
 								},
 								{
+									"name": "key",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
 									"name": "dir",
 									"kind": "variable",
 									"typeSignature": "string"
 								},
 								{
+									"name": "pinned",
+									"kind": "variable",
+									"typeSignature": "boolean"
+								},
+								{
 									"name": "url",
 									"kind": "variable",
 									"typeSignature": "string"
+								},
+								{
+									"name": "branch",
+									"kind": "variable",
+									"typeSignature": "string | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
+									"name": "needs_human",
+									"kind": "variable",
+									"typeSignature": "({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; checkout: string; } | { kind: \"origin_mismatch\"; fix: { ...; } | ... 1 more ... | { ...; }; origin: { ...; } | ... 1 more ... | { ...; }; expected: string; } ...",
+									"typeInfo": {
+										"kind": "array",
+										"element": {
+											"kind": "reference",
+											"name": "ReposNeedsHuman",
+											"module": "repos_status.ts"
+										}
+									}
 								},
 								{
 									"name": "writable",
@@ -223163,29 +223230,6 @@
 									"typeSignature": "boolean"
 								},
 								{
-									"name": "branch",
-									"kind": "variable",
-									"typeSignature": "string | null",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "intrinsic",
-												"text": "string"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "pinned",
-									"kind": "variable",
-									"typeSignature": "boolean"
-								},
-								{
 									"name": "refresh",
 									"kind": "variable",
 									"typeSignature": "{ kind: \"act\"; } | { kind: \"held\"; by: \"entry\" | \"pinned\" | \"origin_not_https\"; } | null",
@@ -223220,7 +223264,7 @@
 								{
 									"name": "clone",
 									"kind": "variable",
-									"typeSignature": "{ kind: \"act\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; } | { kind: \"held\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; by: \"entry\" | ... 1 more ... | \"busy\"; } | null",
+									"typeSignature": "{ kind: \"act\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; } | { kind: \"held\"; by: \"entry\" | \"unprobed_worktree\" | \"busy\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; } | null",
 									"typeInfo": {
 										"kind": "union",
 										"members": [
@@ -223230,7 +223274,7 @@
 											},
 											{
 												"kind": "object",
-												"text": "{ kind: \"held\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; by: \"entry\" | \"unprobed_worktree\" | \"busy\"; }"
+												"text": "{ kind: \"held\"; by: \"entry\" | \"unprobed_worktree\" | \"busy\"; recipe: { url: string; branch: string | null; shallow: boolean; sparse: string | null; }; }"
 											},
 											{
 												"kind": "intrinsic",
@@ -223261,7 +223305,7 @@
 								{
 									"name": "checkouts",
 									"kind": "variable",
-									"typeSignature": "{ path: string; primary: boolean; head: { kind: \"branch\"; name: string; } | { kind: \"detached\"; commit: string; }; uncommitted: { staged: number; unstaged: number; untracked: number; conflicted: number; }; ... 4 more ...; busy: { ...; }[]; }[]",
+									"typeSignature": "{ in_progress: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\" | null; path: string; busy: { pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]; ... 5 more ...; submodules: boolean | null; }[]",
 									"typeInfo": {
 										"kind": "array",
 										"element": {
@@ -223274,7 +223318,7 @@
 								{
 									"name": "branches",
 									"kind": "variable",
-									"typeSignature": "{ name: string; upstream: string | null; worktree: string | null; symref: string | null; unique_commits: number; newest_commit_at: number; relation: { kind: \"in_sync\"; } | { kind: \"ahead\"; commits: number; } | ... 5 more ... | { ...; }; verdict: { ...; } | ... 4 more ... | { ...; }; }[]",
+									"typeSignature": "{ worktree: string | null; name: string; upstream: string | null; symref: string | null; unique_commits: number; newest_commit_at: number; relation: { kind: \"in_sync\"; } | { kind: \"ahead\"; commits: number; } | ... 5 more ... | { ...; }; verdict: { ...; } | ... 4 more ... | { ...; }; }[]",
 									"typeInfo": {
 										"kind": "array",
 										"element": {
@@ -223327,19 +223371,6 @@
 									}
 								},
 								{
-									"name": "needs_human",
-									"kind": "variable",
-									"typeSignature": "({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; checkout: string; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"origin_mismatch\"; origin: { ...; } | ... 1 more ... | { ...; }; expected: string; fix: { ...; } | ... 1 more ... | { ...; }; } ...",
-									"typeInfo": {
-										"kind": "array",
-										"element": {
-											"kind": "reference",
-											"name": "ReposNeedsHuman",
-											"module": "repos_status.ts"
-										}
-									}
-								},
-								{
 									"name": "probe_error",
 									"kind": "variable",
 									"typeSignature": "{ kind: \"path_unreadable\" | \"non_utf8_path\" | \"config_unreadable\" | \"fetch_url_unreadable\" | \"push_urls_unreadable\" | \"git_not_run\" | \"git_timed_out\" | \"git_failed\" | \"unexpected_output\"; message: string; } | null",
@@ -223361,7 +223392,7 @@
 								{
 									"name": "unprobed_worktrees",
 									"kind": "variable",
-									"typeSignature": "{ prune: { kind: \"safe\"; } | { kind: \"loses\"; losses: ({ kind: \"operation\"; op: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\"; } | { kind: \"detached_head\"; } | ... 6 more ... | { ...; })[]; } | { ...; } | null; ... 7 more ...; holds: { ...; } | null; }[]",
+									"typeSignature": "{ in_progress: \"rebase\" | \"merge\" | \"cherry_pick\" | \"revert\" | \"bisect\" | \"sequencer\" | \"am\" | null; path: string; busy: { pid: number; cwd: string; worktree: string | null; process_cwd: string | null; source: \"session_file\" | \"roster_worker\"; }[]; ... 5 more ...; prune: { ...; } | ... 2 more ... | null; }[]",
 									"typeInfo": {
 										"kind": "array",
 										"element": {
@@ -223404,7 +223435,7 @@
 											},
 											{
 												"kind": "object",
-												"text": "{ kind: \"origin_refs_shared\"; remote: string; refspec: string; }"
+												"text": "{ kind: \"origin_refs_shared\"; refspec: string; remote: string; }"
 											},
 											{
 												"kind": "object",
@@ -223420,7 +223451,7 @@
 								{
 									"name": "visibility_check",
 									"kind": "variable",
-									"typeSignature": "{ kind: \"leak\"; } | { kind: \"private\"; } | { kind: \"unknown\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { ...; }; } | ... 6 more ... | { ...; }; } | null",
+									"typeSignature": "{ kind: \"leak\"; } | { kind: \"private\"; } | { failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { ...; }; } | ... 6 more ... | { ...; }; kind: \"unknown\"; } | null",
 									"typeInfo": {
 										"kind": "union",
 										"members": [
@@ -223434,7 +223465,7 @@
 											},
 											{
 												"kind": "object",
-												"text": "{ kind: \"unknown\"; failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; remote: string; refspec: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; }"
+												"text": "{ failure: { kind: \"ref_gone\"; refname: string; fix: { kind: \"unset_refspec\"; pattern: string; } | { kind: \"set_branches\"; branch: string | null; } | { kind: \"by_hand\"; }; } | { kind: \"unreachable\"; cause: \"dns\" | \"connection\" | \"host_key\" | \"auth\"; message: string; } | { kind: \"repo_not_found\"; message: string; } | { kind: \"timed_out\"; after_secs: number; } | { kind: \"failed\"; message: string; } | { kind: \"refspec_outside_origin\"; refspec: string; } | { kind: \"origin_refs_shared\"; refspec: string; remote: string; } | { kind: \"legacy_remotes_unreadable\"; path: string; }; kind: \"unknown\"; }"
 											},
 											{
 												"kind": "intrinsic",
@@ -223491,7 +223522,7 @@
 							"name": "ReposUnregisteredClone",
 							"kind": "type",
 							"docComment": "A child of the workspace root holding a `.git` that no registry entry\nclaims, its `kind` flattened beside its own fields.",
-							"typeSignature": "{ kind: \"clone\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"worktree\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"moved_worktree\"; entry: string; blocked_by: { ...; } | ... 6 more ... | null; exit_noise: string | null; dir: string; origin: string | null; owned: boolean; } ...",
+							"typeSignature": "{ kind: \"clone\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"worktree\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"moved_worktree\"; entry: string; dir: string; origin: string | null; owned: boolean; blocked_by: { ...; } | ... 6 more ... | null; exit_noise: string | null; } ...",
 							"sourceLine": 606,
 							"typeInfo": {
 								"kind": "union",
@@ -223506,7 +223537,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"moved_worktree\"; entry: string; blocked_by: { kind: \"rewrites\"; path: string; git_dir: string; } | { kind: \"claimed_dir\"; git_dir: string; } | { kind: \"swapped\"; git_dir: string; with: string; } | { kind: \"relative_gitdir\"; git_dir: string; } | { kind: \"unreadable_gitdir\"; git_dir: string; } | { kind: \"non_utf8_path\"; } | { kind: \"nul_in_gitdir\"; git_dir: string; } | null; exit_noise: string | null; dir: string; origin: string | null; owned: boolean; }"
+										"text": "{ kind: \"moved_worktree\"; entry: string; dir: string; origin: string | null; owned: boolean; blocked_by: { kind: \"rewrites\"; path: string; git_dir: string; } | { kind: \"claimed_dir\"; git_dir: string; } | { kind: \"swapped\"; git_dir: string; with: string; } | { kind: \"relative_gitdir\"; git_dir: string; } | { kind: \"unreadable_gitdir\"; git_dir: string; } | { kind: \"non_utf8_path\"; } | { kind: \"nul_in_gitdir\"; git_dir: string; } | null; exit_noise: string | null; }"
 									},
 									{
 										"kind": "object",
@@ -223514,7 +223545,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"shared_git_dir\"; entry: string; with: string | null; dir: string; origin: string | null; owned: boolean; }"
+										"text": "{ kind: \"shared_git_dir\"; entry: string; dir: string; origin: string | null; with: string | null; owned: boolean; }"
 									},
 									{
 										"kind": "object",
@@ -223564,7 +223595,7 @@
 								{
 									"name": "entries",
 									"kind": "variable",
-									"typeSignature": "{ key: string; kind: \"repo\" | \"reference\"; dir: string; url: string; writable: boolean; archived: boolean; visibility: \"public\" | \"private\" | null; ci: boolean; branch: string | null; pinned: boolean; ... 13 more ...; visibility_check: { ...; } | ... 2 more ... | null; }[]",
+									"typeSignature": "{ kind: \"repo\" | \"reference\"; key: string; dir: string; pinned: boolean; url: string; branch: string | null; needs_human: ({ kind: \"not_a_repo\"; detail: string; } | { kind: \"operation_in_progress\"; op: \"rebase\" | ... 5 more ... | \"am\"; checkout: string; } | ... 12 more ... | { ...; })[]; ... 16 more ...; visibility_...",
 									"typeInfo": {
 										"kind": "array",
 										"element": {
@@ -223577,7 +223608,7 @@
 								{
 									"name": "unregistered",
 									"kind": "variable",
-									"typeSignature": "({ kind: \"clone\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"worktree\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"moved_worktree\"; entry: string; blocked_by: { ...; } | ... 6 more ... | null; exit_noise: string | null; dir: string; origin: string | null; owned: boolean; }...",
+									"typeSignature": "({ kind: \"clone\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"worktree\"; dir: string; origin: string | null; owned: boolean; } | { kind: \"moved_worktree\"; entry: string; dir: string; origin: string | null; owned: boolean; blocked_by: { ...; } | ... 6 more ... | null; exit_noise: string | null; }...",
 									"typeInfo": {
 										"kind": "union",
 										"members": [
@@ -223634,7 +223665,7 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"registry_invalid\"; issues: ({ kind: \"repo_not_owned\"; key: string; account: string; } | { kind: \"fork_not_owned\"; key: string; } | { kind: \"dir_not_a_name\"; entry: { kind: \"repo\" | \"reference\"; key: string; }; dir: string; } | { kind: \"dir_claimed_twice\"; dir: string; first: { kind: \"repo\" | \"reference\"; key: string; }; second: { kind: \"repo\" | \"reference\"; key: string; }; } | { kind: \"key_in_both\"; key: string; } | { kind: \"key_is_other_dir\"; key: string; entry: { kind: \"repo\" | \"reference\"; key: string; }; } | { kind: \"unknown_checkout_ref\"; key: string; field: \"requires\" | \"consults\"; target: string; } | { kind: \"self_ref\"; key: string; field: \"requires\" | \"consults\"; } | { kind: \"requires_and_consults\"; key: string; target: string; })[]; message: string; hint: string | null; }"
+										"text": "{ kind: \"registry_invalid\"; message: string; hint: string | null; issues: ({ kind: \"repo_not_owned\"; key: string; account: string; } | { kind: \"fork_not_owned\"; key: string; } | { kind: \"dir_not_a_name\"; entry: { kind: \"repo\" | \"reference\"; key: string; }; dir: string; } | { kind: \"dir_claimed_twice\"; dir: string; first: { kind: \"repo\" | \"reference\"; key: string; }; second: { kind: \"repo\" | \"reference\"; key: string; }; } | { kind: \"key_in_both\"; key: string; } | { kind: \"key_is_other_dir\"; key: string; entry: { kind: \"repo\" | \"reference\"; key: string; }; } | { kind: \"unknown_checkout_ref\"; key: string; field: \"requires\" | \"consults\"; target: string; } | { kind: \"self_ref\"; key: string; field: \"requires\" | \"consults\"; } | { kind: \"requires_and_consults\"; key: string; target: string; })[]; }"
 									},
 									{
 										"kind": "object",
@@ -223642,11 +223673,11 @@
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"git_too_old\"; found: string; required: string; message: string; hint: string | null; }"
+										"text": "{ kind: \"git_too_old\"; message: string; hint: string | null; found: string; required: string; }"
 									},
 									{
 										"kind": "object",
-										"text": "{ kind: \"unknown_entry\"; name: string; suggestions: string[]; message: string; hint: string | null; }"
+										"text": "{ kind: \"unknown_entry\"; name: string; message: string; hint: string | null; suggestions: string[]; }"
 									},
 									{
 										"kind": "object",
@@ -223660,14 +223691,9 @@
 							"name": "ReposStatusErrorReport",
 							"kind": "type",
 							"docComment": "The document `repos status --json` prints on a fatal error, in place of the report.",
-							"typeSignature": "{ version: 20; error: { kind: \"references_with_targets\"; message: string; hint: string | null; } | { kind: \"root_not_found\"; message: string; hint: string | null; } | { kind: \"registry_not_found\"; message: string; hint: string | null; } | ... 7 more ... | { ...; }; }",
+							"typeSignature": "{ error: { kind: \"references_with_targets\"; message: string; hint: string | null; } | { kind: \"root_not_found\"; message: string; hint: string | null; } | { kind: \"registry_not_found\"; message: string; hint: string | null; } | ... 7 more ... | { ...; }; version: 20; }",
 							"sourceLine": 669,
 							"members": [
-								{
-									"name": "version",
-									"kind": "variable",
-									"typeSignature": "20"
-								},
 								{
 									"name": "error",
 									"kind": "variable",
@@ -223677,6 +223703,11 @@
 										"name": "ReposStatusErrorBody",
 										"module": "repos_status.ts"
 									}
+								},
+								{
+									"name": "version",
+									"kind": "variable",
+									"typeSignature": "20"
 								}
 							],
 							"mergedValue": true

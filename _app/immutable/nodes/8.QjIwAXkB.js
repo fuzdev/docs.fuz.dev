@@ -1,1 +1,0 @@
-export{t as component}from"../chunks/Btms-v5x.js";

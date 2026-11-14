@@ -407,14 +407,14 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "Svelte's compiler",
 		kind: 'Reference implementation',
 		how: "Diff after a canonical reprint of both sides' output",
-		runs: 'Paused, not built today'
+		runs: 'Not run today, outside the build'
 	},
 	{
 		project: 'tsv typechecker',
 		against: "TypeScript 7's recorded error baselines",
 		kind: "Incumbent's baselines",
 		how: 'Error codes and spans',
-		runs: 'Paused, not built today'
+		runs: 'Not run today, outside the build'
 	},
 	{
 		project: 'fuz_app backend, TypeScript',

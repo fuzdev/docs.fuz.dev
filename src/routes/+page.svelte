@@ -49,6 +49,7 @@
 			<Card href={resolve('/skills')} icon="🧙">skills</Card>
 			<Card href={DOCS_PATH} icon="📜">docs</Card>
 			<Card href={resolve('/tools')} icon="🪄">tools</Card>
+			<Card href={resolve('/coherence')} icon="🪜">coherence</Card>
 		</section>
 		<section class="panel p_lg shadow_inset_xs">
 			<ProjectLinks />

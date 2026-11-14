@@ -42,7 +42,7 @@ gro deploy     # build, commit, and push to deploy branch
 - fuz_css (@fuzdev/fuz_css) - semantic-first CSS framework and design system
 - fuz_ui (@fuzdev/fuz_ui) - UI components, theming, docs system
 - fuz_util (@fuzdev/fuz_util) - utility functions
-- mdz (@fuzdev/mdz) - markdown dialect rendering the skill docs
+- mdz (@fuzdev/mdz) - markdown dialect rendering the skill docs and the `/coherence` evidence links
 - fuz_code (@fuzdev/fuz_code) - syntax highlighting
 - blake3 (@fuzdev/blake3-wasm) - hashing for the /tools/hash route
 - Gro (@fuzdev/gro) - build system and task runner
@@ -64,6 +64,7 @@ src/
 │   │   ├── fuz-stack/ # generated from skills/fuz-stack/
 │   │   └── grimoire/  # generated from skills/grimoire/
 │   ├── tools/        # interactive tools (BLAKE3 hashing)
+│   ├── coherence/    # the practices page and the data file it renders
 │   └── about/        # ecosystem links
 skills/               # Claude Code skills (full tree under "Skill structure" below)
 ```
@@ -91,6 +92,7 @@ auto-generated API docs.
 - `/skills/{skill}/references/{slug}` - Per-reference skill doc pages (generated)
 - `/tools` - Tools index
 - `/tools/hash` - BLAKE3 hashing tool
+- `/coherence` - Practices for keeping agent-written code coherent, rendered from `practices.ts`
 
 Deploy with `gro deploy` (builds and pushes to deploy branch).
 

@@ -6,7 +6,7 @@
 		"svelte": "5.57.2",
 		"sveltekit": "3.0.1",
 		"typescript": "6.0.3",
-		"gro": "0.230.0",
+		"gro": "0.237.0",
 		"vitest": "5.0.3"
 	},
 	"libraries": [
@@ -40,15 +40,15 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/gro",
-			"version": "0.236.0",
+			"version": "0.237.0",
 			"path": "gro",
 			"description": "security-first JS runtime and toolchain on V8",
 			"glyph": "🌰",
 			"homepage_url": "https://gro.fuz.dev/",
 			"published": true,
-			"module_count": 88,
-			"exported_module_count": 65,
-			"export_count": 461,
+			"module_count": 99,
+			"exported_module_count": 76,
+			"export_count": 480,
 			"peer_dependencies": [
 				"@fuzdev/blake3-wasm",
 				"@fuzdev/fuz_schema",
@@ -97,7 +97,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/mdz",
-			"version": "0.9.0",
+			"version": "0.10.0",
 			"path": "mdz",
 			"description": "a strict markdown dialect built for streaming, web authoring, docs, and untrusted content",
 			"glyph": "📝",
@@ -105,7 +105,7 @@
 			"published": true,
 			"module_count": 28,
 			"exported_module_count": 19,
-			"export_count": 121,
+			"export_count": 122,
 			"peer_dependencies": [
 				"@fuzdev/fuz_util"
 			],
@@ -357,9 +357,9 @@
 			"glyph": "💤",
 			"homepage_url": "https://github.com/fuzdev/zzz",
 			"published": false,
-			"module_count": 266,
-			"exported_module_count": 263,
-			"export_count": 936,
+			"module_count": 268,
+			"exported_module_count": 265,
+			"export_count": 957,
 			"peer_dependencies": [
 				"@fuzdev/fuz_app",
 				"@fuzdev/fuz_schema",

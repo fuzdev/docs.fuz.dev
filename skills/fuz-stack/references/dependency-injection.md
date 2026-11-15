@@ -168,8 +168,8 @@ the platform and builds the bundle once.
   export const task: Task<Args> = {
   	Args,
   	summary: 'run a shell command across all repos in parallel',
-  	run: async ({ args, log }) => {
-  		await run_gitops_run(args, log);
+  	run: async ({ task_args, log }) => {
+  		await run_gitops_run(task_args, log);
   	}
   };
 

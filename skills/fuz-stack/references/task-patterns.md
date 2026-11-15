@@ -23,8 +23,8 @@ export type Args = s.Infer<typeof Args>;
 export const task: Task<Args> = {
 	summary: 'greet someone by name',
 	Args,
-	run: async ({ args, log }) => {
-		log.info(`hello, ${args.name}!`);
+	run: async ({ task_args, log }) => {
+		log.info(`hello, ${task_args.name}!`);
 	}
 };
 ```
@@ -57,9 +57,9 @@ project task never shadows a builtin. `gro` alone lists the builtins,
   export const task: Task<Args> = {
   	summary: 'run tests with custom setup',
   	Args,
-  	run: async ({ invoke_task, args }) => {
+  	run: async ({ invoke_task, task_args }) => {
   		// setup
-  		await invoke_task('test', args); // always the builtin
+  		await invoke_task('test', task_args); // always the builtin
   		// teardown
   	}
   };
@@ -98,11 +98,14 @@ name. `--help` is generated from it.
 ## Context
 
 `run` receives
-`{args, config, svelte_config, graph, log, timings, invoke_task}`.
+`{task_args, config, svelte_config, graph, log, timings, invoke_task}`.
 `svelte_config` and `graph` load on first use, so a task that doesn't touch
 them pays nothing. A task reaches the filesystem and child processes by
 importing gro's host modules itself (see ./dependency-injection.md §Roots for
-keeping that testable).
+keeping that testable). A host module's error says only `kind: target` in its
+`message`, with the OS's detail in its `cause`: to show one to a person, print
+it with `format_error_detail` from `@fuzdev/gro/error_detail.ts`, not
+`to_error_message`.
 
 **`invoke_task(name_or_path, args?, {config?})`** follows the CLI's rule: an
 input with a `/` or a `.task.ts` suffix is a path from the project root,

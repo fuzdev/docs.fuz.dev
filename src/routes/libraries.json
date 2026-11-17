@@ -62603,27 +62603,27 @@
 								{
 									"name": "--sidebar_top",
 									"fallback": "0px",
-									"sourceLine": 401
+									"sourceLine": 408
 								},
 								{
 									"name": "--sidebar_bg",
 									"fallback": "var(--shade_05)",
-									"sourceLine": 408
+									"sourceLine": 415
 								},
 								{
 									"name": "--sidebar_z_index",
 									"fallback": "200",
-									"sourceLine": 409
+									"sourceLine": 416
 								},
 								{
 									"name": "--sidebar_scrim_bg",
 									"fallback": "var(--darken_40)",
-									"sourceLine": 421
+									"sourceLine": 428
 								}
 							]
 						}
 					],
-					"moduleComment": "Sidebar-and-main app shell. Provisions `sidebar_state_context` (creating\na fresh `SidebarState` if `sidebar_state` is not supplied) so descendants\ncan read sidebar visibility and toggle it. Optionally binds a global\nkeyboard shortcut and renders a built-in toggle button while the sidebar\nis enabled; a toggle elsewhere reads the context and the state's `id`\n(see `SidebarStateOptions`). Requires\nthe SvelteKit runtime — it closes the overlay from `afterNavigate`.\n\nTwo modes, split by the state's `narrow_query`. Outside it the sidebar\nsits beside the content, padded by `--sidebar_offset`, following\n`show_wide`. Inside it the sidebar starts closed and opens as an\noverlay over a scrim, following `show_narrow`; the content is\n`inert` while it's open, and navigation, a hash change (an in-page link,\nwhich SvelteKit leaves to the browser without `afterNavigate`), Escape, a\nscrim click, or widening out of narrow mode closes it. Escape never prevents the\ndefault, so the browser's close requests stay intact; it does nothing\nwhile a modal (`:modal`) is open, when a window `keydown` listener\nregistered before the overlay opened swallows it (a contextmenu, say),\nor when a listener that ran first already prevented its default (a\npopover's `document` listener, say).\n\nThe open overlay is a modal dialog: the sidebar takes `role=\"dialog\"`,\n`aria-modal`, `tabindex=\"-1\"`, and `sidebar_label` as its name, and\nfocus moves into it, to its first control that takes focus, else to the\nsidebar itself — the content went inert and dropped it. The attributes\nkey on the open overlay, which reads the viewport — that's what keeps\nthe wide sidebar from ever being a dialog — and the server render\nmatches hydration because the overlay always starts closed, as with the\ncontent's `inert`. `aria-modal` lets assistive tech hide everything\noutside the sidebar, the built-in toggle included, so a sidebar whose\nscreen-reader users need a close control beyond Escape and navigation\nrenders its own.\n\nClosing with Escape, the keyboard shortcut, or a scrim click returns\nfocus to what opened the overlay, or else to the first element whose\n`aria-controls` names the sidebar's id and that takes it — when focus\nwas inside the sidebar or had fallen to the body. The id is the state's\n`id` when set, so a toggle outside the shell can carry\n`aria-controls` too; Safari doesn't focus a clicked button, so without\nit a mouse-opened overlay has no opener to return to.\n\nThe shell's rules sit in two cascade layers nested under `fuz_ui`.\n`fuz_ui.app_shell_base`, in the scoped style, holds the base and state\nrules, which apply in both modes; `fuz_ui.app_shell_narrow` overrides\nsome of them from a style element in `svelte:head` carrying\n`media={narrow_query}`, so the server render paints the right mode\nbefore hydration and the markup's classes never depend on the viewport.\nThe narrow layer is ordered after the base layer, so it wins whatever\nthe selectors' specificity or the sheets' order. Its rules are global —\nthey match every `.app-shell` on the page — so shells mounted at the\nsame time must share a `narrow_query`. Pages served under a strict CSP\nneed `style-src-elem 'unsafe-inline'` or the hash of that constant style.\n\nPublic class hooks: `.app-shell` (root, with state classes `.wide-open` /\n`.narrow-open`), `.app-shell-content`, `.app-shell-sidebar`,\n`.app-shell-scrim`, `.app-shell-toggle`, `.app-shell-toggle-glyph`. Any\nunlayered rule beats both layers at any specificity, so overrides need\nno specificity games; to layer them instead, order `fuz_ui` first\n(`@layer fuz_ui, overrides;`) in a sheet that loads before the shell.\nThe same ordering means the fuz_css reset (in fuz_css's `fuz.base`\nlayer, which zeroes `padding`, `margin`, and `border` on every element)\nwould override the shell if its sheet were declared first, so the layers\nset none of those. The one they need, the content's\nwide offset, goes through `--sidebar_offset`: the layers set it on\n`.app-shell-content` (`--sidebar_width` while the wide sidebar is open,\nelse `0px`), and one unlayered rule at (0,0,1) reads it into the\ncontent's `padding-left`. Descendants of the content can read it too.\nOverride the offset by setting `--sidebar_offset` on\n`.app-shell-content` or with a `padding-left` rule there; a `padding`\nshorthand there overrides it as well. Like any unlayered override,\nthese apply in both modes, open or closed; to change only the wide open\noffset, target `.app-shell.wide-open > .app-shell-content` inside the\nnarrow query's negation — the state classes don't track the viewport,\nso `.wide-open` stays set in narrow mode too. CSS variables:\n`--sidebar_bg`, `--sidebar_z_index` (default `200` in both modes; the toggle sits one\nabove), `--sidebar_scrim_bg`, `--sidebar_width` (the `sidebar_width`\nprop when passed, else `180px` from the base layer; always the\nconfigured width, not the offset), `--sidebar_top` (wide mode only: the\nsidebar starts this far down, e.g. below a full-width top bar; default\n`0px`), and `--sidebar_offset`.",
+					"moduleComment": "Sidebar-and-main app shell. Provisions `sidebar_state_context` (creating\na fresh `SidebarState` if `sidebar_state` is not supplied) so descendants\ncan read sidebar visibility and toggle it. Optionally binds a global\nkeyboard shortcut and renders a built-in toggle button while the sidebar\nis enabled; a toggle elsewhere reads the context and the state's `id`\n(see `SidebarStateOptions`). Requires\nthe SvelteKit runtime — it closes the overlay from `afterNavigate`.\n\nTwo modes, split by the state's `narrow_query`. Outside it the sidebar\nsits beside the content, padded by `--sidebar_offset`, following\n`show_wide`. Inside it the sidebar starts closed and opens as an\noverlay over a scrim, following `show_narrow`; the content is\n`inert` while it's open, and navigation, a hash change (an in-page link,\nwhich SvelteKit leaves to the browser without `afterNavigate`), Escape, a\nscrim click, or widening out of narrow mode closes it. Escape never prevents the\ndefault, so the browser's close requests stay intact; it does nothing\nwhile a modal (`:modal`) is open, when a window `keydown` listener\nregistered before the overlay opened swallows it (a contextmenu, say),\nor when a listener that ran first already prevented its default (a\npopover's `document` listener, say). An open `popover=\"auto\"` isn't\n`:modal` and its Escape isn't prevented, so one Escape closes it and the\noverlay together; a popover that should close alone hides itself\n(`hidePopover()`) and prevents the default from a listener that runs\nfirst — preventing alone would keep the browser from closing it too.\n\nThe open overlay is a modal dialog: the sidebar takes `role=\"dialog\"`,\n`aria-modal`, `tabindex=\"-1\"`, and `sidebar_label` as its name, and\nfocus moves into it, to its first control that takes focus, else to the\nsidebar itself — the content went inert and dropped it. The attributes\nkey on the open overlay, which reads the viewport — that's what keeps\nthe wide sidebar from ever being a dialog — and the server render\nmatches hydration because the overlay always starts closed, as with the\ncontent's `inert`. There's no focus trap: the content's `inert` already\nkeeps Tab out of it (not out of anything rendered outside the shell), and the built-in toggle, outside the sidebar, stays\nreachable as a close control. `aria-modal` lets assistive tech hide\neverything outside the sidebar, the built-in toggle included (Chromium\nkeeps it exposed; WebKit may not), so a sidebar whose\nscreen-reader users need a close control beyond Escape and navigation\nrenders its own.\n\nClosing with Escape, the keyboard shortcut, or a scrim click returns\nfocus to what opened the overlay, or else to the first element whose\n`aria-controls` names the sidebar's id and that takes it — when focus\nwas inside the sidebar or had fallen to the body. The id is the state's\n`id` when set, so a toggle outside the shell can carry\n`aria-controls` too; Safari doesn't focus a clicked button, so without\nit a mouse-opened overlay has no opener to return to.\n\nThe shell's rules sit in two cascade layers nested under `fuz_ui`.\n`fuz_ui.app_shell_base`, in the scoped style, holds the base and state\nrules, which apply in both modes; `fuz_ui.app_shell_narrow` overrides\nsome of them from a style element in `svelte:head` carrying\n`media={narrow_query}`, so the server render paints the right mode\nbefore hydration and the markup's classes never depend on the viewport.\nThe narrow layer is ordered after the base layer, so it wins whatever\nthe selectors' specificity or the sheets' order. Its rules are global —\nthey match every `.app-shell` on the page — so shells mounted at the\nsame time must share a `narrow_query`. Pages served under a strict CSP\nneed `style-src-elem 'unsafe-inline'` or the hash of that constant style.\n\nPublic class hooks: `.app-shell` (root, with state classes `.wide-open` /\n`.narrow-open`), `.app-shell-content`, `.app-shell-sidebar`,\n`.app-shell-scrim`, `.app-shell-toggle`, `.app-shell-toggle-glyph`. Any\nunlayered rule beats both layers at any specificity, so overrides need\nno specificity games; to layer them instead, order `fuz_ui` first\n(`@layer fuz_ui, overrides;`) in a sheet that loads before the shell.\nThe same ordering means the fuz_css reset (in fuz_css's `fuz.base`\nlayer, which zeroes `padding`, `margin`, and `border` on every element)\nwould override the shell if its sheet were declared first, so the layers\nset none of those. The one they need, the content's\nwide offset, goes through `--sidebar_offset`: the layers set it on\n`.app-shell-content` (`--sidebar_width` while the wide sidebar is open,\nelse `0px`), and one unlayered rule at (0,0,1) reads it into the\ncontent's `padding-left`. Descendants of the content can read it too.\nOverride the offset by setting `--sidebar_offset` on\n`.app-shell-content` or with a `padding-left` rule there; a `padding`\nshorthand there overrides it as well. Like any unlayered override,\nthese apply in both modes, open or closed; to change only the wide open\noffset, target `.app-shell.wide-open > .app-shell-content` inside the\nnarrow query's negation — the state classes don't track the viewport,\nso `.wide-open` stays set in narrow mode too. CSS variables:\n`--sidebar_bg`, `--sidebar_z_index` (default `200` in both modes; the toggle sits one\nabove), `--sidebar_scrim_bg`, `--sidebar_width` (the `sidebar_width`\nprop when passed, else `180px` from the base layer; always the\nconfigured width, not the offset), `--sidebar_top` (wide mode only: the\nsidebar starts this far down, e.g. below a full-width top bar; default\n`0px`), and `--sidebar_offset`.",
 					"dependencies": [
 						"sidebar_state.svelte.ts"
 					],
@@ -71920,9 +71920,17 @@
 									"optional": true
 								}
 							],
-							"acceptsChildren": true
+							"acceptsChildren": true,
+							"cssCustomProperties": [
+								{
+									"name": "--docs_menu_category_spacing",
+									"fallback": "var(--space_xl6)",
+									"sourceLine": 74
+								}
+							]
 						}
 					],
+					"moduleComment": "The tome menu, grouped by category, marking the current tome.\n`--docs_menu_category_spacing` sets the margin around each category\n(default `--space_xl6`), for a site that lists the menu in a denser nav.",
 					"dependencies": [
 						"DocsList.svelte",
 						"DocsMenuHeader.svelte",
@@ -71999,7 +72007,7 @@
 								{
 									"name": "--shadow_color",
 									"fallback": "var(--shadow_color_umbra)",
-									"sourceLine": 49
+									"sourceLine": 43
 								}
 							]
 						}
@@ -247998,6 +248006,7 @@
 						"diskfile_tab.svelte.ts",
 						"DiskfileActions.svelte",
 						"DiskfileAudioView.svelte",
+						"DiskfileDormantNotice.svelte",
 						"DiskfileEditorView.svelte",
 						"DiskfileInfo.svelte",
 						"DiskfileMarkdownView.svelte",
@@ -248135,53 +248144,60 @@
 					"path": "diskfile_editor_state.svelte.ts",
 					"declarations": [
 						{
+							"name": "SAVE_ERROR_DORMANT",
+							"kind": "variable",
+							"docComment": "`save_error` for a save of a file in no open project (`DiskfileEditorState.dormant`).",
+							"typeSignature": "\"not saved — its project isn't open; reopen it to save\"",
+							"sourceLine": 21
+						},
+						{
 							"name": "SAVE_ERROR_DELETED_ON_DISK",
 							"kind": "variable",
 							"docComment": "`save_error` for a save that found the file gone — its delete not reported yet.",
 							"typeSignature": "\"not saved — the file was deleted on disk\"",
-							"sourceLine": 21
+							"sourceLine": 24
 						},
 						{
 							"name": "SAVE_ERROR_RECREATES",
 							"kind": "variable",
 							"docComment": "`save_error` for a save that found the file gone, now flagged\n`deleted_on_disk` — so the next save recreates it.",
 							"typeSignature": "\"not saved — the file was deleted on disk; saving again recreates it\"",
-							"sourceLine": 27
+							"sourceLine": 30
 						},
 						{
 							"name": "SAVE_ERROR_CHANGED_AGAIN",
 							"kind": "variable",
 							"docComment": "`save_error` for an overwrite refused because a newer version than the one\nshown is on disk — cleared once the disk settles on the editor's content.",
 							"typeSignature": "\"not saved — the file changed on disk again\"",
-							"sourceLine": 34
+							"sourceLine": 37
 						},
 						{
 							"name": "HISTORY_LABEL_UNSAVED_EDIT",
 							"kind": "variable",
 							"docComment": "Label of the history entry holding a file's draft.",
 							"typeSignature": "\"Unsaved edit\"",
-							"sourceLine": 37
+							"sourceLine": 40
 						},
 						{
 							"name": "HISTORY_LABEL_DISK_CHANGE",
 							"kind": "variable",
 							"docComment": "Label of a history entry recording a disk state.",
 							"typeSignature": "\"Disk change\"",
-							"sourceLine": 39
+							"sourceLine": 42
 						},
 						{
 							"name": "HISTORY_LABEL_DISCARDED_EDIT",
 							"kind": "variable",
 							"docComment": "Label of a draft set aside unsaved (see `DiskfileEditorState`).",
 							"typeSignature": "\"Discarded edit\"",
-							"sourceLine": 41
+							"sourceLine": 44
 						},
 						{
 							"name": "DiskfileSaveOptions",
 							"kind": "interface",
 							"docComment": "Options for `DiskfileEditorState.save_changes`.",
 							"typeSignature": "DiskfileSaveOptions",
-							"sourceLine": 83,
+							"sourceLine": 86,
 							"members": [
 								{
 									"name": "overwrite",
@@ -248196,7 +248212,7 @@
 							"name": "DiskfileEditorState",
 							"kind": "class",
 							"docComment": "The editing state of one file, shared by every view of it — the `/files`\neditor, file-part editors, tabs — and kept while none is mounted, like a\nVS Code text model. Get it with `Diskfiles.get_editor_state`, which creates\nit on first use and keeps it until the diskfile is removed; views never\nown it.\n\nIt holds the file's `DiskfileHistory`, and records every change of the\nfile's content on disk into it (`Diskfiles` calls `check_disk_changes`\nwhenever new content lands), whether or not an editor shows it — having\nan editing state keeps a file's content current (see `Diskfiles.upsert`):\n\n- The content loads on demand: the views call `Diskfiles.ensure_content`.\n  Until it lands the editor is read-only, and its first arrival seeds the\n  history's original state — it's not a change on disk.\n- The editor shows the selected history entry (`current_content`), or the\n  disk content when none is selected. A clean editor follows the disk.\n- Editing keeps the file's one draft (`draft`, in `Diskfiles.drafts` — not\n  in the history, so it outlives this state and the file's cell), updated\n  in place and re-dated on each edit. The views list it with the history\n  (`content_history`, as `draft_entry`). Editing from another entry (an\n  older state picked from the history) starts a new draft and sets the old\n  one aside as a discarded-edit entry, so its text stays restorable.\n- When the disk changes under a draft, or under a picked entry, the edit is\n  kept and `has_conflict` is set: saving stops until the user chooses to\n  overwrite (`save_changes({overwrite: true})`) or keep the disk version\n  (`discard_draft`). Our own save's broadcast never counts — the disk\n  then holds the edit, which settles it. The backend checks too: a save\n  carries the hash of the disk content it's based on\n  (`last_seen_disk_hash`), so a write the frontend hasn't heard of yet\n  refuses it (`disk_changed`), and the file is read again to show that\n  change as a conflict like any other.\n- During a conflict the views can show the disk content instead, read-only\n  (`showing_disk`, `shown_content`), without touching the edit.",
-							"sourceLine": 128,
+							"sourceLine": 131,
 							"members": [
 								{
 									"name": "app",
@@ -248463,7 +248479,7 @@
 								{
 									"name": "draft",
 									"kind": "variable",
-									"docComment": "The file's draft (`Diskfiles.drafts`), `null` when it has none.",
+									"docComment": "The file's draft (`Diskfiles.drafts`), `null` when it has none — and\nalways for a disposed state, so a throwaway one (`Diskfiles.get_editor_state`\nfor a stale cell) never shows, saves, or discards the live file's draft.",
 									"typeSignature": "Draft | null",
 									"modifiers": [
 										"readonly"
@@ -248505,6 +248521,16 @@
 											}
 										]
 									}
+								},
+								{
+									"name": "dormant",
+									"kind": "variable",
+									"docComment": "Whether the file is under no open root (`Diskfiles.is_dormant`) — its\nproject closed with it kept for a draft or a tab. It can't be saved\n(`can_save`, `SAVE_ERROR_DORMANT`) until the project is open again.",
+									"typeSignature": "boolean",
+									"modifiers": [
+										"readonly"
+									],
+									"reactivity": "$derived.by"
 								},
 								{
 									"name": "content_loaded",
@@ -248583,7 +248609,7 @@
 								{
 									"name": "can_save",
 									"kind": "variable",
-									"docComment": "Whether saving would write anything. Always true for a file deleted on\ndisk — saving recreates it even when the content matches its last state\n— but not for an uncovered one (`Diskfile.uncovered`), which may still\nbe on disk. Never true when the content wasn't loaded.",
+									"docComment": "Whether saving would write anything. Always true for a file deleted on\ndisk — saving recreates it even when the content matches its last state\n— but not for an uncovered one (`Diskfile.uncovered`), which may still\nbe on disk. Never true when the content wasn't loaded, or while the\nfile is `dormant`.",
 									"typeSignature": "boolean",
 									"modifiers": [
 										"readonly"
@@ -248932,18 +248958,21 @@
 								{
 									"name": "constructor",
 									"kind": "constructor",
-									"typeSignature": "(options: { app: Frontend; diskfile: Diskfile; }): DiskfileEditorState",
+									"typeSignature": "(options: { app: Frontend; diskfile: Diskfile; throwaway?: boolean | undefined; }): DiskfileEditorState",
 									"parameters": [
 										{
 											"name": "options",
-											"type": "{ app: Frontend; diskfile: Diskfile; }"
+											"type": "{ app: Frontend; diskfile: Diskfile; throwaway?: boolean | undefined; }",
+											"propertyDescriptions": {
+												"throwaway": "a state for a cell no longer at its path\n(`Diskfiles.get_editor_state`, which disposes it), that sees no draft\nfrom the start, so seeding never shows or drops the live file's draft"
+											}
 										}
 									]
 								},
 								{
 									"name": "dispose",
 									"kind": "function",
-									"docComment": "Disposes the history. Called by `Diskfiles` when the diskfile goes\naway, and for a throwaway state (`Diskfiles.get_editor_state`). The\ndraft isn't this state's — it stays — and a disposed state takes no\nedits and saves nothing, so a throwaway state never writes it.",
+									"docComment": "Disposes the history. Called by `Diskfiles` when the diskfile goes\naway, and for a throwaway state (`Diskfiles.get_editor_state`). The\ndraft isn't this state's — it stays — and a disposed state sees no\ndraft (`draft`), takes no edits, and saves nothing, so a throwaway\nstate never touches it.",
 									"typeSignature": "(): void",
 									"returnType": "void"
 								},
@@ -249082,7 +249111,7 @@
 								{
 									"name": "current_content",
 									"kind": "variable",
-									"docComment": "The editor's text: the selected history entry's, else the disk content.\nAlways `''` when the content isn't loaded — earlier text in history\n(from before the file grew past the index cap, say) isn't what's on\ndisk, so the read-only editor never shows or copies it.",
+									"docComment": "The editor's text: the selected history entry's, else the disk content.\nAlways `''` when the content isn't loaded — a draft or earlier text in history\n(from before the file grew past the index cap, say) isn't what's on\ndisk, so the read-only editor never shows or copies it.",
 									"typeSignature": "string",
 									"modifiers": [
 										"getter",
@@ -249260,11 +249289,67 @@
 							"returnDescription": "the normalized path, `/` for the root"
 						},
 						{
+							"name": "to_parent_path",
+							"kind": "function",
+							"docComment": "The path of the directory holding `path`, without a trailing `/` (`/` for\na path at the top).",
+							"typeSignature": "(path: Branded<string, \"DiskfilePath\">): Branded<string, \"DiskfilePath\">",
+							"sourceLine": 125,
+							"parameters": [
+								{
+									"name": "path",
+									"type": "Branded<string, \"DiskfilePath\">",
+									"typeInfo": {
+										"kind": "intersection",
+										"alias": "Branded",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
+											},
+											{
+												"kind": "reference",
+												"name": "Brand",
+												"typeArgs": [
+													{
+														"kind": "literal",
+														"value": "DiskfilePath",
+														"text": "\"DiskfilePath\""
+													}
+												]
+											}
+										]
+									}
+								}
+							],
+							"returnType": "Branded<string, \"DiskfilePath\">",
+							"returnTypeInfo": {
+								"kind": "intersection",
+								"alias": "Branded",
+								"members": [
+									{
+										"kind": "intrinsic",
+										"text": "string"
+									},
+									{
+										"kind": "reference",
+										"name": "Brand",
+										"typeArgs": [
+											{
+												"kind": "literal",
+												"value": "DiskfilePath",
+												"text": "\"DiskfilePath\""
+											}
+										]
+									}
+								]
+							}
+						},
+						{
 							"name": "to_relative_path",
 							"kind": "function",
 							"docComment": "Formats `path` for display relative to the directory `parent`: the part\nafter `parent` when `path` is inside it, else `path` unchanged, so a path\noutside `parent` stays absolute rather than losing its leading `/`.",
 							"typeSignature": "(path: string, parent: string): string",
-							"sourceLine": 130,
+							"sourceLine": 139,
 							"parameters": [
 								{
 									"name": "path",
@@ -249285,7 +249370,7 @@
 							"kind": "function",
 							"docComment": "The innermost of `roots` holding `path` below it — the root the file tree\nshows `path` under (`DiskfileTreeState.reveal`), and the one a copied\nrelative path is relative to. A root isn't below itself, so a root's own\npath finds only a root around it.",
 							"typeSignature": "(path: string, roots: readonly string[]): string | null",
-							"sourceLine": 146,
+							"sourceLine": 155,
 							"parameters": [
 								{
 									"name": "path",
@@ -249319,7 +249404,7 @@
 							"kind": "interface",
 							"docComment": "What a contextmenu copies for a file or folder — see `to_diskfile_copy_paths`.",
 							"typeSignature": "DiskfileCopyPaths",
-							"sourceLine": 157,
+							"sourceLine": 166,
 							"members": [
 								{
 									"name": "absolute",
@@ -249359,7 +249444,7 @@
 							"kind": "function",
 							"docComment": "The paths a file's or folder's contextmenu copies. A folder's are written\nwithout its trailing `/`, as a shell or another editor takes them. Relative\npaths go from the innermost root, whichever root the row is shown under, so\na file copies the same relative path from the list, a tab, or either of two\noverlapping roots.",
 							"typeSignature": "(path: string, roots: readonly string[]): DiskfileCopyPaths",
-							"sourceLine": 176,
+							"sourceLine": 185,
 							"parameters": [
 								{
 									"name": "path",
@@ -249379,7 +249464,7 @@
 							"kind": "variable",
 							"docComment": "Names the file index never enters or lists under any root, on either rule\n(`FileIndexIgnoreRule`) — a folder's or a file's: the backend filer's\n`ALWAYS_IGNORED_DIRS` in `crates/zzz_server/src/filer/ignore.rs` and the\ncredential directories it skips too (`CREDENTIAL_DIR_NAMES` in\n`crates/zzz_server/src/scoped_fs.rs`), which a test holds this to. Not even\na `.gitignore` can let the index into these.",
 							"typeSignature": "ReadonlySet<string>",
-							"sourceLine": 197,
+							"sourceLine": 206,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "ReadonlySet",
@@ -249396,7 +249481,7 @@
 							"kind": "variable",
 							"docComment": "Names the file index skips besides `FILE_INDEX_ALWAYS_IGNORED_NAMES` under\na root on fixed names only — the build and dependency output that would\nswamp it (`PLAIN_DIR_IGNORED_DIRS` in `crates/zzz_server/src/filer/ignore.rs`,\nwhich a test holds this to). Under a git root git decides these instead,\nso a tracked `dist/` is indexed there.",
 							"typeSignature": "ReadonlySet<string>",
-							"sourceLine": 215,
+							"sourceLine": 224,
 							"typeInfo": {
 								"kind": "reference",
 								"name": "ReadonlySet",
@@ -249413,14 +249498,14 @@
 							"kind": "variable",
 							"docComment": "The prefix of the backend's staging files, which the index never lists\n(`TEMP_FILE_PREFIX` in `crates/zzz_server/src/scoped_fs.rs`, which a test\nholds this to).",
 							"typeSignature": "\".zzz-tmp-\"",
-							"sourceLine": 227
+							"sourceLine": 236
 						},
 						{
 							"name": "FileIndexIgnoreRule",
 							"kind": "type",
 							"docComment": "How the file index decides what it skips under one root — the client's\nview of the backend filer's `IgnoreRule`:\n\n- `fixed` — by name alone, `FILE_INDEX_ALWAYS_IGNORED_NAMES` and\n  `FILE_INDEX_PLAIN_DIR_IGNORED_NAMES` wherever they appear: a plain\n  directory, a registry's root (indexed at its top level), the app\n  directory and the scoped dirs while no open project focuses them, and a\n  focused directory whose project state has no `ignored` entry\n- `git` — `FILE_INDEX_ALWAYS_IGNORED_NAMES` by name; `paths`, the\n  daemon's `ProjectIgnoredJson.paths` for that root: relative to it, each\n  ignored directory with a trailing `/` (the root itself as `./`), each\n  ignored file without one; and `nested`, its `ProjectIgnoredJson.nested`:\n  the directories holding a repo of their own, which the filer doesn't\n  enter, relative, each with a trailing `/`\n\nA permanent filer on a git checkout (the app dir or a scoped dir) runs\ngit's rule on the daemon, but its paths aren't on the wire unless a\nproject focuses it, so here it reads as `fixed`: a tracked `dist/` in it\nis indexed but hidden in the tree, and a file git ignores there reads as\nbroken in a link, and is waited for, without a notice, when created.",
 							"typeSignature": "FileIndexIgnoreRule",
-							"sourceLine": 251,
+							"sourceLine": 260,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "FileIndexIgnoreRule",
@@ -249441,7 +249526,7 @@
 							"kind": "variable",
 							"docComment": "The rule of every root without git's answer — see `FileIndexIgnoreRule`.",
 							"typeSignature": "FileIndexIgnoreRule",
-							"sourceLine": 255,
+							"sourceLine": 264,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "FileIndexIgnoreRule",
@@ -249462,7 +249547,7 @@
 							"kind": "interface",
 							"docComment": "The part of a path the file index skips — see `to_unindexed_part`:\n\n- `by` — `name` for an ignored name (`FILE_INDEX_ALWAYS_IGNORED_NAMES`, a\n  staging file's prefix, or under fixed names\n  `FILE_INDEX_PLAIN_DIR_IGNORED_NAMES`), `git` for a path git ignores,\n  `nested` for a folder holding a repo of its own under a git root\n- `path` — the skipped part, absolute: a folder with a trailing `/` (the\n  root itself when git ignores it whole), a file without one",
 							"typeSignature": "FileIndexUnindexedPart",
-							"sourceLine": 267,
+							"sourceLine": 276,
 							"members": [
 								{
 									"name": "by",
@@ -249501,7 +249586,7 @@
 							"kind": "function",
 							"docComment": "Whether the file index skips any path part named `name` under every rule:\nan always-ignored name or a staging file's.",
 							"typeSignature": "(name: string): boolean",
-							"sourceLine": 276,
+							"sourceLine": 285,
 							"parameters": [
 								{
 									"name": "name",
@@ -249515,7 +249600,7 @@
 							"kind": "function",
 							"docComment": "The first part of `path` below `root` that the file index skips under\n`rule` — the backend filer's `is_ignored` for one root, and the one\npredicate the file tree, markdown links, and creating a file share. The\nfiler never lists such a path from `root`, so a link there can't be told\nbroken, and a file or folder created there never shows.\n\nChecks each part from the root down: a name ignored under every rule, a\nname ignored under fixed names, or under git each folder prefix (`a/`,\n`a/b/`, …) and the path itself in `rule.paths`, then each folder prefix in\n`rule.nested` — the order the filer's walk checks them in. Set lookups,\nO(depth), never relying on the daemon's sort order. A file entry matches\nonly a file path and a folder entry only a folder, as the filer keeps them\napart.",
 							"typeSignature": "(path: string, root: string, rule: FileIndexIgnoreRule): FileIndexUnindexedPart | null",
-							"sourceLine": 300,
+							"sourceLine": 309,
 							"parameters": [
 								{
 									"name": "path",
@@ -249568,7 +249653,7 @@
 							"kind": "function",
 							"docComment": "Says why the file index skips `part`, short: the name it skips everywhere,\nthe path git ignores, or the folder that's a repo of its own — a path\nrelative to `root` when below it.",
 							"typeSignature": "(part: FileIndexUnindexedPart, root: string): string",
-							"sourceLine": 337,
+							"sourceLine": 346,
 							"parameters": [
 								{
 									"name": "part",
@@ -249588,7 +249673,7 @@
 							"kind": "function",
 							"docComment": "Like `to_unindexed_part`, over every filer that would hold `path`: the\ndaemon indexes the union of its filers, so a path is skipped only when\neach root holding it below itself skips it — a whole tree in `trees`, or\nin `top_levels` one listing only its direct children. The part returned\nis the innermost such root's.",
 							"typeSignature": "(path: string, trees: readonly string[], top_levels: readonly string[], rules: ReadonlyMap<string, FileIndexIgnoreRule>): FileIndexUnindexedPart | null",
-							"sourceLine": 358,
+							"sourceLine": 367,
 							"parameters": [
 								{
 									"name": "path",
@@ -249656,7 +249741,7 @@
 							"kind": "function",
 							"docComment": "The directories holding the file at `path`, each with a trailing `/`:\nevery ancestor from its parent up to its root `source_dir`, inclusive,\ninnermost first — none when `path` isn't under `source_dir`. The file\nindex lists only files, so a folder exists for it exactly when it holds one.",
 							"typeSignature": "(path: string, source_dir: string): string[]",
-							"sourceLine": 391,
+							"sourceLine": 400,
 							"parameters": [
 								{
 									"name": "path",
@@ -249676,7 +249761,7 @@
 							"kind": "function",
 							"docComment": "Converts a `SerializableDisknode` to the `DiskfileJson` format.",
 							"typeSignature": "(disknode: { id: Branded<string, \"DiskfilePath\">; source_dir: Branded<Branded<string, \"DiskfilePath\">, \"DiskfileDirectoryPath\">; size: number | null; ctime: number | null; mtime: number | null; }, existing_id?: Branded<...>): { ...; }",
-							"sourceLine": 409,
+							"sourceLine": 418,
 							"parameters": [
 								{
 									"name": "disknode",
@@ -249727,7 +249812,7 @@
 							"kind": "function",
 							"docComment": "Decodes a snapshot reply's files (`SnapshotFiles`) into the disknodes\n`Diskfiles.reconcile` and `add_initial` take: each file's `id` is its\ngroup's `dir` plus its relative path, its `source_dir` the `dir`, and its\n`ctime` its `mtime` where the tuple leaves it off.",
 							"typeSignature": "(groups: { dir: Branded<Branded<string, \"DiskfilePath\">, \"DiskfileDirectoryPath\">; files: SnapshotFile[]; }[]): { id: Branded<string, \"DiskfilePath\">; source_dir: Branded<...>; size: number | null; ctime: number | null; mtime: number | null; }[]",
-							"sourceLine": 438,
+							"sourceLine": 447,
 							"parameters": [
 								{
 									"name": "groups",
@@ -249756,7 +249841,7 @@
 							"kind": "function",
 							"docComment": "Parses a name entered for a new file or folder, a path relative to\n`Diskfiles.new_files_dir` (`sub/name.ts` creates any missing folders).\nLeading whitespace and slashes are dropped, as is trailing whitespace —\nlike a pasted name's stray space or newline, they're almost never meant.\nWhitespace inside the name is kept, including around an inner `/`. Empty,\n`.`, and `..` segments are left for the backend to normalize\n(`sub/../a.txt` creates `a.txt`). Refused: a blank or whitespace-only name;\none that normalizes to the directory itself (`sub/..`); a whitespace-only\nsegment (it would create a folder named by whitespace); a `..` that climbs\nout of the directory; and for a file, a last segment that's empty, `.`, or\n`..` (`x/`, `x/.`, `x/y/..`), which names a folder, not a file.",
 							"typeSignature": "(name: string, kind: \"file\" | \"folder\"): Result<{ value: string; }, { message: string; }>",
-							"sourceLine": 472,
+							"sourceLine": 481,
 							"parameters": [
 								{
 									"name": "name",
@@ -249824,7 +249909,7 @@
 							"kind": "function",
 							"docComment": "Asks for a name and creates a file or folder of that name in\n`Diskfiles.new_files_dir` (see `Diskfiles.create_file` and\n`Diskfiles.create_directory`), alerting on failure — including a name\n`parse_new_diskfile_name` refuses, such as a whitespace-only one — with\nthe name first (`couldn't create file a.txt: <reason>`). A backend failure\nis already logged by its action handler. Cancelling or entering an empty\nname does nothing.",
 							"typeSignature": "(diskfiles: Diskfiles, kind: \"file\" | \"folder\"): Promise<void>",
-							"sourceLine": 531,
+							"sourceLine": 540,
 							"parameters": [
 								{
 									"name": "diskfiles",
@@ -249869,7 +249954,7 @@
 							"kind": "function",
 							"docComment": "Deletes the file at `path` on disk (see `Diskfiles.delete`), alerting on\nfailure with its path first (`couldn't delete a.txt: <backend message>`),\nlike `prompt_create_diskfile`. The failure is already logged by the action\nhandler.",
 							"typeSignature": "(diskfiles: Diskfiles, path: Branded<string, \"DiskfilePath\">): Promise<boolean>",
-							"sourceLine": 556,
+							"sourceLine": 565,
 							"parameters": [
 								{
 									"name": "diskfiles",
@@ -249921,7 +250006,7 @@
 							"kind": "function",
 							"docComment": "Handles `beforeunload`: while any file has unsaved changes\n(`Diskfiles.has_unsaved_changes`), asks the browser to confirm leaving the\npage, since drafts live only in memory.",
 							"typeSignature": "(event: BeforeUnloadEvent, diskfiles: Diskfiles | undefined): void",
-							"sourceLine": 579,
+							"sourceLine": 588,
 							"mutates": {
 								"event": "cancels it (`preventDefault` plus the legacy `returnValue`) to ask for confirmation"
 							},
@@ -249957,14 +250042,21 @@
 							"kind": "variable",
 							"docComment": "How a file kept out of the index is described (`Diskfile.uncovered`) — in\nan accessible name, a tab's title, and the views' notices.",
 							"typeSignature": "\"not indexed by an open project\"",
-							"sourceLine": 593
+							"sourceLine": 602
+						},
+						{
+							"name": "DISKFILE_DORMANT_LABEL",
+							"kind": "variable",
+							"docComment": "How a file under no open root is described (`Diskfiles.is_dormant`) — in\nan accessible name, a tab's title, and the views' notices.",
+							"typeSignature": "\"its project isn't open\"",
+							"sourceLine": 608
 						},
 						{
 							"name": "DiskfileStatus",
 							"kind": "interface",
 							"docComment": "What a file row marks beside the file's name — see `DiskfileStatusLabel`.",
 							"typeSignature": "DiskfileStatus",
-							"sourceLine": 596,
+							"sourceLine": 611,
 							"members": [
 								{
 									"name": "deleted",
@@ -249976,6 +250068,12 @@
 									"name": "uncovered",
 									"kind": "variable",
 									"docComment": "Out of the index, not seen deleted, kept for its draft or tab (`Diskfile.uncovered`).",
+									"typeSignature": "boolean"
+								},
+								{
+									"name": "dormant",
+									"kind": "variable",
+									"docComment": "Under no open root, kept for its draft or tab (`Diskfiles.is_dormant`).",
 									"typeSignature": "boolean"
 								},
 								{
@@ -249997,7 +250095,7 @@
 							"kind": "function",
 							"docComment": "The status a file row marks for the file at `path`. Only looks the cell and\nthe editing state up — a file never opened has no editing state, and\nlisting a file mustn't create one.",
 							"typeSignature": "(diskfiles: Diskfiles, path: Branded<string, \"DiskfilePath\">): DiskfileStatus",
-							"sourceLine": 612,
+							"sourceLine": 629,
 							"parameters": [
 								{
 									"name": "diskfiles",
@@ -250036,7 +250134,7 @@
 							"kind": "function",
 							"docComment": "A file row's accessible name: `label`, then in words what its markers show,\nsince they're hidden from assistive tech.",
 							"typeSignature": "(label: string | null | undefined, status: DiskfileStatus): string | undefined",
-							"sourceLine": 628,
+							"sourceLine": 646,
 							"parameters": [
 								{
 									"name": "label",
@@ -250097,6 +250195,7 @@
 						"DiskfileAudioView.svelte",
 						"DiskfileContextmenu.svelte",
 						"DiskfileCopyPathEntries.svelte",
+						"DiskfileDormantNotice.svelte",
 						"DiskfileEditorView.svelte",
 						"DiskfileExplorer.svelte",
 						"DiskfileList.svelte",
@@ -255561,6 +255660,40 @@
 					]
 				},
 				{
+					"path": "DiskfileDormantNotice.svelte",
+					"declarations": [
+						{
+							"name": "DiskfileDormantNotice",
+							"kind": "component",
+							"sourceLine": 1,
+							"props": [
+								{
+									"name": "diskfile",
+									"type": "Diskfile"
+								},
+								{
+									"name": "small",
+									"type": "boolean",
+									"optional": true,
+									"description": "Sized for a file-part editor.",
+									"defaultValue": "false"
+								}
+							]
+						}
+					],
+					"moduleComment": "Says a file is dormant (`DiskfileEditorState.dormant`: its project\nclosed, so it can't be saved) and offers to reopen the project — the\none holding the file's directory, as the daemon resolves it\n(`Projects.open`, the way `zzz <file>` does), which binds the file and\nits draft again. By the directory, since the file may be gone from\ndisk, and the daemon opens a file's directory anyway. Its known files\nare reconciled with the reopened index, so one deleted while it was\nclosed is flagged deleted.",
+					"dependencies": [
+						"diskfile.svelte.ts",
+						"diskfile_helpers.ts",
+						"frontend.svelte.ts"
+					],
+					"dependents": [
+						"DiskfileEditorView.svelte",
+						"DiskfileMarkdownView.svelte",
+						"PartEditorForDiskfile.svelte"
+					]
+				},
+				{
 					"path": "DiskfileEditorNav.svelte",
 					"declarations": [
 						{
@@ -255644,6 +255777,7 @@
 						"DiskfileConflictNotice.svelte",
 						"DiskfileContextmenu.svelte",
 						"DiskfileDetailsDrawer.svelte",
+						"DiskfileDormantNotice.svelte",
 						"DiskfileEditorNav.svelte",
 						"DiskfileHistoryView.svelte",
 						"DiskfileInfo.svelte",
@@ -256058,6 +256192,7 @@
 						"DiskfileConflictNotice.svelte",
 						"DiskfileContextmenu.svelte",
 						"DiskfileDetailsDrawer.svelte",
+						"DiskfileDormantNotice.svelte",
 						"DiskfileEditorNav.svelte",
 						"DiskfileHistoryView.svelte",
 						"DiskfileInfo.svelte",
@@ -258376,6 +258511,40 @@
 									}
 								},
 								{
+									"name": "is_dormant",
+									"kind": "function",
+									"docComment": "Whether the file at `path` is kept off the index (`uncovered` or\n`deleted_on_disk`, for a draft or a tab) under none of `indexed_roots`\n— its project isn't open here, so the daemon refuses to read or write\nit (its scope is those roots). Reopening the project (`Projects.open`\non the path) binds it again. A file in the index is in scope by how it\ngot there, and with no roots known yet (the session not loaded — the\napp directory is always one after) nothing is. Reactive.",
+									"typeSignature": "(path: Branded<string, \"DiskfilePath\">): boolean",
+									"parameters": [
+										{
+											"name": "path",
+											"type": "Branded<string, \"DiskfilePath\">",
+											"typeInfo": {
+												"kind": "intersection",
+												"alias": "Branded",
+												"members": [
+													{
+														"kind": "intrinsic",
+														"text": "string"
+													},
+													{
+														"kind": "reference",
+														"name": "Brand",
+														"typeArgs": [
+															{
+																"kind": "literal",
+																"value": "DiskfilePath",
+																"text": "\"DiskfilePath\""
+															}
+														]
+													}
+												]
+											}
+										}
+									],
+									"returnType": "boolean"
+								},
+								{
 									"name": "has_path",
 									"kind": "function",
 									"docComment": "Whether a file is known at `path`: on disk in the index, or kept off it\nfor a draft or a tab (deleted on disk, or uncovered). Subscribes a\nreactive reader to `path` (`DiskfileIndex.has`) and, on an index miss,\nto the whole `#unindexed_files` map too, so any file kept or released\noff the index re-runs it. Read it per path only in component effects,\nor deriveds that live in one.",
@@ -258561,14 +258730,14 @@
 							"kind": "variable",
 							"docComment": "The most cells `Diskfiles` checks its index against after every write in\nDEV (`assert_diskfile_index_in_step`) — a scan of every cell, so a large\ntree skips it.",
 							"typeSignature": "2000",
-							"sourceLine": 1631
+							"sourceLine": 1647
 						},
 						{
 							"name": "to_diskfile_index_mismatches",
 							"kind": "function",
 							"docComment": "How `diskfiles.index` differs from its cells, each difference described —\nempty when they agree: no cell kept off disk (`deleted_on_disk` or\n`uncovered`) has a record, and every other cell has one with the cell's\nroot, size, and mtime. A cell keeps no `ctime`, so that isn't compared.\nRecords without a cell are every file nothing needs, so they're expected.\nWithin `DISKFILE_INDEX_CHECK_LIMIT` records, also rebuilds the directories\nand their counts from the records and compares them with\n`DiskfileIndex.directory_paths` and `DiskfileIndex.directory_counts`.\nUntracked. A scan of every cell and record — for tests and DEV checks.",
 							"typeSignature": "(diskfiles: Diskfiles): string[]",
-							"sourceLine": 1657,
+							"sourceLine": 1673,
 							"parameters": [
 								{
 									"name": "diskfiles",
@@ -258582,7 +258751,7 @@
 							"kind": "function",
 							"docComment": "Throws when `diskfiles.index` differs from its cells — see\n`to_diskfile_index_mismatches`.",
 							"typeSignature": "(diskfiles: Diskfiles): void",
-							"sourceLine": 1713,
+							"sourceLine": 1729,
 							"throws": [
 								{
 									"type": "Error",
@@ -259577,7 +259746,7 @@
 							]
 						}
 					],
-					"moduleComment": "A file's name in a row, then its markers: `(deleted)` for a file kept\nafter it left disk, `(not indexed)` for one kept after it left the index\n(`Diskfile.uncovered`), `●` for unsaved changes (in the negative color when\nthe file also changed on disk). Only the name truncates, so the markers\nalways show. The markers are hidden from assistive tech — the row's\naccessible name says them (`to_diskfile_status_label`).",
+					"moduleComment": "A file's name in a row, then its markers: `(deleted)` for a file kept\nafter it left disk, `(not indexed)` for one kept after it left the index\n(`Diskfile.uncovered`) — `(project closed)` when that's because its\nproject isn't open (`Diskfiles.is_dormant`), `●` for unsaved changes (in the negative color when\nthe file also changed on disk). Only the name truncates, so the markers\nalways show. The markers are hidden from assistive tech — the row's\naccessible name says them (`to_diskfile_status_label`).",
 					"dependencies": [
 						"diskfile_helpers.ts"
 					],
@@ -259636,12 +259805,12 @@
 								{
 									"name": "--shadow_color",
 									"fallback": "var(--shadow_color_umbra)",
-									"sourceLine": 127
+									"sourceLine": 130
 								},
 								{
 									"name": "--shadow_alpha",
 									"fallback": "var(--shadow_alpha_30)",
-									"sourceLine": 127
+									"sourceLine": 130
 								}
 							]
 						}
@@ -259911,13 +260080,18 @@
 						{
 							"name": "DraftStatus",
 							"kind": "type",
-							"docComment": "Where a draft stands against the disk, derived — never set by a scope\nchange:\n\n- `bound`: the disk holds the version the draft is based on, as far as\n  anything here knows (`Draft.base_hash`).\n- `stale`: the disk moved since — its hash isn't `base_hash`, or the\n  file's editing state saw it move (`DiskfileEditorState.disk_conflict`).\n  The editor's conflict: overwrite, or keep the disk version.\n- `deleted`: the file is gone from disk (`Diskfile.deleted_on_disk`);\n  saving recreates it, exclusively.",
+							"docComment": "Where a draft stands against the disk, derived — never set by a scope\nchange:\n\n- `dormant`: its file is under no open root (`Diskfiles.is_dormant`) — its\n  project closed. It can't be saved; reopening the project binds it again,\n  and its `base_hash` is checked against what the disk holds then.\n- `bound`: the disk holds the version the draft is based on, as far as\n  anything here knows (`Draft.base_hash`).\n- `stale`: the disk moved since — its hash isn't `base_hash`, or the\n  file's editing state saw it move (`DiskfileEditorState.disk_conflict`).\n  The editor's conflict: overwrite, or keep the disk version.\n- `deleted`: the file is gone from disk (`Diskfile.deleted_on_disk`);\n  saving recreates it, exclusively.",
 							"typeSignature": "DraftStatus",
-							"sourceLine": 19,
+							"sourceLine": 22,
 							"typeInfo": {
 								"kind": "union",
 								"alias": "DraftStatus",
 								"members": [
+									{
+										"kind": "literal",
+										"value": "dormant",
+										"text": "\"dormant\""
+									},
 									{
 										"kind": "literal",
 										"value": "bound",
@@ -259937,10 +260111,125 @@
 							}
 						},
 						{
+							"name": "DraftOptions",
+							"kind": "interface",
+							"typeSignature": "DraftOptions",
+							"sourceLine": 24,
+							"members": [
+								{
+									"name": "diskfiles",
+									"kind": "variable",
+									"typeSignature": "Diskfiles"
+								},
+								{
+									"name": "path",
+									"kind": "variable",
+									"typeSignature": "Branded<string, \"DiskfilePath\">",
+									"typeInfo": {
+										"kind": "intersection",
+										"alias": "Branded",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
+											},
+											{
+												"kind": "reference",
+												"name": "Brand",
+												"typeArgs": [
+													{
+														"kind": "literal",
+														"value": "DiskfilePath",
+														"text": "\"DiskfilePath\""
+													}
+												]
+											}
+										]
+									}
+								},
+								{
+									"name": "root",
+									"kind": "variable",
+									"typeSignature": "Branded<Branded<string, \"DiskfilePath\">, \"DiskfileDirectoryPath\"> | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "intersection",
+												"alias": "Branded",
+												"members": [
+													{
+														"kind": "intrinsic",
+														"text": "string"
+													},
+													{
+														"kind": "reference",
+														"name": "Brand",
+														"typeArgs": [
+															{
+																"kind": "literal",
+																"value": "DiskfilePath",
+																"text": "\"DiskfilePath\""
+															}
+														]
+													},
+													{
+														"kind": "reference",
+														"name": "Brand",
+														"typeArgs": [
+															{
+																"kind": "literal",
+																"value": "DiskfileDirectoryPath",
+																"text": "\"DiskfileDirectoryPath\""
+															}
+														]
+													}
+												]
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
+									"name": "text",
+									"kind": "variable",
+									"typeSignature": "string"
+								},
+								{
+									"name": "base_hash",
+									"kind": "variable",
+									"typeSignature": "string | null",
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "intrinsic",
+												"text": "string"
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
+									"name": "updated",
+									"kind": "variable",
+									"docComment": "Defaults to now.",
+									"typeSignature": "number",
+									"optional": true
+								}
+							]
+						},
+						{
 							"name": "Draft",
 							"kind": "class",
 							"docComment": "A file's unsaved edit — the tip of its editing, kept apart from the\n`Diskfile` that mirrors the disk, so dropping the mirror never touches\nit. One per path (`Drafts`). Page memory for now; the shape a workspace\npersists later, keyed by `root` and `path`.",
-							"sourceLine": 27,
+							"sourceLine": 40,
 							"members": [
 								{
 									"name": "id",
@@ -260061,7 +260350,7 @@
 								{
 									"name": "base_hash",
 									"kind": "variable",
-									"docComment": "The BLAKE3 of the disk content the draft is based on — what a save\nsends as `expected_hash` — or `null` when that content came without a\nhash (seeded, not read). Moves when the draft is rebased: our own save\nlanding under it, or the user choosing to write over the disk.",
+									"docComment": "The BLAKE3 of the disk content the draft is based on — what a save\nsends as `expected_hash` — or `null` when that content came without a\nhash (seeded, not read), taken once a read of the same text brings\none. Moves when the draft is rebased: our own save landing under it\n(its response, or its read landing first), or the user choosing to\nwrite over the disk.",
 									"typeSignature": "string | null",
 									"reactivity": "$state.raw",
 									"typeInfo": {
@@ -260100,6 +260389,11 @@
 										"members": [
 											{
 												"kind": "literal",
+												"value": "dormant",
+												"text": "\"dormant\""
+											},
+											{
+												"kind": "literal",
 												"value": "bound",
 												"text": "\"bound\""
 											},
@@ -260119,11 +260413,11 @@
 								{
 									"name": "constructor",
 									"kind": "constructor",
-									"typeSignature": "(options: { diskfiles: Diskfiles; path: Branded<string, \"DiskfilePath\">; root: Branded<Branded<string, \"DiskfilePath\">, \"DiskfileDirectoryPath\"> | null; text: string; base_hash: string | null; updated?: number | undefined; }): Draft",
+									"typeSignature": "(options: DraftOptions): Draft",
 									"parameters": [
 										{
 											"name": "options",
-											"type": "{ diskfiles: Diskfiles; path: Branded<string, \"DiskfilePath\">; root: Branded<Branded<string, \"DiskfilePath\">, \"DiskfileDirectoryPath\"> | null; text: string; base_hash: string | null; updated?: number | undefined; }"
+											"type": "DraftOptions"
 										}
 									]
 								},
@@ -260149,7 +260443,7 @@
 							"name": "Drafts",
 							"kind": "class",
 							"docComment": "The files' drafts, by path — at most one each. Owned by `Diskfiles`; a\ndraft is written by the file's `DiskfileEditorState` and outlives it and\nthe file's cell. A draft keeps a file the index no longer has\n(`Diskfiles.release_uncovered`, `remove_by_path`).",
-							"sourceLine": 100,
+							"sourceLine": 109,
 							"members": [
 								{
 									"name": "constructor",
@@ -262451,6 +262745,7 @@
 						"DiskfileCopyPathEntries.svelte",
 						"DiskfileDetailsDrawer.svelte",
 						"DiskfileDirectoryContextmenu.svelte",
+						"DiskfileDormantNotice.svelte",
 						"DiskfileEditorNav.svelte",
 						"DiskfileEditorView.svelte",
 						"DiskfileExplorer.svelte",
@@ -283006,6 +283301,7 @@
 						"diskfile_helpers.ts",
 						"DiskfileActions.svelte",
 						"DiskfileConflictNotice.svelte",
+						"DiskfileDormantNotice.svelte",
 						"DiskfileHistoryView.svelte",
 						"DiskfileMetrics.svelte",
 						"DiskfilePickerDialog.svelte",

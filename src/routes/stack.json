@@ -357,9 +357,9 @@
 			"glyph": "💤",
 			"homepage_url": "https://github.com/fuzdev/zzz",
 			"published": false,
-			"module_count": 282,
-			"exported_module_count": 279,
-			"export_count": 1070,
+			"module_count": 283,
+			"exported_module_count": 280,
+			"export_count": 1075,
 			"peer_dependencies": [
 				"@fuzdev/fuz_app",
 				"@fuzdev/fuz_schema",

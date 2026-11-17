@@ -123,7 +123,7 @@
 		{
 			"kind": "package",
 			"name": "@fuzdev/fuz_ui",
-			"version": "0.227.0",
+			"version": "0.228.0",
 			"path": "fuz_ui",
 			"description": "Svelte component library and frontend helpers",
 			"glyph": "🧶",
@@ -131,7 +131,7 @@
 			"published": true,
 			"module_count": 99,
 			"exported_module_count": 99,
-			"export_count": 312,
+			"export_count": 313,
 			"peer_dependencies": [
 				"@fuzdev/fuz_code",
 				"@fuzdev/fuz_css",
@@ -357,9 +357,9 @@
 			"glyph": "💤",
 			"homepage_url": "https://github.com/fuzdev/zzz",
 			"published": false,
-			"module_count": 268,
-			"exported_module_count": 265,
-			"export_count": 957,
+			"module_count": 280,
+			"exported_module_count": 277,
+			"export_count": 1066,
 			"peer_dependencies": [
 				"@fuzdev/fuz_app",
 				"@fuzdev/fuz_schema",
@@ -409,7 +409,7 @@
 		{
 			"kind": "crate",
 			"name": "blake3_wasm_core",
-			"version": "0.2.0",
+			"version": "0.2.1",
 			"path": "blake3",
 			"description": "Shared BLAKE3 WASM bindings core (wasm-bindgen exports)",
 			"crate_kind": "rlib",
@@ -420,7 +420,7 @@
 		{
 			"kind": "crate",
 			"name": "blake3_wasm",
-			"version": "0.2.0",
+			"version": "0.2.1",
 			"path": "blake3",
 			"description": "BLAKE3 hashing compiled to WASM",
 			"crate_kind": "cdylib",
@@ -433,7 +433,7 @@
 		{
 			"kind": "crate",
 			"name": "blake3_wasm_small",
-			"version": "0.2.0",
+			"version": "0.2.1",
 			"path": "blake3",
 			"description": "BLAKE3 hashing compiled to WASM, size-optimized build without SIMD",
 			"crate_kind": "cdylib",
@@ -446,7 +446,7 @@
 		{
 			"kind": "crate",
 			"name": "blake3_debug",
-			"version": "0.2.0",
+			"version": "0.2.1",
 			"path": "blake3",
 			"description": "Development utilities for blake3_wasm (comparison, test vectors)",
 			"crate_kind": "bin",
@@ -457,7 +457,7 @@
 		{
 			"kind": "crate",
 			"name": "blake3_component",
-			"version": "0.2.0",
+			"version": "0.2.1",
 			"path": "blake3",
 			"description": "BLAKE3 WASI component via WIT interface",
 			"crate_kind": "cdylib",
@@ -468,7 +468,7 @@
 		{
 			"kind": "crate",
 			"name": "blake3_bench_wasmtime",
-			"version": "0.2.0",
+			"version": "0.2.1",
 			"path": "blake3",
 			"description": "BLAKE3 WASI component benchmarks using Wasmtime runtime",
 			"crate_kind": "bin",

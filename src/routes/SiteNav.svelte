@@ -120,10 +120,8 @@
 	/* a sub-item sits under its section's label, past the emoji */
 	.sub {
 		padding-left: var(--space_xl4);
-	}
-	/* `DocsMenu` spaces its categories for a page of its own */
-	.sub :global(.category) {
-		margin: var(--space_md) 0;
+		/* `DocsMenu` spaces its categories for a page of its own */
+		--docs_menu_category_spacing: var(--space_md);
 	}
 	.narrow-only {
 		display: none;

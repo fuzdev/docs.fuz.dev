@@ -8,6 +8,7 @@
 	 */
 
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
 
 	const {
 		sections,
@@ -17,6 +18,9 @@
 		sections: Record<string, string>;
 		children: Snippet;
 	} = $props();
+
+	// selected by the URL's hash, as `DocsPageLinks` selects; stale once the reader scrolls
+	const hash = $derived(page.url.hash.slice(1));
 </script>
 
 <div class="page-sections">
@@ -27,8 +31,7 @@
 		<h4 class="mb_sm">on this page</h4>
 		<ul class="unstyled">
 			{#each Object.entries(sections) as [id, title] (id)}
-				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-				<li><a class="menuitem" href="#{id}">{title}</a></li>
+				<li><a class={['menuitem', { selected: id === hash }]} href="#{id}">{title}</a></li>
 			{/each}
 		</ul>
 	</nav>
@@ -46,10 +49,10 @@
 	}
 	.sections-column {
 		position: sticky;
-		top: calc(var(--docs_sticky_top, 0px) + var(--space_lg));
+		top: calc(var(--site_header_height, 0px) + var(--space_lg));
 		flex-shrink: 0;
 		width: 220px;
-		max-height: calc(100svh - var(--docs_sticky_top, 0px) - var(--space_lg));
+		max-height: calc(100svh - var(--site_header_height, 0px) - var(--space_lg));
 		overflow: auto;
 		scrollbar-width: thin;
 	}

@@ -44,22 +44,24 @@
 
 	<TomeSection>
 		<TomeSectionHeader text="Toolchain" />
-		<table>
-			<thead>
-				<tr>
-					<th>Tool</th>
-					<th>Version</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each Object.entries(stack.toolchain) as [tool, version] (tool)}
+		<div class="overflow-x:auto">
+			<table>
+				<thead>
 					<tr>
-						<td>{tool}</td>
-						<td><code>{version}</code></td>
+						<th>Tool</th>
+						<th>Version</th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each Object.entries(stack.toolchain) as [tool, version] (tool)}
+						<tr>
+							<td>{tool}</td>
+							<td><code>{version}</code></td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	</TomeSection>
 
 	<TomeSection>
@@ -68,44 +70,46 @@
 			{packages.length} packages, {total_exported_modules} exported modules ({total_modules} total),
 			{total_exports} exports
 		</p>
-		<table>
-			<thead>
-				<tr>
-					<th>Package</th>
-					<th>Version</th>
-					<th>Description</th>
-					<th>Modules</th>
-					<th>Exports</th>
-					<th>Published</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each packages as pkg (pkg.name)}
+		<div class="overflow-x:auto">
+			<table>
+				<thead>
 					<tr>
-						<td>
-							{pkg.glyph}
-							{#if pkg.homepage_url}
-								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-								<a href={pkg.homepage_url}>{pkg.name}</a>
-							{:else}
-								{pkg.name}
-							{/if}
-						</td>
-						<td><code>{pkg.version}</code></td>
-						<td>{pkg.description}</td>
-						<td>
-							{#if pkg.exported_module_count! < pkg.module_count!}
-								{pkg.exported_module_count}/{pkg.module_count}
-							{:else}
-								{pkg.module_count}
-							{/if}
-						</td>
-						<td>{pkg.export_count}</td>
-						<td>{pkg.published ? 'yes' : 'no'}</td>
+						<th>Package</th>
+						<th>Version</th>
+						<th>Description</th>
+						<th>Modules</th>
+						<th>Exports</th>
+						<th>Published</th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each packages as pkg (pkg.name)}
+						<tr>
+							<td>
+								{pkg.glyph}
+								{#if pkg.homepage_url}
+									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+									<a href={pkg.homepage_url}>{pkg.name}</a>
+								{:else}
+									{pkg.name}
+								{/if}
+							</td>
+							<td><code>{pkg.version}</code></td>
+							<td>{pkg.description}</td>
+							<td>
+								{#if pkg.exported_module_count! < pkg.module_count!}
+									{pkg.exported_module_count}/{pkg.module_count}
+								{:else}
+									{pkg.module_count}
+								{/if}
+							</td>
+							<td>{pkg.export_count}</td>
+							<td>{pkg.published ? 'yes' : 'no'}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	</TomeSection>
 
 	{#if crate_workspaces.length > 0}
@@ -113,28 +117,30 @@
 			<TomeSectionHeader text="Rust workspaces" />
 			{#each crate_workspaces as workspace (workspace.name)}
 				<h3>{workspace.name}</h3>
-				<table>
-					<thead>
-						<tr>
-							<th>Crate</th>
-							<th>Version</th>
-							<th>Kind</th>
-							<th>Description</th>
-							<th>Deps</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each workspace.crates as crate (crate.name)}
+				<div class="overflow-x:auto">
+					<table>
+						<thead>
 							<tr>
-								<td><code>{crate.name}</code></td>
-								<td><code>{crate.version}</code></td>
-								<td>{crate.crate_kind}</td>
-								<td>{crate.description}</td>
-								<td>{crate.internal_deps!.join(', ')}</td>
+								<th>Crate</th>
+								<th>Version</th>
+								<th>Kind</th>
+								<th>Description</th>
+								<th>Deps</th>
 							</tr>
-						{/each}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{#each workspace.crates as crate (crate.name)}
+								<tr>
+									<td><code>{crate.name}</code></td>
+									<td><code>{crate.version}</code></td>
+									<td>{crate.crate_kind}</td>
+									<td>{crate.description}</td>
+									<td>{crate.internal_deps!.join(', ')}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
 			{/each}
 		</TomeSection>
 	{/if}

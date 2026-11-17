@@ -97,8 +97,14 @@
 				{#if href_contains_current_page(page_href, page.url)}
 					<ul class="unstyled sub narrow-only">
 						{#each Object.entries(section_page.sections) as [id, title] (id)}
-							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-							<li><a class="menuitem" href="{page_href}#{id}">{title}</a></li>
+							<li>
+								<a
+									class={['menuitem', { selected: id === page.url.hash.slice(1) }]}
+									href="{page_href}#{id}"
+								>
+									{title}
+								</a>
+							</li>
 						{/each}
 					</ul>
 				{/if}

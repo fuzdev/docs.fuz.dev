@@ -97,7 +97,7 @@
 	</p>
 {/snippet}
 
-<main>
+<div>
 	<header>
 		<h1>Keeping software coherent at agent speed</h1>
 		<p class="width_atmost_md">
@@ -400,7 +400,7 @@
 			{/each}
 		</ul>
 	</section>
-</main>
+</div>
 
 <style>
 	/* sized in em so the mark scales with the text it sits in */

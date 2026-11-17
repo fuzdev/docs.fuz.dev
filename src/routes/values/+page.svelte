@@ -61,7 +61,7 @@
 	<Mdz {content} inline />
 {/snippet}
 
-<main>
+<div>
 	<header>
 		<h1>The values the Fuz stack is designed against</h1>
 		<p class="width_atmost_md">{headword.text} {@render source(headword.source)}.</p>
@@ -276,7 +276,7 @@
 			</table>
 		</div>
 	</section>
-</main>
+</div>
 
 <style>
 	/* one column per project, as many across as fit */

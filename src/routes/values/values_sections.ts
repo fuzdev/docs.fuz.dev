@@ -1,5 +1,6 @@
 /**
- * The `/values` page's sections, shared by the page's headings and the sidebar nav.
+ * The `/values` page's sections, shared by the page's headings, its sections
+ * column, and the sidebar nav on narrow screens.
  *
  * @module
  */

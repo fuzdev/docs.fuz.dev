@@ -2,7 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { Library, library_context } from '@fuzdev/fuz_ui/library.svelte.ts';
 
-	import SidebarLayout from '#routes/SidebarLayout.svelte';
 	import { library_json } from '#routes/library.ts';
 
 	const { children }: { children: Snippet } = $props();
@@ -14,6 +13,6 @@
 	library_context.set(() => library);
 </script>
 
-<SidebarLayout>
+<div class="width_atmost_md">
 	{@render children()}
-</SidebarLayout>
+</div>

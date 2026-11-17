@@ -1,49 +1,25 @@
+import type { Component } from 'svelte';
 import type { Tome } from '@fuzdev/fuz_ui/tome.ts';
+
 import ApiPage from './api/+page.svelte';
 import FuzStackPage from './fuz-stack/+page.svelte';
 import GrimoirePage from './grimoire/+page.svelte';
 import IntroductionPage from './introduction/+page.svelte';
 import StackPage from './stack/+page.svelte';
+import { tome_entries, type TomeSlug } from './tome_entries.ts';
 
-export const tomes: Array<Tome> = [
-	{
-		slug: 'introduction',
-		category: 'guide',
-		Component: IntroductionPage,
-		related_tomes: ['fuz-stack', 'grimoire', 'stack'],
-		related_modules: [],
-		related_declarations: []
-	},
-	{
-		slug: 'fuz-stack',
-		category: 'skills',
-		Component: FuzStackPage,
-		related_tomes: ['stack'],
-		related_modules: [],
-		related_declarations: []
-	},
-	{
-		slug: 'grimoire',
-		category: 'skills',
-		Component: GrimoirePage,
-		related_tomes: ['fuz-stack'],
-		related_modules: [],
-		related_declarations: []
-	},
-	{
-		slug: 'stack',
-		category: 'reference',
-		Component: StackPage,
-		related_tomes: ['api'],
-		related_modules: [],
-		related_declarations: []
-	},
-	{
-		slug: 'api',
-		category: 'reference',
-		Component: ApiPage,
-		related_tomes: ['stack'],
-		related_modules: [],
-		related_declarations: []
-	}
-];
+const components: Record<TomeSlug, Component<any>> = {
+	introduction: IntroductionPage,
+	'fuz-stack': FuzStackPage,
+	grimoire: GrimoirePage,
+	stack: StackPage,
+	api: ApiPage
+};
+
+export const tomes: Array<Tome> = tome_entries.map((entry) => ({
+	...entry,
+	related_tomes: [...entry.related_tomes],
+	related_modules: [...entry.related_modules],
+	related_declarations: [...entry.related_declarations],
+	Component: components[entry.slug]
+}));

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import SidebarLayout from '#routes/SidebarLayout.svelte';
+	import PageSections from '#routes/PageSections.svelte';
+	import { coherence_sections } from './coherence_sections.ts';
 
 	const { children }: { children: Snippet } = $props();
 </script>
 
-<!-- the grid and the inventory tables need more room than a column of prose -->
-<SidebarLayout wide>
+<PageSections sections={coherence_sections}>
 	{@render children()}
-</SidebarLayout>
+</PageSections>

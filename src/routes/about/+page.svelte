@@ -18,14 +18,13 @@
 	<title>about - docs.fuz.dev</title>
 </svelte:head>
 
-<main class="width_atmost_md pb_xl9">
+<div class="about width_atmost_md pb_xl9">
 	<section>
 		<header class="box">
-			<h1 class="mb_xl5" style:margin-top={MAIN_HEADER_MARGIN_TOP}>
+			<h1 class="mb_lg" style:margin-top={MAIN_HEADER_MARGIN_TOP}>
 				{library.repo_name}
 			</h1>
 		</header>
-		<Breadcrumb />
 	</section>
 	<section class="box mb_lg">
 		<div class="panel p_md width_atmost_md">
@@ -40,10 +39,10 @@
 			</div>
 		</DocsFooter>
 	</section>
-</main>
+</div>
 
 <style>
-	main {
+	.about {
 		display: flex;
 		flex-direction: column;
 		align-items: center;

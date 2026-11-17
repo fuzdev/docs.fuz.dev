@@ -52,7 +52,7 @@ gro deploy     # build, commit, and push to deploy branch
 ```
 src/
 ├── lib/              # stack repo metadata + dependency-graph modules
-├── routes/           # SvelteKit routes, the shared sidebar layout, and the evidence checker
+├── routes/           # SvelteKit routes, the site shell (root layout, SiteNav, PageSections), and the evidence checker
 │   ├── docs/         # tome-based documentation
 │   │   ├── api/      # auto-generated API docs
 │   │   ├── introduction/ # ecosystem introduction
@@ -78,7 +78,7 @@ auto-generated API docs.
 
 ### Routes
 
-- `/` - Landing page with description, theme controls, ProjectLinks
+- `/` - Landing page with the intro blurb, ProjectLinks, and footer
 - `/about` - Library summary, ecosystem links
 - `/docs` - Tome-based documentation index
 - `/docs/introduction` - Ecosystem introduction
@@ -108,9 +108,9 @@ claim is corrected there and nowhere else. Each failure row has a `reviewed`
 flag for the maintainer's review, and `claims_checked` is the date the claims
 were last checked against the repos.
 
-The page sits in the shared `SidebarLayout` (`wide`, since its tables need
-the room), and `coherence_sections.ts` names its sections for both the page's
-headings and the sidebar's sub-items.
+The page sits in `PageSections`, which lists its sections in a column beside
+it on wide screens, and `coherence_sections.ts` names those sections for the
+page's headings, that column, and the sidebar's sub-items on narrow screens.
 
 ### Evidence check
 
@@ -136,14 +136,20 @@ worth keeping can be chosen.
 
 ### Shared layout
 
-`src/routes/SidebarLayout.svelte` is the sidebar layout of `/skills`,
-`/tools`, `/coherence` and `/values`. Its nav lists the site's sections, each
-with its emoji from `src/routes/site_sections.ts` (the same map the landing
-page's cards read), and the coherence and values pages list their own
-sections as sub-items from `coherence_sections.ts` and `values_sections.ts`.
-On a narrow screen the nav opens in a dialog. The layout also sets the
-scroll padding that keeps an anchor's target clear of its sticky header.
-`src/routes/style.css` holds the few styles both data pages share.
+`src/routes/+layout.svelte` puts every page in one shell: fuz_ui's
+`AppShell`, with a sticky header (the breadcrumb, and on narrow screens the
+menu button) and `src/routes/SiteNav.svelte` as the sidebar. `SiteNav` lists
+the site's sections, each with its emoji from `src/routes/site_sections.ts`,
+built from `MenuLink`; on narrow screens the sidebar opens as `AppShell`'s
+overlay. `/docs` renders fuz_ui's `Docs` nested in the shell: `SiteNav`
+renders its tome menu (a `DocsMenu` of `docs/tome_entries.ts`, the tomes
+without their page components) and, at or below 1000px, the page's links (a
+`DocsPageLinks` under the `docs_links_context` the root layout sets).
+`src/routes/PageSections.svelte` gives the coherence and values pages a
+column of their sections on wide screens; at or below 1000px the sidebar
+lists them instead. The root layout also sets the scroll padding that keeps
+an anchor's target clear of the sticky header. `src/routes/style.css` holds
+the few styles both data pages share.
 
 ### Skill docs generation
 

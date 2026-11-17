@@ -1,7 +1,8 @@
 /**
- * The `/coherence` page's sections, shared by the page's headings and the
- * sidebar nav. An inventory's id is also its section's, so a hold that points
- * at a table links to the heading here.
+ * The `/coherence` page's sections, shared by the page's headings, its
+ * sections column, and the sidebar nav on narrow screens. An inventory's id
+ * is also its section's, so a hold that points at a table links to the
+ * heading here.
  *
  * @module
  */

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import SidebarLayout from '#routes/SidebarLayout.svelte';
+	import PageSections from '#routes/PageSections.svelte';
+	import { values_sections } from './values_sections.ts';
 
 	const { children }: { children: Snippet } = $props();
 </script>
 
-<!-- the order grid and the decision tables need more room than a column of prose -->
-<SidebarLayout wide>
+<PageSections sections={values_sections}>
 	{@render children()}
-</SidebarLayout>
+</PageSections>

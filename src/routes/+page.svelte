@@ -6,15 +6,11 @@
 	import { site_context } from '@fuzdev/fuz_ui/site.svelte.ts';
 	import { FUZ_DEV_URL, MAIN_HEADER_MARGIN_TOP } from '@fuzdev/fuz_ui/constants.ts';
 	import ProjectLinks from '@fuzdev/fuz_ui/ProjectLinks.svelte';
-	import Card from '@fuzdev/fuz_ui/Card.svelte';
-	import { DOCS_PATH } from '@fuzdev/fuz_ui/docs_helpers.svelte.ts';
-
-	import { section_icons } from './site_sections.ts';
 
 	const site = site_context.get();
 </script>
 
-<main class="box width:100%">
+<div class="box width:100%">
 	<div class="box width_atmost_md mb_xl9">
 		<section class="box">
 			<h1 class="mb_sm" style:margin-top={MAIN_HEADER_MARGIN_TOP}>docs.fuz.dev</h1>
@@ -47,13 +43,6 @@
 				</div>
 			</div>
 		</section>
-		<section class="box gap_lg">
-			<Card href={resolve('/skills')} icon={section_icons.skills}>skills</Card>
-			<Card href={DOCS_PATH} icon={section_icons.docs}>docs</Card>
-			<Card href={resolve('/tools')} icon={section_icons.tools}>tools</Card>
-			<Card href={resolve('/coherence')} icon={section_icons.coherence}>coherence</Card>
-			<Card href={resolve('/values')} icon={section_icons.values}>values</Card>
-		</section>
 		<section class="panel p_lg shadow_inset_xs">
 			<ProjectLinks />
 		</section>
@@ -65,4 +54,4 @@
 			</DocsFooter>
 		</section>
 	</div>
-</main>
+</div>

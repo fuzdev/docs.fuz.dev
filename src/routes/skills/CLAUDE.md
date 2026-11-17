@@ -13,7 +13,7 @@ skills/                        # source skill markdown
 src/routes/skills/
 ├── skill_docs.gen.ts          # [single gen file] auto-discovers all skills
 ├── skills_manifest.ts         # [generated] lightweight metadata for nav + index
-├── +layout.svelte             # [hand-written] the shared SidebarLayout + library context
+├── +layout.svelte             # [hand-written] the library context + a width wrapper
 ├── +page.svelte               # [hand-written] data-driven skills index
 └── {skill-name}/
     ├── skill_data.ts          # [generated] markdown content as exported strings
@@ -23,10 +23,10 @@ src/routes/skills/
         └── {slug}/+page.svelte # [generated] one per reference doc
 ```
 
-`+layout.svelte` wraps the section in the site's shared
-`src/routes/SidebarLayout.svelte` (see the root `CLAUDE.md`). For skills, the
-sidebar lists every skill from the manifest, and a skill's references expand
-as sub-items while its route is active.
+`+layout.svelte` sets the section's library context; the site's shell
+(`src/routes/+layout.svelte`, see the root `CLAUDE.md`) provides the sidebar,
+whose `SiteNav` lists every skill from the manifest, with a skill's
+references expanding as sub-items while its route is active.
 
 ## Gen file pattern
 
@@ -67,4 +67,4 @@ component/element tags render only when registered. See the fuz-stack skill's
 2. Optionally add `skills/{name}/references/*.md` for detailed topic docs —
    each with a one-line `description` in YAML frontmatter (required)
 3. Run `gro gen` to generate route files
-4. The layout sidebar and index page update automatically
+4. The site nav and index page update automatically

@@ -1,0 +1,1 @@
+import{E as e,M as t,P as n,bt as r,ht as i,mt as a,tt as o}from"../chunks/Blvtqps0.js";import{n as s,t as c}from"../chunks/CU6s78Ga.js";import{t as l}from"../chunks/BT6xs-Zr.js";var u=n(`<div class="width_atmost_md"><!></div>`);function d(n,d){i(d,!0);let f=new c(l,`/docs.fuz.dev`);s.set(()=>f);var p=u(),m=o(p);e(m,()=>d.children),r(p),t(n,p),a()}export{d as component};

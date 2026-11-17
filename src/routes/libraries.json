@@ -284484,9 +284484,9 @@
 						{
 							"name": "format_project_opened",
 							"kind": "function",
-							"docComment": "Where an open of `path` landed and why, for the notice after it —\n`Opened /dev/zzz/src, rooted at /dev/zzz/ — a git checkout; /dev/repos.toml\nlists no cloned repo holding it.`",
+							"docComment": "Where an open of `path` landed and why, for the notice after it, e.g.\n`Opened /dev/zzz/src, rooted at /dev/zzz/ — a git checkout; /dev/repos.toml lists no cloned repo holding it.`",
 							"typeSignature": "(path: string, project: Pick<{ root: Branded<Branded<string, \"DiskfilePath\">, \"DiskfileDirectoryPath\">; name: string; opened_at: string; kind: \"registry\" | \"git_repo\" | \"plain_dir\"; ... 5 more ...; rev: number; }, \"kind\" | ... 1 more ... | \"fallback\">): string",
-							"sourceLine": 78,
+							"sourceLine": 77,
 							"parameters": [
 								{
 									"name": "path",
@@ -284534,7 +284534,7 @@
 							"kind": "function",
 							"docComment": "Parse user input (the open-project form or the `?project=` URL param) into\na path to open, without throwing — a directory or a file, which opens the\nproject holding it.\n\nThe input is trimmed and must be absolute. A leading `~` is rejected rather\nthan expanded — the frontend can't know the daemon's home directory. The\nresult is not canonical (`/a/./b/` and symlinked paths pass through as\ngiven); the daemon resolves it on `project_open`, so callers should use the\nroot in its output, not this path.",
 							"typeSignature": "(raw: string): Result<{ path: Branded<string, \"DiskfilePath\">; }, { message: string; }>",
-							"sourceLine": 104,
+							"sourceLine": 103,
 							"parameters": [
 								{
 									"name": "raw",

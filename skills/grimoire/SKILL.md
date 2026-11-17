@@ -187,7 +187,10 @@ number of quests or lore TODOs, or none.
 - **The session orchestrates** — it delegates code edits to writer subagents,
   one alive at a time, alternating with read-only reviewers; it keeps lore
   current between them and asks the human its fork questions early and in
-  batches, so no step waits on an answer.
+  batches, so no step waits on an answer. When a slice is tightly coupled
+  code the session already holds in context, the operator may instead have
+  the session write it while read-only reviewers judge each slice's saved
+  diff — the review loop is unchanged, only the author moves.
 - **Review until the loop terminates** — every writer pass gets a read-only
   review. A slice closes on an empty round; on a round whose findings are all
   declined _and logged as tracked work_ (a real, in-scope finding is never

@@ -61880,7 +61880,7 @@
 	"fuz_ui": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_ui",
-			"version": "0.229.0",
+			"version": "0.229.1",
 			"description": "Svelte component library and frontend helpers",
 			"tagline": "friendly user zystem",
 			"glyph": "🧶",
@@ -78741,7 +78741,7 @@
 	"fuz_app": {
 		"pkg_json": {
 			"name": "@fuzdev/fuz_app",
-			"version": "0.176.0",
+			"version": "0.177.0",
 			"description": "fullstack app library",
 			"glyph": "🗝",
 			"logo": "logo.svg",
@@ -248148,56 +248148,56 @@
 							"kind": "variable",
 							"docComment": "`save_error` for a save of a file in no open project (`DiskfileEditorState.dormant`).",
 							"typeSignature": "\"not saved — its project isn't open; reopen it to save\"",
-							"sourceLine": 21
+							"sourceLine": 22
 						},
 						{
 							"name": "SAVE_ERROR_DELETED_ON_DISK",
 							"kind": "variable",
 							"docComment": "`save_error` for a save that found the file gone — its delete not reported yet.",
 							"typeSignature": "\"not saved — the file was deleted on disk\"",
-							"sourceLine": 24
+							"sourceLine": 25
 						},
 						{
 							"name": "SAVE_ERROR_RECREATES",
 							"kind": "variable",
 							"docComment": "`save_error` for a save that found the file gone, now flagged\n`deleted_on_disk` — so the next save recreates it.",
 							"typeSignature": "\"not saved — the file was deleted on disk; saving again recreates it\"",
-							"sourceLine": 30
+							"sourceLine": 31
 						},
 						{
 							"name": "SAVE_ERROR_CHANGED_AGAIN",
 							"kind": "variable",
 							"docComment": "`save_error` for an overwrite refused because a newer version than the one\nshown is on disk — cleared once the disk settles on the editor's content.",
 							"typeSignature": "\"not saved — the file changed on disk again\"",
-							"sourceLine": 37
+							"sourceLine": 38
 						},
 						{
 							"name": "HISTORY_LABEL_UNSAVED_EDIT",
 							"kind": "variable",
 							"docComment": "Label of the history entry holding a file's draft.",
 							"typeSignature": "\"Unsaved edit\"",
-							"sourceLine": 40
+							"sourceLine": 41
 						},
 						{
 							"name": "HISTORY_LABEL_DISK_CHANGE",
 							"kind": "variable",
 							"docComment": "Label of a history entry recording a disk state.",
 							"typeSignature": "\"Disk change\"",
-							"sourceLine": 42
+							"sourceLine": 43
 						},
 						{
 							"name": "HISTORY_LABEL_DISCARDED_EDIT",
 							"kind": "variable",
 							"docComment": "Label of a draft set aside unsaved (see `DiskfileEditorState`).",
 							"typeSignature": "\"Discarded edit\"",
-							"sourceLine": 44
+							"sourceLine": 45
 						},
 						{
 							"name": "DiskfileSaveOptions",
 							"kind": "interface",
 							"docComment": "Options for `DiskfileEditorState.save_changes`.",
 							"typeSignature": "DiskfileSaveOptions",
-							"sourceLine": 86,
+							"sourceLine": 87,
 							"members": [
 								{
 									"name": "overwrite",
@@ -248211,8 +248211,8 @@
 						{
 							"name": "DiskfileEditorState",
 							"kind": "class",
-							"docComment": "The editing state of one file, shared by every view of it — the `/files`\neditor, file-part editors, tabs — and kept while none is mounted, like a\nVS Code text model. Get it with `Diskfiles.get_editor_state`, which creates\nit on first use and keeps it until the diskfile is removed; views never\nown it.\n\nIt holds the file's `DiskfileHistory`, and records every change of the\nfile's content on disk into it (`Diskfiles` calls `check_disk_changes`\nwhenever new content lands), whether or not an editor shows it — having\nan editing state keeps a file's content current (see `Diskfiles.upsert`):\n\n- The content loads on demand: the views call `Diskfiles.ensure_content`.\n  Until it lands the editor is read-only, and its first arrival seeds the\n  history's original state — it's not a change on disk.\n- The editor shows the selected history entry (`current_content`), or the\n  disk content when none is selected. A clean editor follows the disk.\n- Editing keeps the file's one draft (`draft`, in `Diskfiles.drafts` — not\n  in the history, so it outlives this state and the file's cell), updated\n  in place and re-dated on each edit. The views list it with the history\n  (`content_history`, as `draft_entry`). Editing from another entry (an\n  older state picked from the history) starts a new draft and sets the old\n  one aside as a discarded-edit entry, so its text stays restorable.\n- When the disk changes under a draft, or under a picked entry, the edit is\n  kept and `has_conflict` is set: saving stops until the user chooses to\n  overwrite (`save_changes({overwrite: true})`) or keep the disk version\n  (`discard_draft`). Our own save's broadcast never counts — the disk\n  then holds the edit, which settles it. The backend checks too: a save\n  carries the hash of the disk content it's based on\n  (`last_seen_disk_hash`), so a write the frontend hasn't heard of yet\n  refuses it (`disk_changed`), and the file is read again to show that\n  change as a conflict like any other.\n- During a conflict the views can show the disk content instead, read-only\n  (`showing_disk`, `shown_content`), without touching the edit.",
-							"sourceLine": 131,
+							"docComment": "The editing state of one file, shared by every view of it — the `/files`\neditor, file-part editors, tabs — and kept while none is mounted, like a\nVS Code text model. Get it with `Diskfiles.get_editor_state`, which creates\nit on first use and keeps it until nothing holds the file and it has\nnothing to keep (`can_drop`), or the diskfile is removed; views never own\nit.\n\nIt holds the file's `DiskfileHistory`, and records every change of the\nfile's content on disk into it (`Diskfiles` calls `check_disk_changes`\nwhenever new content lands), whether or not an editor shows it — having\nan editing state keeps a file's content current (see `Diskfiles.upsert`):\n\n- The content loads on demand: the views call `Diskfiles.ensure_content`.\n  Until it lands the editor is read-only, and its first arrival seeds the\n  history's original state — it's not a change on disk.\n- The editor shows the selected history entry (`current_content`), or the\n  disk content when none is selected. A clean editor follows the disk.\n- Editing keeps the file's one draft (`draft`, in `Diskfiles.drafts` — not\n  in the history, so it outlives this state and the file's cell), updated\n  in place and re-dated on each edit. The views list it with the history\n  (`content_history`, as `draft_entry`). Editing from another entry (an\n  older state picked from the history) starts a new draft and sets the old\n  one aside as a discarded-edit entry, so its text stays restorable.\n- When the disk changes under a draft, or under a picked entry, the edit is\n  kept and `has_conflict` is set: saving stops until the user chooses to\n  overwrite (`save_changes({overwrite: true})`) or keep the disk version\n  (`discard_draft`). Our own save's broadcast never counts — the disk\n  then holds the edit, which settles it. The backend checks too: a save\n  carries the hash of the disk content it's based on\n  (`last_seen_disk_hash`), so a write the frontend hasn't heard of yet\n  refuses it (`disk_changed`), and the file is read again to show that\n  change as a conflict like any other.\n- During a conflict the views can show the disk content instead, read-only\n  (`showing_disk`, `shown_content`), without touching the edit.",
+							"sourceLine": 133,
 							"members": [
 								{
 									"name": "app",
@@ -248359,43 +248359,6 @@
 											{
 												"kind": "intrinsic",
 												"text": "string"
-											},
-											{
-												"kind": "intrinsic",
-												"text": "null"
-											}
-										]
-									}
-								},
-								{
-									"name": "markdown_view_mode_choice",
-									"kind": "variable",
-									"docComment": "The markdown view's mode the user chose for this file, `null` until they\nchoose one. Kept with the rest of the file's editing state, so it lasts\nacross tab switches and reopening for as long as the app keeps the file\n(in memory, like its drafts). See `markdown_view_mode`.",
-									"typeSignature": "MarkdownViewMode | null",
-									"reactivity": "$state.raw",
-									"typeInfo": {
-										"kind": "union",
-										"members": [
-											{
-												"kind": "union",
-												"alias": "MarkdownViewMode",
-												"members": [
-													{
-														"kind": "literal",
-														"value": "split",
-														"text": "\"split\""
-													},
-													{
-														"kind": "literal",
-														"value": "preview",
-														"text": "\"preview\""
-													},
-													{
-														"kind": "literal",
-														"value": "source",
-														"text": "\"source\""
-													}
-												]
 											},
 											{
 												"kind": "intrinsic",
@@ -249109,6 +249072,46 @@
 									"returnType": "void"
 								},
 								{
+									"name": "markdown_view_mode_choice",
+									"kind": "variable",
+									"docComment": "The markdown view's mode the user chose for this file, `null` until they\nchoose one. Kept by path (`Diskfiles.markdown_view_modes`), not here, so\nit lasts across tab switches and reopening after this state is dropped\n(in page memory, like the drafts) — set even from a throwaway state, the\nchoice being the path's. See `markdown_view_mode`.",
+									"typeSignature": "MarkdownViewMode | null",
+									"modifiers": [
+										"getter",
+										"setter"
+									],
+									"typeInfo": {
+										"kind": "union",
+										"members": [
+											{
+												"kind": "union",
+												"alias": "MarkdownViewMode",
+												"members": [
+													{
+														"kind": "literal",
+														"value": "split",
+														"text": "\"split\""
+													},
+													{
+														"kind": "literal",
+														"value": "preview",
+														"text": "\"preview\""
+													},
+													{
+														"kind": "literal",
+														"value": "source",
+														"text": "\"source\""
+													}
+												]
+											},
+											{
+												"kind": "intrinsic",
+												"text": "null"
+											}
+										]
+									}
+								},
+								{
 									"name": "current_content",
 									"kind": "variable",
 									"docComment": "The editor's text: the selected history entry's, else the disk content.\nAlways `''` when the content isn't loaded — a draft or earlier text in history\n(from before the file grew past the index cap, say) isn't what's on\ndisk, so the read-only editor never shows or copies it.",
@@ -249116,6 +249119,15 @@
 									"modifiers": [
 										"getter",
 										"setter"
+									]
+								},
+								{
+									"name": "can_drop",
+									"kind": "variable",
+									"docComment": "Whether dropping this state loses nothing worth keeping — so\n`Diskfiles` drops it, and the file's cell, once nothing holds the file\n(no tab, view, or part): not `dirty` (no draft, no picked entry shown),\nno discarded edit (the close dialog's \"don't save\" promises it stays in\nthe history), no save in flight or waiting on a read — a save usually\nleaves the file dirty until its broadcast, but typing back to the disk\ncontent meanwhile doesn't — and no markdown fragment to reveal (a view\nmode chosen is kept by path, apart from this state). What it does drop\n— the disk and saved entries of the history — comes back as the file is\nread again. Not reactive: read when settling.",
+									"typeSignature": "boolean",
+									"modifiers": [
+										"getter"
 									]
 								}
 							]
@@ -255681,7 +255693,7 @@
 							]
 						}
 					],
-					"moduleComment": "Says a file is dormant (`DiskfileEditorState.dormant`: its project\nclosed, so it can't be saved) and offers to reopen the project — the\none holding the file's directory, as the daemon resolves it\n(`Projects.open`, the way `zzz <file>` does), which binds the file and\nits draft again. By the directory, since the file may be gone from\ndisk, and the daemon opens a file's directory anyway. Its known files\nare reconciled with the reopened index, so one deleted while it was\nclosed is flagged deleted.",
+					"moduleComment": "Says a file is dormant (`DiskfileEditorState.dormant`: its project\nclosed, so it can't be saved) and offers to reopen the project — the\none holding the file's directory, as the daemon resolves it\n(`Projects.open`, the way `zzz <file>` does), which binds the file and\nits draft again. By the directory, since the file may be gone from\ndisk, and the daemon opens a file's directory anyway. Its known files\nare reconciled with the reopened index, so one deleted while it was\nclosed is flagged deleted — under the directories the reopen focuses.",
 					"dependencies": [
 						"diskfile.svelte.ts",
 						"diskfile_helpers.ts",
@@ -256510,13 +256522,13 @@
 							"kind": "variable",
 							"docComment": "How many `diskfile_read` requests `Diskfiles` keeps in flight — reads\nbeyond it wait in a queue, the shown files first (JSON-RPC batches aren't\nsupported, so each read is its own request).",
 							"typeSignature": "4",
-							"sourceLine": 61
+							"sourceLine": 62
 						},
 						{
 							"name": "DiskfilesJson",
 							"kind": "type",
 							"typeSignature": "{ id: Branded<string, \"Uuid\">; created: Branded<string, \"Datetime\">; updated: Branded<string, \"Datetime\">; diskfiles: { id: Branded<string, \"Uuid\">; ... 6 more ...; mtime: number | null; }[]; selected_path: Branded<...> | null; }",
-							"sourceLine": 85,
+							"sourceLine": 86,
 							"members": [
 								{
 									"name": "id",
@@ -256652,7 +256664,7 @@
 							"name": "DiskfilesJsonInput",
 							"kind": "type",
 							"typeSignature": "{ id?: string | undefined; created?: string | undefined; updated?: string | undefined; diskfiles?: { path: string; source_dir: string; id?: string | undefined; created?: string | undefined; updated?: string | undefined; content?: string | ... 1 more ... | undefined; size?: number | ... 1 more ... | undefined; mtime?...",
-							"sourceLine": 86,
+							"sourceLine": 87,
 							"members": [
 								{
 									"name": "id",
@@ -256712,7 +256724,7 @@
 							"name": "DiskfilesOptions",
 							"kind": "interface",
 							"typeSignature": "DiskfilesOptions",
-							"sourceLine": 88,
+							"sourceLine": 89,
 							"extends": [
 								"CellOptions<typeof DiskfilesJson>"
 							]
@@ -256722,7 +256734,7 @@
 							"kind": "interface",
 							"docComment": "What `filer_change` reported while a file-tree snapshot was in flight —\nsee `Diskfiles.track_changes` for how a snapshot is applied around it.",
 							"typeSignature": "DiskfileSnapshotChanges",
-							"sourceLine": 94,
+							"sourceLine": 95,
 							"members": [
 								{
 									"name": "paths",
@@ -256750,7 +256762,7 @@
 							"kind": "interface",
 							"docComment": "Records what `filer_change` reports while a file-tree snapshot is in flight.",
 							"typeSignature": "DiskfileChangeTracker",
-							"sourceLine": 100,
+							"sourceLine": 101,
 							"extends": [
 								"DiskfileSnapshotChanges"
 							],
@@ -256767,7 +256779,7 @@
 						{
 							"name": "Diskfiles",
 							"kind": "class",
-							"sourceLine": 105,
+							"sourceLine": 106,
 							"extends": [
 								"Cell<typeof DiskfilesJson>"
 							],
@@ -256780,6 +256792,63 @@
 									"modifiers": [
 										"readonly"
 									]
+								},
+								{
+									"name": "markdown_view_modes",
+									"kind": "variable",
+									"docComment": "The markdown view mode chosen per file\n(`DiskfileEditorState.markdown_view_mode_choice`), by path — apart from\nthe editing states, which are dropped when clean, so a choice lasts for\nthe page. Page memory only.",
+									"typeSignature": "SvelteMap<Branded<string, \"DiskfilePath\">, MarkdownViewMode>",
+									"modifiers": [
+										"readonly"
+									],
+									"typeInfo": {
+										"kind": "reference",
+										"name": "SvelteMap",
+										"typeArgs": [
+											{
+												"kind": "intersection",
+												"alias": "Branded",
+												"members": [
+													{
+														"kind": "intrinsic",
+														"text": "string"
+													},
+													{
+														"kind": "reference",
+														"name": "Brand",
+														"typeArgs": [
+															{
+																"kind": "literal",
+																"value": "DiskfilePath",
+																"text": "\"DiskfilePath\""
+															}
+														]
+													}
+												]
+											},
+											{
+												"kind": "union",
+												"alias": "MarkdownViewMode",
+												"members": [
+													{
+														"kind": "literal",
+														"value": "split",
+														"text": "\"split\""
+													},
+													{
+														"kind": "literal",
+														"value": "preview",
+														"text": "\"preview\""
+													},
+													{
+														"kind": "literal",
+														"value": "source",
+														"text": "\"source\""
+													}
+												]
+											}
+										]
+									}
 								},
 								{
 									"name": "index",
@@ -256958,7 +257027,7 @@
 								{
 									"name": "get_editor_state",
 									"kind": "function",
-									"docComment": "The app-level editing state of `diskfile` (its draft, history, and save\nstate), created on first use and kept until the diskfile is removed —\nviews read it, they don't own it. Safe to call from component init or a\n`$derived`: it's created detached from the calling effect, and reading it\ndoesn't track the lookup. A diskfile no longer in `cells` gets a\nthrowaway state.",
+									"docComment": "The app-level editing state of `diskfile` (its history and save state,\nover its draft in `drafts`), created on first use and kept until\nnothing holds the file and it has nothing to keep\n(`DiskfileEditorState.can_drop`, see `#settle`) or the diskfile is\nremoved — views read it, they don't own it. Safe to call from component init or a\n`$derived`: it's created detached from the calling effect, and reading it\ndoesn't track the lookup. A diskfile no longer in `cells` gets a\nthrowaway state.",
 									"typeSignature": "(diskfile: Diskfile): DiskfileEditorState",
 									"parameters": [
 										{
@@ -258344,7 +258413,7 @@
 								{
 									"name": "get_editor_state_at",
 									"kind": "function",
-									"docComment": "The editing state of the file at `path` (see `get_editor_state`),\ncreated if there's none — `undefined` when no file is known there. For\nan event handler: the editing state then keeps the file's cell.",
+									"docComment": "The editing state of the file at `path` (see `get_editor_state`),\ncreated if there's none — `undefined` when no file is known there. For\nan event handler: the state is dropped with the cell at the next settle\nunless something holds the file or the state has something to keep\n(`DiskfileEditorState.can_drop`) — set what it keeps before returning.",
 									"typeSignature": "(path: Branded<string, \"DiskfilePath\">): DiskfileEditorState | undefined",
 									"parameters": [
 										{
@@ -258513,7 +258582,7 @@
 								{
 									"name": "is_dormant",
 									"kind": "function",
-									"docComment": "Whether the file at `path` is kept off the index (`uncovered` or\n`deleted_on_disk`, for a draft or a tab) under none of `indexed_roots`\n— its project isn't open here, so the daemon refuses to read or write\nit (its scope is those roots). Reopening the project (`Projects.open`\non the path) binds it again. A file in the index is in scope by how it\ngot there, and with no roots known yet (the session not loaded — the\napp directory is always one after) nothing is. Reactive.",
+									"docComment": "Whether the file at `path` is kept off the index (`uncovered` or\n`deleted_on_disk`, for a draft or a tab) under none of `indexed_roots`\n— its project isn't open here, so the daemon refuses to read or write\nit (its scope is those roots). Reopening the project (`Projects.open`\non its directory, reconciling — `DiskfileDormantNotice`) binds it\nagain. A file in the index is in scope by how it got there, and with\nno roots known yet (the session not loaded — the app directory is\nalways one after) nothing is. Reactive.",
 									"typeSignature": "(path: Branded<string, \"DiskfilePath\">): boolean",
 									"parameters": [
 										{
@@ -258730,14 +258799,14 @@
 							"kind": "variable",
 							"docComment": "The most cells `Diskfiles` checks its index against after every write in\nDEV (`assert_diskfile_index_in_step`) — a scan of every cell, so a large\ntree skips it.",
 							"typeSignature": "2000",
-							"sourceLine": 1647
+							"sourceLine": 1669
 						},
 						{
 							"name": "to_diskfile_index_mismatches",
 							"kind": "function",
 							"docComment": "How `diskfiles.index` differs from its cells, each difference described —\nempty when they agree: no cell kept off disk (`deleted_on_disk` or\n`uncovered`) has a record, and every other cell has one with the cell's\nroot, size, and mtime. A cell keeps no `ctime`, so that isn't compared.\nRecords without a cell are every file nothing needs, so they're expected.\nWithin `DISKFILE_INDEX_CHECK_LIMIT` records, also rebuilds the directories\nand their counts from the records and compares them with\n`DiskfileIndex.directory_paths` and `DiskfileIndex.directory_counts`.\nUntracked. A scan of every cell and record — for tests and DEV checks.",
 							"typeSignature": "(diskfiles: Diskfiles): string[]",
-							"sourceLine": 1673,
+							"sourceLine": 1695,
 							"parameters": [
 								{
 									"name": "diskfiles",
@@ -258751,7 +258820,7 @@
 							"kind": "function",
 							"docComment": "Throws when `diskfiles.index` differs from its cells — see\n`to_diskfile_index_mismatches`.",
 							"typeSignature": "(diskfiles: Diskfiles): void",
-							"sourceLine": 1729,
+							"sourceLine": 1751,
 							"throws": [
 								{
 									"type": "Error",
@@ -258782,6 +258851,7 @@
 						"diskfiles_editor.svelte.ts",
 						"drafts.svelte.ts",
 						"markdown_links.ts",
+						"markdown_view_mode.ts",
 						"reactive_helpers.svelte.ts",
 						"task_queue.ts",
 						"transcript_helpers.ts"
@@ -259746,7 +259816,7 @@
 							]
 						}
 					],
-					"moduleComment": "A file's name in a row, then its markers: `(deleted)` for a file kept\nafter it left disk, `(not indexed)` for one kept after it left the index\n(`Diskfile.uncovered`) — `(project closed)` when that's because its\nproject isn't open (`Diskfiles.is_dormant`), `●` for unsaved changes (in the negative color when\nthe file also changed on disk). Only the name truncates, so the markers\nalways show. The markers are hidden from assistive tech — the row's\naccessible name says them (`to_diskfile_status_label`).",
+					"moduleComment": "A file's name in a row, then its markers: `(deleted)` for a file kept\nafter it left disk, `(not indexed)` for one kept after it left the index\n(`Diskfile.uncovered`) — `(project closed)` when that's because its\nproject isn't open (`Diskfiles.is_dormant`) — `●` for unsaved changes (in the negative color when\nthe file also changed on disk). Only the name truncates, so the markers\nalways show. The markers are hidden from assistive tech — the row's\naccessible name says them (`to_diskfile_status_label`).",
 					"dependencies": [
 						"diskfile_helpers.ts"
 					],
@@ -278694,7 +278764,8 @@
 					"dependents": [
 						"diskfile_editor_state.svelte.ts",
 						"DiskfileContextmenu.svelte",
-						"DiskfileMarkdownView.svelte"
+						"DiskfileMarkdownView.svelte",
+						"diskfiles.svelte.ts"
 					]
 				},
 				{

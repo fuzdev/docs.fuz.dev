@@ -9,6 +9,8 @@
 	import Card from '@fuzdev/fuz_ui/Card.svelte';
 	import { DOCS_PATH } from '@fuzdev/fuz_ui/docs_helpers.svelte.ts';
 
+	import { section_icons } from './site_sections.ts';
+
 	const site = site_context.get();
 </script>
 
@@ -46,10 +48,11 @@
 			</div>
 		</section>
 		<section class="box gap_lg">
-			<Card href={resolve('/skills')} icon="🧙">skills</Card>
-			<Card href={DOCS_PATH} icon="📜">docs</Card>
-			<Card href={resolve('/tools')} icon="🪄">tools</Card>
-			<Card href={resolve('/coherence')} icon="🪜">coherence</Card>
+			<Card href={resolve('/skills')} icon={section_icons.skills}>skills</Card>
+			<Card href={DOCS_PATH} icon={section_icons.docs}>docs</Card>
+			<Card href={resolve('/tools')} icon={section_icons.tools}>tools</Card>
+			<Card href={resolve('/coherence')} icon={section_icons.coherence}>coherence</Card>
+			<Card href={resolve('/values')} icon={section_icons.values}>values</Card>
 		</section>
 		<section class="panel p_lg shadow_inset_xs">
 			<ProjectLinks />

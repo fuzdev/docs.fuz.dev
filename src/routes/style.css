@@ -1,9 +1,16 @@
 /* global stylesheet imported by src/routes/+layout.svelte */
 
-/*
-
-:root {
-  --some_stylish_property: 100%;
+/* a record's fields, each label beside its value, as the coherence and values pages show them */
+.record-fields {
+	display: grid;
+	grid-template-columns: max-content minmax(0, 1fr);
+	gap: var(--space_xs) var(--space_lg);
+	margin: 0;
 }
-
-*/
+.record-fields > dt {
+	color: var(--text_70);
+	font-size: var(--font_size_sm);
+}
+.record-fields > dd {
+	margin: 0;
+}

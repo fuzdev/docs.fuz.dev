@@ -1,270 +1,273 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import Mdz from '@fuzdev/mdz/Mdz.svelte';
-	import Breadcrumb from '@fuzdev/fuz_ui/Breadcrumb.svelte';
-	import DocsFooter from '@fuzdev/fuz_ui/DocsFooter.svelte';
 	import { site_context } from '@fuzdev/fuz_ui/site.svelte.ts';
-	import { FUZ_DEV_URL, MAIN_HEADER_MARGIN_TOP } from '@fuzdev/fuz_ui/constants.ts';
 
 	import {
+		claims_checked,
+		failure_holds,
+		failures,
+		gate_gaps,
+		gates,
+		hold_id,
+		hold_status_ids,
+		hold_statuses,
+		kept_actions,
+		mechanism_ids,
+		mechanisms,
 		oracle_comparisons,
-		practice_rungs,
-		practice_statuses,
-		practices,
-		practices_relate,
-		type Practice,
-		type PracticeStatusId
-	} from './practices.ts';
+		oracle_kind_ids,
+		oracle_kinds,
+		rung_ids,
+		rungs,
+		run_when_ids,
+		run_whens,
+		wanted_legend,
+		type HoldStatusId,
+		type InventoryId
+	} from './coherence.ts';
+	import { coherence_sections, type CoherenceSectionId } from './coherence_sections.ts';
 
 	const site = site_context.get();
 
-	const practice_by_id = new Map(practices.map((p) => [p.id, p]));
-	const status_by_id = new Map(practice_statuses.map((s) => [s.id, s]));
-	const related_by_id = practices_relate(practices);
+	// each table links back to the holds that point at it
+	const listed_holds = (inventory: InventoryId) =>
+		failures.flatMap((failure) =>
+			failure_holds(failure)
+				.filter(({ hold }) => hold.inventory === inventory)
+				.map(({ rung, hold }) => ({ failure, hold, id: hold_id(failure, rung) }))
+		);
 
-	/** How long a jump to a record ignores the scroll and hover events the jump itself causes. */
-	const JUMP_SETTLE_MS = 300;
-	/** Scroll offsets under this count as the top of the page, where nothing is selected. */
-	const PAGE_TOP_SLACK = 8;
-
-	// the record the reader is at, set by scrolling or by following a link to one
-	let selected: string | null = $state.raw(null);
-	// the practice under the pointer or focus on the ladder, shown in place of `selected`
-	let previewed: string | null = $state.raw(null);
-	const shown = $derived(previewed ?? selected);
-	const shown_related = $derived(shown === null ? undefined : related_by_id.get(shown));
-
-	let jumped_at = -Infinity;
-	let follow_queued = false;
-
-	// a record's anchor id is its practice id, so the DOM is the lookup
-	const heading_of = (id: string): HTMLElement | null | undefined =>
-		document.getElementById(id)?.querySelector('h3');
-
-	const is_on_screen = (el: HTMLElement | null): boolean => {
-		if (!el) return false;
-		const rect = el.getBoundingClientRect();
-		return rect.bottom > 0 && rect.top < window.innerHeight;
-	};
-
-	const jump = (id: string): void => {
-		jumped_at = performance.now();
-		previewed = null;
-		selected = practice_by_id.has(id) ? id : null;
-	};
-
-	// a jump moves the sticky ladder under a still pointer, which is not a hover
-	const preview = (id: string): void => {
-		if (performance.now() - jumped_at < JUMP_SETTLE_MS) return;
-		previewed = id;
-	};
-
-	/**
-	 * Selects the topmost record whose heading is fully on screen. Going down, the next
-	 * record takes over as soon as the current heading starts to leave the top. Going up,
-	 * the previous one takes over once its heading is back in view, so the selection
-	 * never moves to a record whose heading the reader can't see.
-	 */
-	const follow = (): void => {
-		if (performance.now() - jumped_at < JUMP_SETTLE_MS) return;
-		if (window.scrollY < PAGE_TOP_SLACK) {
-			selected = null;
-			return;
-		}
-		for (const p of practices) {
-			const top = heading_of(p.id)?.getBoundingClientRect().top;
-			if (top === undefined || top < -1) continue;
-			if (top >= window.innerHeight) break;
-			selected = p.id;
-			return;
-		}
-		// no heading is on screen: hold the selection while its record is still showing
-		if (selected !== null && is_on_screen(document.getElementById(selected))) return;
-		selected = practices.findLast((p) => is_on_screen(document.getElementById(p.id)))?.id ?? null;
-	};
-
-	const queue_follow = (): void => {
-		if (follow_queued) return;
-		follow_queued = true;
-		requestAnimationFrame(() => {
-			follow_queued = false;
-			follow();
-		});
-	};
-
-	const jump_to_hash = (): void => {
-		jump(decodeURIComponent(location.hash.slice(1)));
-	};
-
-	onMount(() => {
-		if (location.hash.length > 1) jump_to_hash();
-		else follow();
-	});
+	const reviewed_count = failures.filter((f) => f.reviewed).length;
+	const review_state =
+		reviewed_count === 0
+			? 'has not yet reviewed its rows'
+			: reviewed_count === failures.length
+				? 'has reviewed every row'
+				: `has reviewed ${reviewed_count} of its ${failures.length} rows`;
 </script>
 
 <svelte:head>
 	<title>keeping software coherent at agent speed - docs.fuz.dev</title>
 </svelte:head>
 
-<svelte:window onscroll={queue_follow} onresize={queue_follow} onhashchange={jump_to_hash} />
-
-{#snippet status_shape(status: PracticeStatusId)}
-	<svg class="status-shape" viewBox="0 0 12 12" aria-hidden="true">
+{#snippet status_shape(status: HoldStatusId)}
+	<svg class="mark" viewBox="0 0 12 12" aria-hidden="true">
 		<circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5" />
-		{#if status === 'practised'}
+		{#if status === 'held'}
 			<circle cx="6" cy="6" r="5" fill="currentColor" />
 		{:else if status === 'partial'}
 			<path d="M6 1 A5 5 0 0 0 6 11 Z" fill="currentColor" />
+		{:else}
+			<path d="M2.5 9.5 L9.5 2.5" stroke="currentColor" stroke-width="1.5" />
 		{/if}
 	</svg>
 {/snippet}
 
-{#snippet status_mark(practice: Practice)}
-	{@render status_shape(practice.status)}<span class="sr_only">
-		{status_by_id.get(practice.status)!.label}:
-	</span>
+{#snippet wanted_shape()}
+	<svg class="mark" viewBox="0 0 12 12" aria-hidden="true">
+		<circle
+			cx="6"
+			cy="6"
+			r="5"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.5"
+			stroke-dasharray="2 2"
+		/>
+	</svg>
 {/snippet}
 
-{#snippet ladder_chip(practice: Practice)}
-	<a
-		href="#{practice.id}"
-		class={[
-			'chip',
-			{
-				palette_a: shown === practice.id,
-				'opacity:75%':
-					shown !== null && shown !== practice.id && !shown_related?.includes(practice.id)
-			}
-		]}
-		aria-current={selected === practice.id ? 'true' : undefined}
-		onclick={() => jump(practice.id)}
-		onmouseenter={() => preview(practice.id)}
-		onmouseleave={() => (previewed = null)}
-		onfocus={() => preview(practice.id)}
-		onblur={() => (previewed = null)}
-	>
-		{@render status_mark(practice)}
-		{practice.name}
-	</a>
+{#snippet source(content: string)}
+	<Mdz {content} inline />
 {/snippet}
 
-<main class="width_atmost_lg mx_auto px_lg pb_xl9">
+{#snippet section_heading(id: CoherenceSectionId)}
+	<h2 {id}>{coherence_sections[id]}</h2>
+{/snippet}
+
+{#snippet listed_by(inventory: InventoryId)}
+	<p class="width_atmost_md">
+		<small>
+			<span class="text_70">The holds whose instances this table lists:</span>
+			{#each listed_holds(inventory) as { failure, hold, id }, index (id)}
+				{#if index > 0}<span class="text_70">;</span>{' '}{/if}<a href="#{id}">{hold.label}</a>
+				<span class="text_70">({failure.name})</span>
+			{/each}
+		</small>
+	</p>
+{/snippet}
+
+<main>
 	<header>
-		<h1 style:margin-top={MAIN_HEADER_MARGIN_TOP}>Keeping software coherent at agent speed</h1>
-		<div class="mb_lg"><Breadcrumb /></div>
+		<h1>Keeping software coherent at agent speed</h1>
 		<p class="width_atmost_md">
-			Agents write a growing share of the Fuz stack's code. These are the practices the stack relies
-			on to keep that code coherent, sorted by what does the work: a person's judgment at the top,
-			the shape of the system at the bottom.
+			Agents write a growing share of the Fuz stack's code. Software is coherent when it still reads
+			as one design: one way to do each thing, one name for each concept, documents that are still
+			true, and checks that mean what they say. This page lists the ways agent-written code loses
+			that, and what the stack does about each.
+		</p>
+		<p class="width_atmost_md">
+			A failure can be held anywhere from a person's judgment to the shape of the system. Each rung
+			down the ladder depends less on anyone remembering than the one before it, and usually takes
+			more work to build. A rule moves along when its next form is simpler than the rule.
 		</p>
 		<p class="width_atmost_md">
 			<small>
-				Claude Fable 5.2 generated this page from a
+				Claude Fable 5.2 wrote this page and its
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-				<a href="{site.repo_url}/blob/main/src/routes/coherence/practices.ts">data file</a>. The
-				maintainer has not yet reviewed its status marks or evidence links.
+				<a href="{site.repo_url}/blob/main/src/routes/coherence/coherence.ts">data file</a>. Its
+				claims were checked against the repos on
+				<time datetime={claims_checked}>{claims_checked}</time>. The maintainer {review_state}.
 			</small>
 		</p>
 	</header>
 
 	<section>
-		<h2 id="practices">The practices</h2>
+		{@render section_heading('grid')}
+		<p class="width_atmost_md">
+			A row is a failure and a column is what holds it. A blank cell means nothing at that rung
+			holds the failure today.
+		</p>
 		<ul class="unstyled row_wrap gap_md mb_lg">
-			{#each practice_statuses as status (status.id)}
+			{#each hold_status_ids as id (id)}
+				{@const status = hold_statuses[id]}
 				<li>
 					<small>
-						{@render status_shape(status.id)}
+						{@render status_shape(id)}
 						<strong>{status.label}</strong>
 						<span class="text_70">{status.meaning}</span>
 					</small>
 				</li>
 			{/each}
-		</ul>
-	</section>
-
-	<section class="practices">
-		<nav class="ladder" aria-label="practices by rung">
-			<ol class="unstyled column gap_md mb_lg">
-				{#each practice_rungs as rung (rung.id)}
-					<li>
-						<div class="mb_xs">
-							<strong>{rung.label}</strong>
-							<small class="text_70">{rung.lives}</small>
-						</div>
-						<div class="column gap_xs align-items:flex-start">
-							{#each practices.filter((p) => p.rung === rung.id) as practice (practice.id)}
-								{@render ladder_chip(practice)}
-							{/each}
-						</div>
-					</li>
-				{/each}
-			</ol>
-			<p>
-				<small class="text_70">
-					Each rung costs more to set up and less to keep up than the one above it. A rule moves
-					down a rung when its lower form is simpler than the rule.
+			<li>
+				<small>
+					{@render wanted_shape()}
+					<strong>{wanted_legend.label}</strong>
+					<span class="text_70">{wanted_legend.meaning}</span>
 				</small>
-			</p>
-		</nav>
-
-		<div class="records">
-			{#each practice_rungs as rung (rung.id)}
-				<section>
-					<h2 id="rung-{rung.id}">{rung.label}</h2>
-					<p class="text_70">{rung.lives}</p>
-					{#each practices.filter((p) => p.rung === rung.id) as practice (practice.id)}
-						{@const status = status_by_id.get(practice.status)!}
-						<article id={practice.id}>
-							<h3>{practice.name}</h3>
-							<dl>
-								<dt>Status</dt>
-								<dd>{@render status_shape(status.id)} {status.label}</dd>
-								<dt>Practice</dt>
-								<dd>{practice.practice}</dd>
-								<dt>Catches</dt>
-								<dd>{practice.catches}</dd>
-								<dt>Costs</dt>
-								<dd>{practice.costs}</dd>
-								<dt>Fails</dt>
-								<dd>{practice.fails}</dd>
-								<dt>Evidence</dt>
-								<dd>
-									<ul class="unstyled">
-										{#each practice.evidence as evidence (evidence)}
-											<li><Mdz content={evidence} inline /></li>
-										{/each}
-									</ul>
-								</dd>
-								<dt>Related</dt>
-								<dd>
-									<div class="row_wrap gap_xs">
-										{#each related_by_id.get(practice.id) ?? [] as id (id)}
-											{@const related = practice_by_id.get(id)!}
-											<a href="#{id}" class="chip" onclick={() => jump(id)}>
-												{@render status_mark(related)}
-												{related.name}
-											</a>
-										{/each}
-									</div>
-								</dd>
-							</dl>
-						</article>
+			</li>
+		</ul>
+		<div class="grid-box">
+			<table class="failure-grid">
+				<thead>
+					<tr>
+						<th scope="col">Failure</th>
+						{#each rung_ids as rung_id (rung_id)}
+							<th scope="col">
+								{rungs[rung_id].label}
+								<small class="text_70 display:block font-weight:normal">
+									{rungs[rung_id].lives}
+								</small>
+							</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each failures as failure (failure.id)}
+						<tr>
+							<th scope="row" class="text-align:left">
+								<a href="#{failure.id}">{failure.name}</a>
+							</th>
+							{#each rung_ids as rung_id (rung_id)}
+								{@const hold = failure.holds[rung_id]}
+								<td>
+									<span class="rung-name text_70">{rungs[rung_id].label}</span>
+									{#if hold}
+										<a href="#{hold_id(failure, rung_id)}">
+											{@render status_shape(hold.status)}<span class="sr_only">
+												{hold_statuses[hold.status].label}:
+											</span>
+											{hold.label}{#if hold.wanted}
+												{' '}{@render wanted_shape()}<span class="sr_only">, more wanted</span>
+											{/if}
+										</a>
+									{:else}
+										<span class="nothing text_70" aria-hidden="true">–</span>
+										<span class="sr_only">nothing</span>
+									{/if}
+								</td>
+							{/each}
+						</tr>
 					{/each}
-				</section>
-			{/each}
+				</tbody>
+			</table>
 		</div>
 	</section>
 
 	<section>
-		<h2 id="oracles-in-use">Oracles in use</h2>
+		{@render section_heading('holds')}
+		{#each failures as failure (failure.id)}
+			<section id={failure.id} class="failure pt_lg">
+				<h3>{failure.name}</h3>
+				<p class="width_atmost_md">
+					{failure.failure}
+					<small class="text_70">
+						{failure.reviewed
+							? 'Reviewed by the maintainer.'
+							: 'Not yet reviewed by the maintainer.'}
+					</small>
+				</p>
+				{#each failure_holds(failure) as { rung, hold } (rung)}
+					<article id={hold_id(failure, rung)} class="py_md">
+						<h4>{rungs[rung].label}: {hold.label}</h4>
+						<dl class="record-fields">
+							<dt>Status</dt>
+							<dd>{@render status_shape(hold.status)} {hold_statuses[hold.status].label}</dd>
+							<dt>{hold.status === 'unreachable' ? 'Why' : 'Does'}</dt>
+							<dd>{hold.does}</dd>
+							{#if hold.fails}
+								<dt>Fails</dt>
+								<dd>{hold.fails}</dd>
+							{/if}
+							{#if hold.cost}
+								<dt>Cost</dt>
+								<dd>{hold.cost}</dd>
+							{/if}
+							{#if hold.wanted}
+								<dt>Wanted</dt>
+								<dd>{@render wanted_shape()} {hold.wanted}</dd>
+							{/if}
+							{#if hold.evidence.length > 0}
+								<dt>Evidence</dt>
+								<dd>
+									<ul class="unstyled">
+										{#each hold.evidence as evidence (evidence)}
+											<li>{@render source(evidence)}</li>
+										{/each}
+									</ul>
+								</dd>
+							{/if}
+							{#if hold.inventory}
+								<dt>Listed</dt>
+								<dd><a href="#{hold.inventory}">{coherence_sections[hold.inventory]}</a></dd>
+							{/if}
+						</dl>
+					</article>
+				{/each}
+			</section>
+		{/each}
+	</section>
+
+	<section>
+		{@render section_heading('oracles')}
 		<p class="width_atmost_md">
-			Each project below checks its output against an oracle: something that already has the right
-			behaviour, such as a reference implementation, a conformance suite, or a twin built to match.
-			A row names what the project compares itself against, how it makes the comparison, and when
-			the comparison runs. A check that runs on every change catches more than one that runs before
-			a release, so the last column says how much weight each row can bear. The practice itself is
-			<a href="#oracles" onclick={() => jump('oracles')}>{practice_by_id.get('oracles')?.name}</a>.
+			Each project below checks its output against an oracle, something to agree with: a reference
+			that already has the right behavior, a suite, a twin, or a law the output must satisfy. A row
+			names what the project compares itself against, how, and when the comparison runs. A check
+			that runs on every change catches more than one that runs before a release, so the rows are
+			sorted by the strongest weight each can bear.
 		</p>
+		{@render listed_by('oracles')}
+		<ul class="unstyled row_wrap gap_md mb_lg">
+			{#each run_when_ids as id (id)}
+				<li>
+					<small>
+						<strong>{run_whens[id].label}</strong>
+						<span class="text_70">{run_whens[id].meaning}</span>
+					</small>
+				</li>
+			{/each}
+		</ul>
 		<div class="overflow-x:auto">
 			<table>
 				<thead>
@@ -274,16 +277,81 @@
 						<th scope="col">Kind</th>
 						<th scope="col">How</th>
 						<th scope="col">Runs</th>
+						<th scope="col">Source</th>
 					</tr>
 				</thead>
 				<tbody>
-					{#each oracle_comparisons as comparison (comparison.project + comparison.against)}
+					{#each oracle_comparisons as comparison (`${comparison.project}|${comparison.against}`)}
+						{@const kind = oracle_kinds[comparison.kind]}
 						<tr>
 							<th scope="row" class="text-align:left">{comparison.project}</th>
 							<td>{comparison.against}</td>
-							<td>{comparison.kind}</td>
+							<td title={kind.meaning}>{kind.label}</td>
 							<td>{comparison.how}</td>
-							<td>{comparison.runs}</td>
+							<td>
+								{#each comparison.runs as run (run.when)}
+									<div class="white-space:nowrap">
+										<strong>{run_whens[run.when].label}</strong
+										>{#if run.what}<span class="text_70">: {run.what}</span>{/if}
+									</div>
+								{/each}
+							</td>
+							<td>{@render source(comparison.source)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+		<ul class="unstyled row_wrap gap_md">
+			{#each oracle_kind_ids as id (id)}
+				<li>
+					<small>
+						<strong>{oracle_kinds[id].label}</strong>
+						<span class="text_70">{oracle_kinds[id].meaning}</span>
+					</small>
+				</li>
+			{/each}
+		</ul>
+	</section>
+
+	<section>
+		{@render section_heading('actions')}
+		<p class="width_atmost_md">
+			These are the actions the stack keeps with the maintainer, each with what stops an agent from
+			taking it, strongest first. The last rows are held by a written rule and nothing else.
+		</p>
+		{@render listed_by('actions')}
+		<ul class="unstyled row_wrap gap_md mb_lg">
+			{#each mechanism_ids as id (id)}
+				<li>
+					<small>
+						<strong>{mechanisms[id].label}</strong>
+						<span class="text_70">{mechanisms[id].meaning}</span>
+					</small>
+				</li>
+			{/each}
+		</ul>
+		<div class="overflow-x:auto">
+			<table>
+				<thead>
+					<tr>
+						<th scope="col">Action</th>
+						<th scope="col">Held by</th>
+						<th scope="col">How</th>
+						<th scope="col">Source</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each kept_actions as kept (kept.action)}
+						<tr>
+							<th scope="row" class="text-align:left">{kept.action}</th>
+							<td>
+								{#each kept.held_by as id (id)}
+									<div class="white-space:nowrap">{mechanisms[id].label}</div>
+								{/each}
+							</td>
+							<td>{kept.how}</td>
+							<td>{@render source(kept.source)}</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -291,60 +359,95 @@
 		</div>
 	</section>
 
-	<section class="box">
-		<DocsFooter repo_url={site.repo_url} root_url={FUZ_DEV_URL}>
-			<div class="mb_xl5">
-				<Breadcrumb />
-			</div>
-		</DocsFooter>
+	<section>
+		{@render section_heading('gates')}
+		<p class="width_atmost_md">
+			A gate is a check run on a change. Most have to pass before the change counts as done, and the
+			last is a review rule. These are the kinds the stack runs, sorted by the same weights as the
+			oracles.
+		</p>
+		{@render listed_by('gates')}
+		<div class="overflow-x:auto">
+			<table>
+				<thead>
+					<tr>
+						<th scope="col">Gate</th>
+						<th scope="col">Catches</th>
+						<th scope="col">Runs</th>
+						<th scope="col">Where</th>
+						<th scope="col">Source</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each gates as gate (gate.gate)}
+						<tr>
+							<th scope="row" class="text-align:left">{gate.gate}</th>
+							<td>{gate.catches}</td>
+							<td class="white-space:nowrap">
+								<strong>{run_whens[gate.runs].label}</strong>
+							</td>
+							<td>{gate.where}</td>
+							<td>{@render source(gate.source)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+		<p class="width_atmost_md">Where CI runs less than the local gate, or does not run:</p>
+		<ul>
+			{#each gate_gaps as gap (gap)}
+				<li>{@render source(gap)}</li>
+			{/each}
+		</ul>
 	</section>
 </main>
 
 <style>
-	.practices {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: var(--space_xl3);
-	}
-	.records {
-		min-width: 0;
-	}
-	article {
-		padding: var(--space_lg) 0;
-		border-top: var(--border_width) solid var(--border_color);
-		/* a jump lands with the heading clear of the top edge */
-		scroll-margin-top: var(--space_lg);
-	}
-	dl {
-		display: grid;
-		grid-template-columns: max-content minmax(0, 1fr);
-		gap: var(--space_xs) var(--space_lg);
-		margin: 0;
-	}
-	dt {
-		color: var(--text_70);
-		font-size: var(--font_size_sm);
-	}
-	dd {
-		margin: 0;
-	}
 	/* sized in em so the mark scales with the text it sits in */
-	.status-shape {
+	.mark {
 		display: inline-block;
 		width: 0.7em;
 		height: 0.7em;
 	}
-	/* the ladder stays in view as the index once there is room beside the records */
-	@media (min-width: 960px) {
-		.practices {
-			grid-template-columns: var(--distance_sm) minmax(0, 1fr);
-			align-items: start;
+	.failure-grid td,
+	.failure-grid th {
+		vertical-align: top;
+	}
+	/* the rung's name sits in the column header when there are columns */
+	.rung-name,
+	.nothing {
+		display: none;
+	}
+	.failure {
+		border-top: var(--border_width) solid var(--border_color);
+	}
+	/* the grid answers to the room it has, which the sidebar changes, not to the viewport */
+	.grid-box {
+		container-type: inline-size;
+	}
+	/* without room for five columns each failure is a card, its rungs the steps down it */
+	@container (max-width: 720px) {
+		.failure-grid,
+		.failure-grid tbody,
+		.failure-grid tr,
+		.failure-grid th,
+		.failure-grid td {
+			display: block;
 		}
-		.ladder {
-			position: sticky;
-			top: var(--space_lg);
-			max-height: calc(100vh - 2 * var(--space_lg));
-			overflow-y: auto;
+		.failure-grid thead {
+			display: none;
+		}
+		.failure-grid tr {
+			padding: var(--space_md) 0;
+		}
+		.failure-grid td {
+			display: grid;
+			grid-template-columns: var(--space_xl7) minmax(0, 1fr);
+			gap: var(--space_sm);
+		}
+		.rung-name,
+		.nothing {
+			display: block;
 		}
 	}
 </style>

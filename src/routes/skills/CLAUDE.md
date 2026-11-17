@@ -13,7 +13,7 @@ skills/                        # source skill markdown
 src/routes/skills/
 ├── skill_docs.gen.ts          # [single gen file] auto-discovers all skills
 ├── skills_manifest.ts         # [generated] lightweight metadata for nav + index
-├── +layout.svelte             # [hand-written] data-driven sidebar from manifest
+├── +layout.svelte             # [hand-written] the shared SidebarLayout + library context
 ├── +page.svelte               # [hand-written] data-driven skills index
 └── {skill-name}/
     ├── skill_data.ts          # [generated] markdown content as exported strings
@@ -23,12 +23,10 @@ src/routes/skills/
         └── {slug}/+page.svelte # [generated] one per reference doc
 ```
 
-The shared `+layout.svelte` provides:
-
-- Sticky top header with Breadcrumb
-- Collapsible sidebar nav with `.menuitem` links and `.selected` highlighting
-- Sub-items expand when that skill's route is active
-- All skills discovered automatically from the manifest
+`+layout.svelte` wraps the section in the site's shared
+`src/routes/SidebarLayout.svelte` (see the root `CLAUDE.md`). For skills, the
+sidebar lists every skill from the manifest, and a skill's references expand
+as sub-items while its route is active.
 
 ## Gen file pattern
 

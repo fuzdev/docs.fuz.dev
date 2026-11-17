@@ -7,10 +7,26 @@
 	import Dialog from '@fuzdev/fuz_ui/Dialog.svelte';
 	import DialogContent from '@fuzdev/fuz_ui/DialogContent.svelte';
 
+	import { coherence_sections } from './coherence/coherence_sections.ts';
+	import { section_icons } from './site_sections.ts';
 	import { skills } from './skills/skills_manifest.ts';
 	import { tools } from './tools/tools_manifest.ts';
+	import { values_sections } from './values/values_sections.ts';
 
-	const { children }: { children: Snippet } = $props();
+	const {
+		children,
+		wide = false
+	}: {
+		children: Snippet;
+		/** Lets the content use the full width beside the sidebar, for a page of tables. */
+		wide?: boolean;
+	} = $props();
+
+	// the single pages that list their own sections as sub-items
+	const section_pages = [
+		{ name: 'coherence', sections: coherence_sections },
+		{ name: 'values', sections: values_sections }
+	] as const;
 
 	const pathname = $derived(page.url.pathname);
 
@@ -26,21 +42,22 @@
 	<nav>
 		<ul class="unstyled">
 			<li>
-				<a class="menuitem" href={resolve('/docs')}>docs</a>
+				<a class="menuitem" href={resolve('/docs')}>{section_icons.docs} docs</a>
 			</li>
 			<li>
 				<a
 					class={['menuitem', { selected: pathname === resolve('/skills') }]}
 					href={resolve('/skills')}
 				>
-					skills
+					{section_icons.skills} skills
 				</a>
 			</li>
+			<!-- a sub-item is indented to sit under its section's label, past the emoji -->
 			{#each skills as skill (skill.name)}
 				{@const skill_path = resolve(('/skills/' + skill.name) as any)}
 				{@const skill_active = pathname.startsWith(skill_path)}
 				<li>
-					<a class={['menuitem pl_lg', { selected: pathname === skill_path }]} href={skill_path}>
+					<a class={['menuitem pl_xl4', { selected: pathname === skill_path }]} href={skill_path}>
 						{skill.name}
 					</a>
 					{#if skill_active && skill.references.length > 0}
@@ -56,7 +73,7 @@
 													resolve(('/skills/' + skill.name + '/references/' + ref.slug) as any)
 											}
 										]}
-										style:padding-left="calc(2 * var(--space_lg))"
+										style:padding-left="calc(var(--space_xl4) + var(--space_lg))"
 										href={resolve(('/skills/' + skill.name + '/references/' + ref.slug) as any)}
 									>
 										{ref.title}
@@ -72,15 +89,40 @@
 					class={['menuitem', { selected: pathname === resolve('/tools') }]}
 					href={resolve('/tools')}
 				>
-					tools
+					{section_icons.tools} tools
 				</a>
 			</li>
 			{#each tools as tool (tool.name)}
 				{@const tool_path = resolve(('/tools/' + tool.name) as any)}
 				<li>
-					<a class={['menuitem pl_lg', { selected: pathname === tool_path }]} href={tool_path}>
+					<a class={['menuitem pl_xl4', { selected: pathname === tool_path }]} href={tool_path}>
 						{tool.name}
 					</a>
+				</li>
+			{/each}
+			{#each section_pages as section_page (section_page.name)}
+				{@const page_path = resolve(`/${section_page.name}`)}
+				<li>
+					<a class={['menuitem', { selected: pathname === page_path }]} href={page_path}>
+						{section_icons[section_page.name]}
+						{section_page.name}
+					</a>
+					{#if pathname === page_path}
+						<ul class="unstyled">
+							{#each Object.entries(section_page.sections) as [id, title] (id)}
+								<li>
+									<!-- a jump within the page is no navigation, so it closes the dialog itself -->
+									<a
+										class="menuitem pl_xl4"
+										href="{page_path}#{id}"
+										onclick={() => (show_nav_dialog = false)}
+									>
+										{title}
+									</a>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</li>
 			{/each}
 		</ul>
@@ -100,7 +142,7 @@
 		{@render nav_list()}
 	</aside>
 	<div class="content">
-		<div class="width_atmost_md">
+		<div class={{ width_atmost_md: !wide }}>
 			{@render children()}
 		</div>
 	</div>
@@ -115,8 +157,12 @@
 {/if}
 
 <style>
-	.sidebar_layout {
+	/* on the root so an anchor jump lands with its target clear of the sticky header */
+	:global(html:has(.sidebar_layout)) {
 		--primary_nav_height: 52px;
+		scroll-padding-top: calc(var(--primary_nav_height) + var(--space_lg));
+	}
+	.sidebar_layout {
 		--sidebar_width: 280px;
 	}
 	.primary_nav {

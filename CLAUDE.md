@@ -52,7 +52,7 @@ gro deploy     # build, commit, and push to deploy branch
 ```
 src/
 ├── lib/              # stack repo metadata + dependency-graph modules
-├── routes/           # SvelteKit routes
+├── routes/           # SvelteKit routes, the shared sidebar layout, and the evidence checker
 │   ├── docs/         # tome-based documentation
 │   │   ├── api/      # auto-generated API docs
 │   │   ├── introduction/ # ecosystem introduction
@@ -64,7 +64,8 @@ src/
 │   │   ├── fuz-stack/ # generated from skills/fuz-stack/
 │   │   └── grimoire/  # generated from skills/grimoire/
 │   ├── tools/        # interactive tools (BLAKE3 hashing)
-│   ├── coherence/    # the practices page and the data file it renders
+│   ├── coherence/    # the coherence page and its data file
+│   ├── values/       # the values page (a sketch) and its data file
 │   └── about/        # ecosystem links
 skills/               # Claude Code skills (full tree under "Skill structure" below)
 ```
@@ -92,9 +93,57 @@ auto-generated API docs.
 - `/skills/{skill}/references/{slug}` - Per-reference skill doc pages (generated)
 - `/tools` - Tools index
 - `/tools/hash` - BLAKE3 hashing tool
-- `/coherence` - Practices for keeping agent-written code coherent, rendered from `practices.ts`
+- `/coherence` - How agent-written code goes wrong and what holds each failure, rendered from `coherence.ts`
+- `/values` - The values the stack's design is measured against, rendered from `values.ts` (a sketch of several candidate views)
 
 Deploy with `gro deploy` (builds and pushes to deploy branch).
+
+### Coherence page
+
+`src/routes/coherence/coherence.ts` is the page's data: failures as rows, the
+ladder's rungs (person, session, written, tool, shape) as columns, a hold in
+each cell, and the inventories behind three holds (oracle comparisons, actions
+kept with a person, gates). Every sentence is a claim about the stack, so a
+claim is corrected there and nowhere else. Each failure row has a `reviewed`
+flag for the maintainer's review, and `claims_checked` is the date the claims
+were last checked against the repos.
+
+The page sits in the shared `SidebarLayout` (`wide`, since its tables need
+the room), and `coherence_sections.ts` names its sections for both the page's
+headings and the sidebar's sub-items.
+
+### Evidence check
+
+`gro task src/routes/evidence_check.task.ts` resolves every evidence link on
+the coherence and values pages against this repo and its sibling checkouts:
+the file exists, and for Markdown so does the heading the link names. Run it
+after changing either page's data, and when a cited repo renames a doc.
+`gro check` covers only the links to this site's own skill pages, since the
+siblings aren't in CI. The checker is `src/routes/evidence.ts`, and each data
+file lists its links for it (`coherence_entries`, `values_entries`).
+
+### Values page
+
+`src/routes/values/values.ts` is the page's data: the values and the kind of
+thing each is (gate, default, objective, budget, overarching), the order each
+project states them in, how the order among the performance axes changes by
+context, and recorded decisions where one value beat another. Like the
+coherence page, every sentence is a claim with a public link, corrected in the
+data file and nowhere else. It names only projects the Fuz stack page
+announces (`stack_projects`), which the evidence task holds to that page's
+list. The page is a sketch: it draws the same data several ways so the views
+worth keeping can be chosen.
+
+### Shared layout
+
+`src/routes/SidebarLayout.svelte` is the sidebar layout of `/skills`,
+`/tools`, `/coherence` and `/values`. Its nav lists the site's sections, each
+with its emoji from `src/routes/site_sections.ts` (the same map the landing
+page's cards read), and the coherence and values pages list their own
+sections as sub-items from `coherence_sections.ts` and `values_sections.ts`.
+On a narrow screen the nav opens in a dialog. The layout also sets the
+scroll padding that keeps an anchor's target clear of its sticky header.
+`src/routes/style.css` holds the few styles both data pages share.
 
 ### Skill docs generation
 

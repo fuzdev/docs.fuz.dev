@@ -307,7 +307,7 @@ Read by task:
   shapes, serde boundary conformance, digests (algorithm, encoding, and
   compare rule per hash and secret)
 - ./references/rust-perf.md — a performance claim or hot path: measuring and
-  gating against a base, arenas, hot-path idioms, locks
+  gating against a base, stores and arenas, hot-path idioms, locks
 - ./references/wasm-patterns.md — WASM, N-API, and C FFI binding crates and
   their npm packaging
 - ./references/rust-dependencies.md — before adding or choosing a crate: the

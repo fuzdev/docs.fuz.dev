@@ -44,8 +44,8 @@ numbers. This reference owns what the binding crates have in common.
   slower. Bytes cross as views. A hot validator lends a buffer in module
   memory that the caller writes into (`fuz_schema_wasm`'s `input_ptr`), so
   nothing is copied. Stream helpers batch chunks before crossing.
-- **Reuse allocations across calls** with per-thread parked arenas
-  (see ./rust-perf.md §Arenas). Under WASM the thread-local is a module static.
+- **Reuse allocations across calls** with per-thread parked stores and
+  arenas (see ./rust-perf.md §Stores and arenas). Under WASM the thread-local is a module static.
 - **An instance must stay callable after a failed call.** Take-and-park
   state instead of holding a guard, so a trap or a caught panic leaves no
   poisoned slot. Where the host can't recover (a stack overflow), give it a

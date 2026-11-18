@@ -37,7 +37,7 @@ A crate with no note does the obvious thing. A note is a rule for using it.
 `unicode-segmentation` / `unicode-width`
 
 - `bumpalo` (`collections`) — arena allocation, safe API only
-  (see ./rust-perf.md §Arenas)
+  (see ./rust-perf.md §Stores and arenas)
 - `phf` — compile-time perfect-hash keyword tables
 - `crc32fast` — storage page checksums (pglet)
 - `lru` — bounds a map an attacker can grow by enumerating keys (the

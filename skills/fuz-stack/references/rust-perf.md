@@ -1,5 +1,5 @@
 ---
-description: Rust performance — measuring and gating changes, arenas, hot-path idioms, locks
+description: Rust performance — measuring and gating changes, stores and arenas, hot-path idioms, locks
 ---
 
 # Rust Performance
@@ -56,26 +56,39 @@ measured, on what, against what.
   to measure has a harness crate or scripts that own sampling and statistics
   (`gro_bench`, `pglet_bench`, tsv's `benches/`).
 
-## Arenas
+## Stores and arenas
 
-tsv's allocation strategy, with `bumpalo`: every parser is
-`parse<'arena>(source: &str, arena: &'arena Bump) -> Result<Ast<'arena>>`.
-The caller owns the `Bump`, the AST borrows it, and formatting takes a
-separate doc arena. One arena per phase, reset before reuse.
+tsv's allocation strategy: a parse writes its tree into per-document
+**stores**, one `Vec` of plain rows per row type, where an edge is a typed
+`u32` id and a list is a run over a store (`tsv_lang::store`). Formatting
+builds into a separate doc arena, flat vectors named by ids too. Neither
+allocates per node, and both are rewound between documents instead of freed.
 
-- **Per-thread parked arenas for a binding's hot loop** (`tsv_arena`'s
-  `with_ast_arena` / `with_doc_arena`): one arena per thread in a
-  `Cell<Option<T>>`. Each call takes it out, resets it, and parks it back, so
-  the high-water chunk is kept and per-call allocation amortizes to zero.
+- **Per-thread parked state for a binding's hot loop** (each language
+  crate's `with_stores`, `tsv_arena`'s `with_doc_arena`): one value per
+  thread in a `Cell<Option<T>>`, boxed where it is large so a take moves a
+  pointer. Each call takes it out and parks it back rewound, so the capacity
+  the largest input grew is kept and per-call allocation amortizes to zero.
+  A caller that owns its loop holds the same slot itself (a `Formatter`).
 - **Take and park, not a `RefCell` guard.** A nested call finds the slot
   empty and pays one fresh allocation instead of panicking, and the slot
   recovers after a `catch_unwind` or a WASM trap, where a held guard would
   leave the instance unusable.
-- The callback must turn arena-borrowed work into an owned return before the
-  next reset.
-- `bumpalo` collections don't run `Drop` for their contents, so an arena
-  holds only plain data (`Copy` types, `&'arena str`). Never move a
-  global-heap `String` or `Vec` into one; it leaks.
+- The callback must turn store-borrowed work into an owned return before the
+  park. An id, a run, or a pool text is meaningful only to the stores that
+  minted it, until their next rewind: a stale one reads some other row, in
+  bounds. An internal feature for tests and audits stamps stores and handles
+  to catch that (`_internal_store_check`).
+- **Parked capacity is kept, never trimmed.** It is released by dropping its
+  holder: the `Formatter`, the thread, or the WASM instance.
+- A row is plain `Copy` data (ids, runs, spans, pool-text handles), so a
+  rewind drops nothing and a list is copied into its store as a block. A
+  by-value copy of a row has its own address: a memo keyed by a row's
+  address takes a reference into the store, never a copy.
+- `bumpalo` is for the bump arenas that remain (dev tooling), safe API only.
+  Its collections don't run `Drop` for their contents, so an arena holds
+  only plain data. Never move a global-heap `String` or `Vec` into one; it
+  leaks.
 
 ## Hot-path idioms
 

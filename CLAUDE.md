@@ -186,7 +186,7 @@ skills/
 │   │   ├── path-references.md         # Path typography in docs (navigable vs module vs code-shaped), import specifier rules
 │   │   ├── rust-dependencies.md       # Approved crate allowlist, manifest conventions, isolate-by-crate
 │   │   ├── rust-patterns.md           # Rust workspace setup, the gate, lints, errors, type modeling, DI, testing, CLI, system safety
-│   │   ├── rust-perf.md               # Rust perf: measuring and gating changes, arenas, hot-path idioms, locks
+│   │   ├── rust-perf.md               # Rust perf: measuring and gating changes, stores and arenas, hot-path idioms, locks
 │   │   ├── rust-spine.md              # Servers on the Rust spine: run_app shape, server toolkit, env, actions, realtime, check-release
 │   │   ├── svelte-patterns.md         # Svelte 5 in the stack: state, deriveds, contexts, snippets, attachments, events
 │   │   ├── task-patterns.md           # Gro tasks: .task.ts modules, Args schemas, invoke_task, names vs paths, errors

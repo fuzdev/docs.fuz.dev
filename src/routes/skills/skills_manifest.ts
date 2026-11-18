@@ -86,7 +86,7 @@ export const skills: Array<SkillMeta> = [
 				slug: 'rust-perf',
 				title: 'Rust Performance',
 				description:
-					'Rust performance — measuring and gating changes, arenas, hot-path idioms, locks'
+					'Rust performance — measuring and gating changes, stores and arenas, hot-path idioms, locks'
 			},
 			{
 				slug: 'rust-spine',

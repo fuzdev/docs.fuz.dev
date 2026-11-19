@@ -1,6 +1,7 @@
 import { basename, dirname } from 'node:path';
 import { fs } from '@fuzdev/gro/fs.ts';
-import { TaskError, type Task } from '@fuzdev/gro/task.ts';
+import type { Task } from '@fuzdev/gro/task.ts';
+import { TaskError } from '@fuzdev/gro/task_error.ts';
 import * as s from '@fuzdev/fuz_schema/schema.ts';
 
 import { coherence_entries } from './coherence/coherence.ts';

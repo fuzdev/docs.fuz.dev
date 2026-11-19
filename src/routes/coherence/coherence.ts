@@ -140,11 +140,30 @@ export interface OracleRun {
 }
 
 /** One comparison of a project against something that already has the right behavior. */
+/** A practice that keeps a comparison's result meaning what it says. */
+export type OracleDisciplineId = 'scoped' | 'pinned' | 'live' | 'sorted' | 'cataloged';
+
+/** One discipline as one comparison practices it. */
+export interface OracleDisciplineHold {
+	discipline: OracleDisciplineId;
+	/** What the project does, as one sentence. */
+	does: string;
+	/** mdz with one link, to where the project's docs say so. */
+	source: string;
+	/** What a file must show for the practice to still be wired. */
+	probes?: Array<Probe>;
+}
+
 export interface OracleComparison {
 	project: string;
 	against: string;
 	kind: OracleKindId;
 	how: string;
+	/**
+	 * What keeps the result meaning what it says, where the project's docs say so.
+	 * A discipline that is absent is not stated either way.
+	 */
+	disciplines?: Array<OracleDisciplineHold>;
 	/** Soonest first. */
 	runs: Array<OracleRun>;
 	/** What a file must show for the comparison to exist at all. */
@@ -202,6 +221,8 @@ export const passages = {
 		'Each row is a rule that once depended on being remembered, the lower form it was given, and the rungs that hold it now. Some of these rules are gone, replaced by a structure. Others remain, with a check holding them.',
 	oracles:
 		'Each project below checks its output against an oracle, something to agree with. A row names what the project compares itself against, how, and when the comparison runs. The rows are sorted by how soon each comparison reports: one that runs on every change speaks before the change lands, and one that runs before a release speaks long after the change that broke it.',
+	disciplines:
+		"Where a project's docs say what keeps a comparison's result meaning what it says, the row lists it by discipline. A discipline a row does not list is not stated either way.",
 	actions:
 		'These are the actions the stack keeps with the maintainer. Each row lists every mechanism that holds some part of the action, hardest to get past first, and says which part.',
 	gates:
@@ -300,6 +321,29 @@ export const oracle_kinds: Record<OracleKindId, LegendEntry> = {
 };
 
 export const oracle_kind_ids = Object.keys(oracle_kinds) as Array<OracleKindId>;
+
+/** In the order a comparison meets them: what it covers, what it runs against, then what it does with a difference. */
+export const oracle_disciplines: Record<OracleDisciplineId, LegendEntry> = {
+	scoped: {
+		label: 'Scoped',
+		meaning: 'What the project does not mean to match is named and taken out of the result.'
+	},
+	pinned: {
+		label: 'Pinned',
+		meaning: 'The other side is held to one version, so it changes only when someone changes it.'
+	},
+	live: {
+		label: 'Run live',
+		meaning: 'An expectation is checked against the other side as it runs, not only a recording.'
+	},
+	sorted: { label: 'Sorted', meaning: 'A difference is put into a kind before it is counted.' },
+	cataloged: {
+		label: 'Cataloged',
+		meaning: 'A difference kept on purpose is listed, and the list is held to the comparison.'
+	}
+};
+
+export const oracle_discipline_ids = Object.keys(oracle_disciplines) as Array<OracleDisciplineId>;
 
 /** Hardest to get past first. */
 export const mechanisms: Record<MechanismId, LegendEntry> = {
@@ -1079,6 +1123,33 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Prettier',
 		kind: 'reference',
 		how: "Fixtures hold Prettier's output with each difference documented, the recordings are checked against a live, pinned Prettier, and a corpus diff fails on lost content or a new uncataloged difference",
+		disciplines: [
+			{
+				discipline: 'pinned',
+				does: 'One audit holds every place that names Prettier, its Svelte plugin or the parsers to a single exact version, and the options passed to Prettier to a single set.',
+				source:
+					'[pin agreement audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#canonical-pin-agreement-audit-pinsaudit)',
+				probes: [{ kind: 'check_script', repo: 'tsv', has: 'npm run pins:audit' }]
+			},
+			{
+				discipline: 'live',
+				does: 'A fixture that claims Prettier never settles on an input, or rejects it, has the claim run against the live Prettier whenever the fixtures are validated.',
+				source:
+					'[validation rules](https://github.com/fuzdev/tsv/blob/main/docs/fixture_overview.md#all-validation-rules)'
+			},
+			{
+				discipline: 'sorted',
+				does: 'A corpus file that differs is sorted by whether the catalog explains every part of the difference, some of it, or none.',
+				source:
+					'[classification](https://github.com/fuzdev/tsv/blob/main/docs/divergence_detector.md#classification)'
+			},
+			{
+				discipline: 'cataloged',
+				does: "The cases where Prettier's output is unstable, does not parse again, throws or changes meaning are listed, each held by a fixture.",
+				source:
+					'[Prettier bug index](https://github.com/fuzdev/tsv/blob/main/docs/conformance_prettier.md#prettier-bug-index)'
+			}
+		],
 		runs: [
 			{
 				when: 'every_change',
@@ -1428,6 +1499,14 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Postgres',
 		kind: 'reference',
 		how: 'SQL fixtures run through both, compared in the binary format against recorded Postgres results and in the text format live',
+		disciplines: [
+			{
+				discipline: 'cataloged',
+				does: 'Behaviors that differ from Postgres are listed in a table, the deliberate tradeoffs and the open gaps alike.',
+				source:
+					'[simplified behaviors](https://github.com/fuzdev/pglet/blob/main/TRADEOFFS.md#simplified-behaviors-differ-from-postgres)'
+			}
+		],
 		runs: [
 			{
 				when: 'every_change',
@@ -1456,6 +1535,14 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'The TypeScript library',
 		kind: 'twin',
 		how: 'The TypeScript side generates fixtures and the Rust tests assert both evaluators against them, with differences declared',
+		disciplines: [
+			{
+				discipline: 'cataloged',
+				does: 'Each place the crate differs from parsing the JSON and checking it with the library is a flag a fixture case declares, and the Rust tests assert the declared behavior.',
+				source:
+					'[declared divergences](https://github.com/fuzdev/fuz_schema/blob/main/docs/rust.md#declared-divergences)'
+			}
+		],
 		runs: [
 			{
 				when: 'every_change',
@@ -1473,6 +1560,20 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Zod and Valibot',
 		kind: 'reference',
 		how: 'Where the two agree, it gives the same result or declares the difference',
+		disciplines: [
+			{
+				discipline: 'sorted',
+				does: 'Each generated case is classified by the conformance tables, as agreeing with both or as differing in a way a rule declares, among other classes.',
+				source:
+					'[the differential](https://github.com/fuzdev/fuz_schema/blob/main/docs/testing.md#the-differential)'
+			},
+			{
+				discipline: 'cataloged',
+				does: 'A difference from the two fails unless the conformance table declares it, and so does a declared difference that is no longer there.',
+				source:
+					'[declared differences](https://github.com/fuzdev/fuz_schema/blob/main/docs/design.md#behavior-that-differs-from-valibot-and-zod)'
+			}
+		],
 		runs: [
 			{
 				when: 'every_change',
@@ -1576,6 +1677,14 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "Node's resolution",
 		kind: 'reference',
 		how: 'Node resolves each case to a committed expectation, and the Rust resolver must match it unless the case declares a departure',
+		disciplines: [
+			{
+				discipline: 'cataloged',
+				does: 'A case where the resolver departs from Node by design declares why and what the resolver does instead.',
+				source:
+					'[departures from Node](https://github.com/fuzdev/gro/blob/main/src/docs/resolver.md#departures-from-node)'
+			}
+		],
 		runs: [
 			{
 				when: 'every_change',
@@ -1714,6 +1823,19 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "The TypeScript compiler's recorded baselines",
 		kind: 'suite',
 		how: "The compiler's baselines over its own test cases decide which programs are valid, and a rejection outside the ledger fails",
+		disciplines: [
+			{
+				discipline: 'scoped',
+				does: 'The `.tsx` cases are skipped and counted, since JSX is outside what tsv parses.',
+				source: '[scope](https://github.com/fuzdev/tsv/blob/main/docs/conformance_tsc.md#scope)'
+			},
+			{
+				discipline: 'sorted',
+				does: 'A program the compiler accepts and tsv rejects is either a sanction kept on purpose or a known gap to fix, and a ledger entry that matches nothing fails the gate.',
+				source:
+					'[the ledgers](https://github.com/fuzdev/tsv/blob/main/docs/conformance_tsc.md#the-ledgers)'
+			}
+		],
 		runs: [
 			{
 				when: 'release',
@@ -1741,6 +1863,14 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'test262',
 		kind: 'suite',
 		how: 'The programs that should parse must parse, held to a pinned count, and wrongly accepted programs are reported without failing',
+		disciplines: [
+			{
+				discipline: 'scoped',
+				does: 'Tests that need execution or module resolution are skipped, and so are the Annex B tests for web browsers, which tsv declares outside its scope.',
+				source:
+					'[what is skipped](https://github.com/fuzdev/tsv/blob/main/docs/conformance_test262.md#what-we-skip)'
+			}
+		],
 		runs: [
 			{
 				when: 'release',
@@ -1838,6 +1968,20 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'zap, previous main build',
 		kind: 'previous',
 		how: 'Both binaries run against identical virtual machines and must report the same, which shows equivalence and not correctness',
+		disciplines: [
+			{
+				discipline: 'sorted',
+				does: 'Each scenario reports that it passed, diverged or errored, and an error is not read as a verdict.',
+				source:
+					'[reading the output](https://github.com/fuzdev/zap/blob/main/docs/differential.md#reading-the-output)'
+			},
+			{
+				discipline: 'cataloged',
+				does: 'A change of behavior made on purpose is an entry that names the exact lines that differ and the reason, and it matches only the run it names.',
+				source:
+					'[intended divergences](https://github.com/fuzdev/zap/blob/main/docs/differential.md#intended-divergences)'
+			}
+		],
 		runs: [
 			{
 				when: 'on_demand',
@@ -2196,10 +2340,16 @@ export const coherence_entries = (): Array<EvidenceEntry> => [
 		)
 	),
 	...moved_rules.map((m) => ({ record: `moved: ${m.was}`, content: m.source })),
-	...oracle_comparisons.map((c) => ({
-		record: `oracle: ${c.project} against ${c.against}`,
-		content: c.source
-	})),
+	...oracle_comparisons.flatMap((c) => {
+		const record = `oracle: ${c.project} against ${c.against}`;
+		return [
+			{ record, content: c.source },
+			...(c.disciplines ?? []).map((d) => ({
+				record: `${record}, ${d.discipline}`,
+				content: d.source
+			}))
+		];
+	}),
 	...kept_actions.map((a) => ({ record: `action: ${a.action}`, content: a.source })),
 	...gates.map((g) => ({ record: `gate: ${g.gate}`, content: g.source })),
 	...gate_gaps.map((content) => ({ record: 'gate gap', content }))
@@ -2217,6 +2367,9 @@ export const coherence_probes = (): Array<ProbeEntry> => [
 		const record = `oracle: ${c.project} against ${c.against}`;
 		return [
 			...(c.probes ?? []).map((probe) => ({ record, probe })),
+			...(c.disciplines ?? []).flatMap((d) =>
+				(d.probes ?? []).map((probe) => ({ record: `${record}, ${d.discipline}`, probe }))
+			),
 			...c.runs.flatMap((run) =>
 				(run.probes ?? []).map((probe) => ({ record: `${record}, ${run.when}`, probe }))
 			)

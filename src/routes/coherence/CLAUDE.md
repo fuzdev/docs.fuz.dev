@@ -53,6 +53,11 @@ not a longer one.
 
 - **The tables sort by how soon a check reports** (`RunWhenId`), not by how
   much it catches.
+- **An oracle row may list disciplines**: what keeps its result meaning what
+  it says (scoped, pinned, run live, sorted, cataloged), each a sentence
+  with the place the project's docs say so. A row lists one only where a
+  doc states it, so a discipline that is absent is not a claim that the
+  project lacks it.
 - **A gate row that speaks of a class of repos names it** (`where_class`),
   and the page lists the class's members from the snapshot
   (`projects/repo_classes.ts`). A class says only what the snapshot shows: a
@@ -66,7 +71,8 @@ not a longer one.
 A row of the gates or oracles table may carry probes (`probe.ts`, in
 `src/routes/`): a string that a named file, check script or CI step of a
 repo must have, or must not have, for the row to stand. An oracle row
-carries them per run, so each says when the comparison runs.
+carries them per run, so each says when the comparison runs, and a
+discipline of a row may carry its own.
 
 - **Where each is checked**: a probe of a check script or a workflow against
   the snapshot, by `src/test/probe.test.ts`, in the gate; a probe of a file

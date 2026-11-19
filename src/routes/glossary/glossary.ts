@@ -313,6 +313,40 @@ export const glossary_terms: Array<GlossaryTerm> = [
 		source: "The grimoire skill's [key concepts](/skills/grimoire#key-concepts)"
 	},
 	{
+		id: 'lore',
+		term: 'lore',
+		group: 'planning',
+		definition:
+			"A planning layer's notes on one subject, usually a repo: its role among the others, decisions and their reasons, and what is next. It holds what the repo does not say and does not restate what the repo does.",
+		source: 'The grimoire skill on [lore](/skills/grimoire#lore-loresubject)'
+	},
+	{
+		id: 'quest',
+		term: 'quest',
+		group: 'planning',
+		definition:
+			"A goal that spans two or more repos or has several phases, kept as one file with its tasks and deleted when the goal is met. Work within one repo stays in that repo's lore.",
+		source: 'The grimoire skill on [quests](/skills/grimoire#quests-quests)'
+	},
+	{
+		id: 'scry',
+		term: 'scry',
+		group: 'planning',
+		definition:
+			"A check, run as code with no model in it, that blocks when it fails: of a planning layer's claims against the repos, or of a policy across repos.",
+		also: 'The skill names the practice scrying.',
+		source: "The grimoire skill's [supporting layers](/skills/grimoire#supporting-layers)"
+	},
+	{
+		id: 'survey',
+		term: 'survey',
+		group: 'planning',
+		definition:
+			'A read-only observation across repos, run as code with no model in it and written out as findings to triage. It never blocks, and each run replaces the last.',
+		also: 'The skill names the practice surveying.',
+		source: "The grimoire skill's [supporting layers](/skills/grimoire#supporting-layers)"
+	},
+	{
 		id: 'arc',
 		term: 'arc',
 		group: 'planning',

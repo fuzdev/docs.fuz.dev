@@ -17,6 +17,8 @@
 		value_kind_ids,
 		value_kinds,
 		values,
+		verification,
+		verification_intro,
 		type TermId
 	} from './values.ts';
 	import { values_sections, type ValuesSectionId } from './values_sections.ts';
@@ -278,6 +280,45 @@
 							<td>{decision.chose}</td>
 							<td>{decision.cost}</td>
 							<td>{@render source(decision.source)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section>
+		{@render section_heading('verification')}
+		<p class="width_atmost_md">{verification_intro}</p>
+		<div class="overflow-x:auto">
+			<table>
+				<thead>
+					<tr>
+						<th scope="col">Check</th>
+						<th scope="col">What passing it shows</th>
+						<th scope="col">Where it is built</th>
+						<th scope="col">What it does not cover yet</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each verification as rung (rung.id)}
+						<tr id={rung.id}>
+							<th scope="row" class="text-align:left">{rung.name}</th>
+							<td>{rung.shows}</td>
+							<td>
+								<ul class="unstyled">
+									{#each rung.built as built (built)}
+										<li>{@render source(built)}</li>
+									{/each}
+								</ul>
+							</td>
+							<td>
+								<ul class="unstyled">
+									{#each rung.limits as limit (limit)}
+										<li>{@render source(limit)}</li>
+									{/each}
+								</ul>
+							</td>
 						</tr>
 					{/each}
 				</tbody>

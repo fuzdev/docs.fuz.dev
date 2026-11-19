@@ -379,6 +379,14 @@
 							<Mdz content={evidence} inline />
 						</li>
 					{/each}
+					{#each lens.verifications as { rung, entry, limit } (`${rung.id}|${entry}`)}
+						<li class="mb_sm">
+							<span class="text_70">
+								{limit ? 'A limit of what a reader can verify' : 'What a reader can verify'},
+							</span>
+							<strong>{rung.name.toLowerCase()}</strong>: <Mdz content={entry} inline />
+						</li>
+					{/each}
 				</ul>
 				<p>
 					<small>From the <a href={resolve('/values')}>values</a> page.</small>

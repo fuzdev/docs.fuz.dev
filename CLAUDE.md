@@ -187,7 +187,9 @@ follow it:
 `src/routes/values/values.ts`: the values and the kind of thing each is
 (gate, default, objective, budget, overarching), the order each project
 states them in, how the order among the performance axes changes by context,
-and recorded decisions where one value beat another. The page is a sketch:
+recorded decisions where one value beat another, and the checks a reader can
+run on what the stack publishes without taking the publisher's word, each
+with where it is built and what it does not yet cover. The page is a sketch:
 it draws the same data several ways so the views worth keeping can be
 chosen, and its section intros still carry sentences of their own, to move
 into the data file when the views settle.

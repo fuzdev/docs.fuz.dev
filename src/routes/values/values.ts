@@ -1,7 +1,8 @@
 /**
  * The data behind the `/values` page: the values the stack's design is measured
  * against, the kind of thing each one is, the order each project states them in,
- * how that order changes by context, and decisions where one value beat another.
+ * how that order changes by context, decisions where one value beat another,
+ * and what a reader can verify of what the stack publishes.
  *
  * The page renders these records as they are, so a claim is corrected here and
  * nowhere else. Every sentence is a claim about the stack that a reader can check,
@@ -106,6 +107,19 @@ export interface Decision {
 	cost: string;
 	/** mdz with one link, to where the decision is recorded. */
 	source: string;
+}
+
+/** A check a reader can run on what the stack publishes, without taking the publisher's word. */
+export interface VerificationRung {
+	/** Also the rung's anchor on the page. */
+	id: string;
+	name: string;
+	/** What passing the check tells a reader. */
+	shows: string;
+	/** mdz, each entry linking one public artifact: where the check is built. */
+	built: Array<string>;
+	/** mdz, each entry linking one public artifact: what the check does not yet cover. */
+	limits: Array<string>;
 }
 
 /** The day these claims were last checked against the repos, as an ISO date. */
@@ -490,6 +504,73 @@ export const decisions: Array<Decision> = [
 	}
 ];
 
+/** The opening of the verification section. */
+export const verification_intro =
+	"What a reader can check about what the stack publishes without taking the publisher's word. Each check rests on the one before it, and each is listed with where it is built and what it does not yet cover.";
+
+/** In the order each rests on the one before. */
+export const verification: Array<VerificationRung> = [
+	{
+		id: 'addressing',
+		name: 'Content addressing',
+		shows:
+			'The bytes in hand are the bytes that were named. An artifact is identified by the BLAKE3 hash of its content, so a changed artifact no longer matches its name.',
+		built: [
+			'fuz names a built artifact by the [hash of its binaries](https://github.com/fuzdev/fuz/blob/main/docs/artifacts.md#two-hashes)',
+			'fuz [re-hashes the binaries](https://github.com/fuzdev/fuz/blob/main/docs/artifacts.md#build-and-verification) before every switch to an artifact, and `fuz artifact verify` runs the same check on request',
+			"fuz_forge's file store takes a file's BLAKE3 hash as its [address and only digest](https://github.com/fuzdev/fuz_forge/blob/main/docs/distribution.md#file-store-contract), and `fuzf file get` checks the bytes it receives against it",
+			'zap pins each fetched file, build source and apt key by the [BLAKE3 of the fetched bytes](https://github.com/fuzdev/zap/blob/main/docs/lock.md#two-kinds-of-fetched-content)'
+		],
+		limits: [
+			"fuz_forge's server [streams a file from disk without re-hashing it](https://github.com/fuzdev/fuz_forge/blob/main/docs/distribution.md#file-store-contract), so the check is the client's to make"
+		]
+	},
+	{
+		id: 'signing',
+		name: 'Signing',
+		shows: "The bytes came from a holder of the publisher's key, whichever server delivered them.",
+		built: [
+			"fuz checks a release's Ed25519 signature against keys built into the binary, and the installing side [links verification only](https://github.com/fuzdev/fuz/blob/main/docs/signing.md#architecture), never the code that signs",
+			"fuz's [verification flow](https://github.com/fuzdev/fuz/blob/main/docs/release_format.md#verification-flow) checks the manifest's signature before any release bytes are fetched, then the hash of the tarball and of each binary, and stops at the first failure",
+			"fuz_forge's `fuzf tool publish` [signs an artifact with the publisher's key](https://github.com/fuzdev/fuz_forge/blob/main/docs/distribution.md#signed-tool-artifacts), which the forge never holds"
+		],
+		limits: [
+			"fuz's docs list the hosted install channel as [not yet there](https://github.com/fuzdev/fuz/blob/main/CLAUDE.md#status): nothing is published to fetch",
+			'On a binary install the built-in key is the root: [trusting the first binary](https://github.com/fuzdev/fuz/blob/main/docs/security-model.md#trust-model) means trusting every later release that key signs',
+			'fuz_forge has [no published release](https://github.com/fuzdev/fuz_forge/blob/main/docs/distribution.md#installing-from-a-release), and the install it documents checks a SHA-512 file, not a signature'
+		]
+	},
+	{
+		id: 'rebuilding',
+		name: 'Reproducible builds',
+		shows:
+			'The binary is what the source builds: two builds of one commit come out the same, byte for byte.',
+		built: [
+			"gro's snapshot build of `fgro` is [reproducible](https://github.com/fuzdev/gro/blob/main/src/docs/run.md#usage) from any path, given the same toolchain and cargo home",
+			"The comparison that holds gro's build in CI is a row of the [oracle table](/coherence/oracles)",
+			'fuz has `fuz artifact build --verify`, which [rebuilds and compares](https://github.com/fuzdev/fuz/blob/main/docs/artifacts.md#cli-commands) the output hashes'
+		],
+		limits: [
+			'fuz lists reproducible builds with attestations from outside rebuilders as [deferred](https://github.com/fuzdev/fuz/blob/main/docs/deferred_security.md#generic-hardening)',
+			"zap's lock says a build of `fgro` is [not reproducible across machines](https://github.com/fuzdev/zap/blob/main/docs/lock.md#the-toolchain-pin), so its pin names one build"
+		]
+	},
+	{
+		id: 'log',
+		name: 'Release log',
+		shows:
+			'The release is the one everyone else was shown, and its publisher has not withdrawn it.',
+		built: [
+			"fuz's [release log check](https://github.com/fuzdev/fuz/blob/main/docs/release_log_check.md#what-it-adds) reads one signed, append-only list of releases from every configured witness, and requires the release to be a row of it with the same hashes, not revoked",
+			'Publishing with a log repository named [records the release](https://github.com/fuzdev/fuz/blob/main/docs/release_log.md#recording-a-release) in that list'
+		],
+		limits: [
+			'The check is [implemented and inactive by default](https://github.com/fuzdev/fuz/blob/main/docs/release_log_check.md): no public release log exists, and nothing happens unless the address of one is set',
+			'Its [limits](https://github.com/fuzdev/fuz/blob/main/docs/release_log_check.md#limits): a bad release becomes public and permanent and is not prevented, and a witness serving an old list hides a newer withdrawal'
+		]
+	}
+];
+
 /** Every mdz string in this page's data that carries a link, with its record, in page order. */
 export const values_entries = (): Array<EvidenceEntry> => [
 	{ record: 'headword', content: headword.source },
@@ -501,5 +582,8 @@ export const values_entries = (): Array<EvidenceEntry> => [
 	...decisions.map((d) => ({
 		record: `decision: ${d.project}, ${d.won} over ${d.lost}`,
 		content: d.source
-	}))
+	})),
+	...verification.flatMap((r) =>
+		[...r.built, ...r.limits].map((content) => ({ record: `verification: ${r.id}`, content }))
+	)
 ];

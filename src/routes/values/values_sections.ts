@@ -6,12 +6,13 @@
  */
 
 /** A heading's anchor on the page. */
-export type ValuesSectionId = 'values' | 'orders' | 'contexts' | 'decisions';
+export type ValuesSectionId = 'values' | 'orders' | 'contexts' | 'decisions' | 'verification';
 
 /** Each section's title, in page order. */
 export const values_sections: Record<ValuesSectionId, string> = {
 	values: 'The values',
 	orders: 'Stated orders',
 	contexts: 'By context',
-	decisions: 'Decisions'
+	decisions: 'Decisions',
+	verification: 'What a reader can verify'
 };

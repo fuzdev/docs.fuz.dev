@@ -19,6 +19,7 @@ import {
 	mechanism_ids,
 	moved_rules,
 	oracle_comparisons,
+	oracle_discipline_ids,
 	oracle_kind_ids,
 	passages,
 	rung_ids,
@@ -281,6 +282,23 @@ describe('oracle_comparisons', () => {
 	test('every kind is used', () => {
 		const used = new Set(oracle_comparisons.map((c) => c.kind));
 		assert.deepEqual([...used].toSorted(), oracle_kind_ids.toSorted());
+	});
+
+	test("a row's disciplines are filled, each once, in the legend's order, and every one is used", () => {
+		const used: Set<string> = new Set();
+		for (const c of oracle_comparisons) {
+			if (!c.disciplines) continue;
+			assert.ok(c.disciplines.length > 0, `${c.project}: an empty list`);
+			const indexes = c.disciplines.map((d) => oracle_discipline_ids.indexOf(d.discipline));
+			// the page keys a row's disciplines by their id
+			assert.strictEqual(new Set(indexes).size, indexes.length, `${c.project}: one twice`);
+			assert_sorted(indexes, `${c.project}: disciplines`);
+			for (const d of c.disciplines) {
+				assert.ok(d.does.trim() && d.source.trim(), `${c.project}: ${d.discipline}`);
+				used.add(d.discipline);
+			}
+		}
+		assert.deepEqual([...used].toSorted(), oracle_discipline_ids.toSorted());
 	});
 });
 

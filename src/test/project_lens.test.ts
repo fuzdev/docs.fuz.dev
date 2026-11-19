@@ -29,7 +29,9 @@ import {
 	headword,
 	method,
 	stated_orders,
-	values
+	values,
+	verification,
+	verification_intro
 } from '#routes/values/values.ts';
 
 const project = (name: string): StackProject => {
@@ -129,7 +131,8 @@ const data_strings = record_strings([
 	contexts,
 	decisions,
 	method.evidence,
-	efficiency.evidence
+	efficiency.evidence,
+	verification
 ]);
 
 const project_lenses = stack_projects.map(project_lens);
@@ -172,7 +175,15 @@ describe('project_lenses', () => {
 
 	// prose that is outside every record must name no project, or a lens would miss it
 	test('the prose outside the records names no project', () => {
-		for (const text of record_strings([passages, headword, method.text, efficiency.text])) {
+		const outside = [
+			passages,
+			headword,
+			method.text,
+			efficiency.text,
+			verification_intro,
+			verification.map((r) => [r.name, r.shows])
+		];
+		for (const text of record_strings(outside)) {
 			for (const p of stack_projects) {
 				assert.ok(!text_mentions_project(text, p), `"${text}" names ${p.name}`);
 			}

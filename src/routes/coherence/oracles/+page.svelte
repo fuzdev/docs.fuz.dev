@@ -3,6 +3,8 @@
 
 	import {
 		oracle_comparisons,
+		oracle_discipline_ids,
+		oracle_disciplines,
 		oracle_kind_ids,
 		oracle_kinds,
 		passages,
@@ -14,6 +16,7 @@
 </script>
 
 <InventoryHeader inventory="oracles" />
+<p class="width_atmost_md">{passages.disciplines}</p>
 <p class="width_atmost_md">{passages.probes}</p>
 <RunLegend />
 <div class="overflow-x:auto">
@@ -25,6 +28,7 @@
 				<th scope="col">Kind</th>
 				<th scope="col">How</th>
 				<th scope="col">Runs</th>
+				<th scope="col">Kept meaningful by</th>
 				<th scope="col">Source</th>
 			</tr>
 		</thead>
@@ -46,6 +50,18 @@
 						{/each}
 					</td>
 					<td>
+						{#each comparison.disciplines ?? [] as hold (hold.discipline)}
+							<div>
+								<strong title={oracle_disciplines[hold.discipline].meaning}>
+									{oracle_disciplines[hold.discipline].label}
+								</strong><span class="text_70">:</span>
+								{hold.does}
+								<Mdz content={hold.source} inline />
+							</div>
+							<Probes probes={hold.probes ?? []} />
+						{/each}
+					</td>
+					<td>
 						<Mdz content={comparison.source} inline />
 						<Probes probes={comparison.probes ?? []} />
 					</td>
@@ -60,6 +76,16 @@
 			<small>
 				<strong>{oracle_kinds[id].label}</strong>
 				<span class="text_70">{oracle_kinds[id].meaning}</span>
+			</small>
+		</li>
+	{/each}
+</ul>
+<ul class="unstyled row_wrap gap_md">
+	{#each oracle_discipline_ids as id (id)}
+		<li>
+			<small>
+				<strong>{oracle_disciplines[id].label}</strong>
+				<span class="text_70">{oracle_disciplines[id].meaning}</span>
 			</small>
 		</li>
 	{/each}

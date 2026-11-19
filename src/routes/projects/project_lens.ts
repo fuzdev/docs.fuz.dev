@@ -40,10 +40,12 @@ import {
 	method,
 	stated_orders,
 	values,
+	verification,
 	type Context,
 	type Decision,
 	type StatedOrder,
-	type Value
+	type Value,
+	type VerificationRung
 } from '#routes/values/values.ts';
 
 /** What the site's data says of one project. */
@@ -71,6 +73,8 @@ export interface ProjectLens {
 	contexts: Array<Context>;
 	/** mdz evidence for the values page's two passages that names it. */
 	passage_evidence: Array<string>;
+	/** What a verification check says of it, as mdz: where the check is built, or a limit of it. */
+	verifications: Array<{ rung: VerificationRung; entry: string; limit: boolean }>;
 }
 
 // the url of an mdz link, which is searched for a repo and never for a name
@@ -184,7 +188,11 @@ export const project_lens = (project: StackProject): ProjectLens => {
 		passes: values.flatMap((value) => value.passes.filter(names).map((pass) => ({ value, pass }))),
 		shortfalls: values.filter((value) => names(value.shortfall)),
 		contexts: contexts.filter(names),
-		passage_evidence: [...method.evidence, ...efficiency.evidence].filter(names)
+		passage_evidence: [...method.evidence, ...efficiency.evidence].filter(names),
+		verifications: verification.flatMap((rung) => [
+			...rung.built.filter(names).map((entry) => ({ rung, entry, limit: false })),
+			...rung.limits.filter(names).map((entry) => ({ rung, entry, limit: true }))
+		])
 	};
 };
 
@@ -203,7 +211,8 @@ export const project_lens_size = (lens: ProjectLens): number =>
 	lens.passes.length +
 	lens.shortfalls.length +
 	lens.contexts.length +
-	lens.passage_evidence.length;
+	lens.passage_evidence.length +
+	lens.verifications.length;
 
 /** A project page's sections that have something in them, each title by its anchor, in page order. */
 export const project_lens_sections = (lens: ProjectLens): Record<string, string> => {
@@ -220,7 +229,8 @@ export const project_lens_sections = (lens: ProjectLens): Record<string, string>
 		lens.passes.length > 0 ||
 		lens.shortfalls.length > 0 ||
 		lens.contexts.length > 0 ||
-		lens.passage_evidence.length > 0
+		lens.passage_evidence.length > 0 ||
+		lens.verifications.length > 0
 	) {
 		sections.values = 'Values';
 	}

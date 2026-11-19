@@ -10,6 +10,8 @@ import {
 	terms,
 	value_kind_ids,
 	values,
+	verification,
+	verification_intro,
 	type TermId
 } from '#routes/values/values.ts';
 import { values_sections } from '#routes/values/values_sections.ts';
@@ -40,7 +42,11 @@ describe('terms and kinds', () => {
 
 describe('values', () => {
 	test('ids are distinct from each other and from the section anchors', () => {
-		const anchors = [...Object.keys(values_sections), ...values.map((v) => v.id)];
+		const anchors = [
+			...Object.keys(values_sections),
+			...values.map((v) => v.id),
+			...verification.map((r) => r.id)
+		];
 		assert.strictEqual(new Set(anchors).size, anchors.length);
 	});
 
@@ -96,6 +102,21 @@ describe('decisions', () => {
 			const owner = `${d.project}: ${d.won} over ${d.lost}`;
 			assert.notStrictEqual(d.won, d.lost, owner);
 			assert.ok(d.chose.trim() && d.cost.trim(), owner);
+		}
+	});
+});
+
+describe('verification', () => {
+	test('each check says what it shows, where it is built and what it leaves out', () => {
+		assert.ok(verification_intro.trim());
+		for (const r of verification) {
+			assert.match(r.id, /^[a-z]+(-[a-z]+)*$/, r.id);
+			assert.ok(r.name.trim() && r.shows.trim(), r.id);
+			for (const field of ['built', 'limits'] as const) {
+				assert.ok(r[field].length > 0, `${r.id}: ${field}`);
+				// the page keys each list by its entries
+				assert.strictEqual(new Set(r[field]).size, r[field].length, `${r.id}: ${field} twice`);
+			}
 		}
 	});
 });

@@ -21,7 +21,7 @@ measured, on what, against what.
   the base revision and the candidate, run them in fresh processes, and
   compare. gro's `cargo xtask bench <suite.json> --counters --base <rev>`
   interleaves the two and reports instruction, cycle, and wall medians;
-  tsv's `deno task perf:ab <base>` grades paired wall deltas with an
+  tsv's `npm run perf:ab -- <base>` grades paired wall deltas with an
   instruction-count check. A move past the repo's threshold needs a written
   reason in review. pglet records timings on a quiet box
   (`cargo xtask measure`) with no base comparison.

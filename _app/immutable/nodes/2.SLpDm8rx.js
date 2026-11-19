@@ -1,0 +1,1 @@
+import{O as e,S as t,X as n,k as r}from"../chunks/4hYOTDS5.js";import{t as i}from"../chunks/DRlstAF7.js";import{t as a}from"../chunks/GV42KuSw.js";function o(o,s){i(o,{get sections(){return a},children:(i,a)=>{var o=r(),c=n(o);t(c,()=>s.children),e(i,o)},$$slots:{default:!0}})}export{o as component};

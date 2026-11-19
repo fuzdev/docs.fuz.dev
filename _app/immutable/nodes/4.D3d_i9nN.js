@@ -1,0 +1,1 @@
+import{A as e,O as t,S as n,Y as r,ut as i}from"../chunks/4hYOTDS5.js";var a=e(`<div class="width_atmost_md"><!></div>`);function o(e,o){var s=a(),c=r(s);n(c,()=>o.children),i(s),t(e,s)}export{o as component};

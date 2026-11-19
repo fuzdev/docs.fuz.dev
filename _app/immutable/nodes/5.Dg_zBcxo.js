@@ -1,1 +1,0 @@
-import{E as e,M as t,P as n,bt as r,tt as i}from"../chunks/Blvtqps0.js";var a=n(`<div class="width_atmost_md"><!></div>`);function o(n,o){var s=a(),c=i(s);e(c,()=>o.children),r(s),t(n,s)}export{o as component};

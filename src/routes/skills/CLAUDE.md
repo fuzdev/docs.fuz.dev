@@ -1,6 +1,7 @@
 # Skill docs routes
 
-Browsable UI for AI agent skill markdown docs, rendered with mdz.
+The skills' Markdown as browsable pages, rendered with mdz. One gen file
+discovers the skills and generates every route.
 
 ## Layout
 
@@ -11,7 +12,7 @@ skills/                        # source skill markdown
 │   └── references/            # optional detailed topic docs
 │       └── *.md
 src/routes/skills/
-├── skill_docs.gen.ts          # [single gen file] auto-discovers all skills
+├── skill_docs.gen.ts          # [the gen file] discovers the skills, writes everything marked generated
 ├── skills_manifest.ts         # [generated] lightweight metadata for nav + index
 ├── skill_doc.ts               # [hand-written] the `SkillDoc` type the data files carry
 ├── SkillDocPage.svelte        # [hand-written] one skill document as a page
@@ -25,58 +26,48 @@ src/routes/skills/
         └── {slug}/+page.svelte # [generated] one per reference doc
 ```
 
-The site's shell (`src/routes/+layout.svelte`, see the root `CLAUDE.md`)
-provides the sidebar,
-whose `SiteNav` lists every skill from the manifest, with a skill's
-references expanding as sub-items while its route is active.
+## What the gen does
 
-## Gen file pattern
-
-A single `skill_docs.gen.ts` auto-discovers skills and generates all routes:
+`skill_docs.gen.ts`:
 
 1. Scans `skills/` for subdirectories containing `SKILL.md`
-2. For each skill: reads `SKILL.md`, strips YAML frontmatter (top-level keys
-   only; a nested map like `metadata` is skipped), extracts title
-3. Reads `references/*.md` if the directory exists (skills without references
-   get an empty array). Each reference **must** have a one-line `description`
-   in YAML frontmatter — the gen throws otherwise, so descriptions can't
-   silently drift when references are added or renamed
-4. Generates `skills_manifest.ts` — lightweight metadata (name, title,
-   description, each route's path, reference slugs/titles/descriptions) for
-   the site nav and the index pages. It is emitted `as const`, so a `path` is
-   a literal that `resolve` checks against the routes that exist
-5. Generates per-skill `skill_data.ts` with content strings (via
-   `JSON.stringify` for safe escaping), rewriting relative `.md` links to the
-   generated route shape (`./SKILL.md` → the skill index, `./foo.md` → `./foo`),
-   each with the path of its source file
-6. Generates `+page.svelte` files, each a `SkillDocPage` given one document
+2. Reads each `SKILL.md`, strips the YAML frontmatter (top-level keys only;
+   a nested map like `metadata` is skipped), and extracts the title
+3. Reads `references/*.md` where the directory exists. Each reference
+   **must** have a one-line `description` in its frontmatter: the gen throws
+   otherwise, so a description can't silently go missing when a reference is
+   added or renamed
+4. Writes `skills_manifest.ts`: name, title, description, each route's path,
+   and the references' slugs, titles and descriptions. It is emitted
+   `as const`, so a `path` is a literal that `resolve` checks against the
+   routes that exist
+5. Writes each skill's `skill_data.ts`, its documents as strings (through
+   `JSON.stringify`, for safe escaping), each with the path of its source
+   file. Relative `.md` links are rewritten to the generated routes
+   (`./SKILL.md` → the skill index, `./foo.md` → `./foo`)
+6. Writes the `+page.svelte` files, each a `SkillDocPage` given one document
 
-`SkillDocPage.svelte` is where a skill page's markup lives: the `<title>`,
-the Markdown rendered with `Mdz`, and the link to the source file. Change
-how every skill page looks there, not in the generator's templates.
+- **A skill page's markup lives in `SkillDocPage.svelte`**: the `<title>`,
+  the Markdown rendered with `Mdz`, and the link to the source file. Change
+  how every skill page looks there, not in the generator's templates.
+- **Content is split per skill, not per page.** The manifest has no Markdown
+  and is what the sidebar and the index pages load; a skill's
+  `skill_data.ts` holds all of its documents, loaded on navigating to any of
+  them.
 
-Content is split per skill, not per page: `skills_manifest.ts` has no
-markdown content (used by the nav and index pages), while a skill's
-`skill_data.ts` holds all of its documents, loaded when navigating to any of
-them.
+## Adding or editing a skill
+
+1. For a new skill, create `skills/{name}/SKILL.md` with YAML frontmatter
+   (`name`, `description`), and optionally `skills/{name}/references/*.md`
+2. Run `gro gen`, after any edit under `skills/`. The routes, the sidebar
+   and the index pages follow from it, and `gro check` fails on a generated
+   file that drifted
 
 ## mdz rendering
 
-The skill docs render through mdz's full grammar — headings, lists, tables,
-blockquotes, code blocks, horizontal rules, and inline formatting (bold, italic,
-strikethrough, links, inline code) all render correctly. mdz is a strict
-dialect, not a CommonMark/GFM superset: single-delimiter emphasis (`*x*`,
-intraword `_`) stays literal, a code span can't cross a line break, and
-component/element tags render only when registered. See the fuz-stack skill's
-`mdz.md` reference for the authoring traps.
-
-## Adding a new skill
-
-1. Create `skills/{name}/SKILL.md` with YAML frontmatter (name, description)
-2. Optionally add `skills/{name}/references/*.md` for detailed topic docs —
-   each with a one-line `description` in YAML frontmatter (required)
-3. Run `gro gen` to generate route files
-4. The site nav and index page update automatically
-
-The same `gro gen` follows any edit under `skills/`; `gro check` fails on a
-generated file that drifted.
+The skill docs render through mdz's full grammar: headings, lists, tables,
+blockquotes, code blocks, horizontal rules, and inline formatting. mdz is a
+strict dialect, not a CommonMark or GFM superset: single-delimiter emphasis
+(`*x*`, intraword `_`) stays literal, a code span can't cross a line break,
+and component and element tags render only when registered. The authoring
+traps are in the fuz-stack skill's `mdz.md` reference.

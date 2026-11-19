@@ -10,33 +10,59 @@ agents to read.
 
 For coding conventions, see Skill(fuz-stack).
 
-## Scope
+## The site
 
-- The `fuz-stack` and `grimoire` skills, in `skills/`, and the routes that
-  render them
-- `/coherence` and `/values`, checkable claims about the stack, each
-  rendered from one data file: `/coherence` as a section of several pages,
-  `/values` as one page
-- `/projects`, a page per project computed from those two data files and
-  from a committed snapshot of the stack repos' own files, with pages that
-  look across the stack: dependencies, checks, and third-party code
-- `/glossary`, the words the site and the stack use in a sense of their own
-- A few browser tools under `/tools`
+Each section is a route and a directory of `src/routes/` by the same name:
 
-How far each has been reviewed differs. The site says once, on the landing
-page, that it is machine-written and inconsistently reviewed; `/coherence`,
-`/values` and `/glossary` each carry their own review flags and the date
-their claims were checked.
+- **`/skills`** - the `fuz-stack` and `grimoire` skills and their references,
+  rendered with mdz from `skills/` through generated routes. Rules:
+  `src/routes/skills/CLAUDE.md`
+- **`/coherence`** - how agent-written work goes wrong and what holds each
+  failure: a grid, a page per family of failures, a page per table, and the
+  gaps gathered, all from `coherence/coherence.ts`. Rules:
+  `src/routes/coherence/CLAUDE.md`
+- **`/values`** - the values the stack's design is measured against (a
+  sketch), from `values/values.ts`. Rules: § Values
+- **`/projects`** - a page per project of the stack and pages across it
+  (dependencies, checks, third-party code), all computed from the coherence
+  and values data and a committed snapshot of the stack repos' own files.
+  Rules: `src/routes/projects/CLAUDE.md`
+- **`/glossary`** - the words the site and the stack use in a sense of their
+  own, from `glossary/glossary.ts`. Rules: § Glossary
+- **`/tools`** - browser tools, listed in `tools/tools_manifest.ts`;
+  `/tools/hash` is BLAKE3 hashing
+- **`/about`** - this repo's summary and ecosystem links
+
+**A section's `CLAUDE.md` holds its rules.** Read it before changing the
+section's data, its pages, or its tests in `src/test/`. Probes (`probe.ts`,
+`src/test/probe.test.ts`) belong to the coherence section.
+
+**No blog, and no writing in a person's voice.** Fuz does not use agents to
+imitate human writing, as a matter of taste, so the blog form is off limits
+here: no posts, essays, opinion or narrative, and no first-person voice. The
+site's kinds of page are the ones above, each a form a machine can be held
+to: rules an agent loads, claims that link their evidence, views computed
+from data and from the repos' own files, definitions, and tools. A page
+states what is so and where that can be checked; it does not argue, tell a
+story or persuade. An idea that needs an argument is a person's to write
+elsewhere.
+
+How far each section has been reviewed differs. The site says once, on the
+landing page, that it is machine-written and inconsistently reviewed;
+`/coherence`, `/values` and `/glossary` each carry their own review flags and
+the date their claims were checked.
 
 What the stack is belongs to [fuz.dev/stack](https://www.fuz.dev/stack), and
 each package's API docs to its own site. This repo keeps no copy of either:
 no aggregated API docs and no description of a project (the landing and
 about pages show fuz_ui's package list). It does keep three things read from
 elsewhere, each written or held by a task where the siblings are checked
-out: the stack page's project names and repos, in `stack_projects.ts`; how
-the stack page files each project (layer, status, languages, site), in
-`projects/stack_facets.json`; and what each repo's own files declare, in
-`projects/stack_snapshot.json`.
+out:
+
+- the stack page's project names and repos, in `stack_projects.ts`
+- how the stack page files each project (layer, status, languages, site), in
+  `projects/stack_facets.json`
+- what each repo's own files declare, in `projects/stack_snapshot.json`
 
 ## Gro commands
 
@@ -50,6 +76,8 @@ gro deploy     # build, commit, and push to the deploy branch (the maintainer's)
 gro task src/routes/evidence_check.task.ts  # resolve the claims' links and file probes against sibling checkouts
 gro task src/routes/projects/stack_snapshot.task.ts  # reread the stack repos into the committed files (--check to compare)
 ```
+
+The two tasks are the commands that need the sibling repos.
 
 ## Reading other repos
 
@@ -75,21 +103,9 @@ Data derived from another repo of the stack follows these rules:
 - **A task fails and writes nothing when it cannot read or place
   something.** What it drops silently is how a page ends up wrong.
 
-The two tasks above are the commands that need the sibling repos.
+## Layout
 
-## Key dependencies
-
-- Svelte 5 and SvelteKit, with the static adapter
-- fuz_css (@fuzdev/fuz_css) - styling and the design system
-- fuz_ui (@fuzdev/fuz_ui) - the app shell, theming, and the about page's components
-- mdz (@fuzdev/mdz) - renders the skill docs and the evidence links
-- fuz_code (@fuzdev/fuz_code) - syntax highlighting in the skill docs
-- fuz_schema (@fuzdev/fuz_schema) - the tasks' `Args`, and the schema the snapshot is parsed with
-- blake3 (@fuzdev/blake3-wasm) - hashing for `/tools/hash`
-- svelte-docinfo - analyzes this repo for the about page's summary
-- Gro (@fuzdev/gro) - task runner and toolchain
-
-## Directory structure
+Beside the section directories:
 
 ```
 skills/                   # the skill sources (see "Skills" below)
@@ -100,51 +116,16 @@ src/
 │   ├── +page.svelte      # landing page
 │   ├── site_sections.ts  # the site's sections: name, emoji, one-line summary
 │   ├── SiteNav.svelte    # the sidebar, built from site_sections
-│   ├── site_nav_manifest.gen.ts  # what the sidebar lists under two sections
+│   ├── site_nav_manifest.gen.ts  # what the sidebar lists under /coherence, /projects and /glossary
 │   ├── PageSections.svelte  # a page with a column listing its sections
-│   ├── style.css         # the styles the two data pages share
+│   ├── style.css         # the styles the coherence and values pages share
+│   ├── stack_projects.ts # the projects the data pages may name, with their repos
 │   ├── evidence.ts       # the evidence link checker
 │   ├── evidence_check.task.ts
-│   ├── probe.ts          # probes: what a file must show for a claim to stand
-│   ├── library.ts        # this repo's own library metadata
-│   ├── skills/           # the skills index, the generator, and its output (has its own CLAUDE.md)
-│   ├── stack_projects.ts # the projects the data pages may name, with their repos
-│   ├── coherence/        # the coherence section: its data file, page list, and pages
-│   ├── projects/         # the project pages: the lens, the snapshot and its task, the stack-wide views
-│   ├── glossary/         # the glossary page and its data file
-│   ├── values/           # the values page, its data file and section names
-│   ├── tools/            # the tools index, its manifest, and each tool
-│   └── about/            # this repo's summary and ecosystem links
+│   ├── probe.ts          # probes: what a file must show for a claim to stand (rules: coherence/CLAUDE.md)
+│   └── library.ts        # this repo's own library metadata
 └── test/                 # tests for the data files, the lens, the snapshot's rules, the probes, and the evidence checker
 ```
-
-## Routes
-
-- `/` - the intro, the site's sections from `site_sections.ts`, and the
-  ecosystem's packages
-- `/skills` - the skills index and how to install one
-- `/skills/{skill}` - a skill's `SKILL.md`, rendered with mdz (generated)
-- `/skills/{skill}/references` and `/skills/{skill}/references/{slug}` - a
-  skill's reference docs (generated)
-- `/coherence` - how agent-written work goes wrong and what holds each
-  failure: the opening and the grid
-- `/coherence/{family}` - a family of failures (`design`, `checks`, `claims`,
-  `sessions`) and the holds of each
-- `/coherence/{table}` - a table some holds point at (`moved`, `oracles`,
-  `actions`, `gates`)
-- `/coherence/gaps` - what every hold leaves out, gathered (computed)
-- `/values` - the values the stack's design is measured against (a sketch)
-- `/projects` and `/projects/{name}` - each project of the stack: what
-  depends on it, what it depends on, its check script and CI, and what the
-  two data pages say of it (computed)
-- `/projects/dependencies` - every dependency between the stack's projects
-- `/projects/checks` - every repo's check script, how its `CLAUDE.md`
-  comments it, the classes of repos the gates page speaks of, its CI
-  workflows, and the actions they use
-- `/projects/third-party` - what each repo declares from outside the stack
-- `/glossary` - the site's and the stack's own words, each defined once
-- `/tools` and `/tools/hash` - the tools index and the BLAKE3 hashing tool
-- `/about` - this repo's summary and ecosystem links
 
 ## Site shell and sections
 
@@ -154,29 +135,25 @@ header (the breadcrumb, and on narrow screens the menu button) and
 screens. The layout also sets the scroll padding that keeps an anchor's
 target clear of the header.
 
-`site_sections.ts` is the list of top-level sections, each a route of the
-same name with an emoji and a one-line summary. The sidebar and the landing
-page both render it, so adding, renaming, or reordering a section is an edit
-there. Under a section the sidebar lists what that section's own data names:
-the skills and their references from `skills/skills_manifest.ts`, the tools
-from `tools/tools_manifest.ts`, the coherence section's pages from
-`coherence/coherence_pages.ts`, the stack-wide project pages from
-`projects/project_views.ts` and the projects from
-`projects/project_page.ts`, and for `/values` and `/glossary` the page's
-sections.
-
-`PageSections.svelte` gives a page a column of its sections on wide screens;
-at or below 1000px the sidebar lists them instead. `/values`, `/glossary`,
-`/coherence/gaps`, each coherence family page, each project page and the
-stack-wide project pages with sections use it.
-
-What the sidebar lists under `/coherence` and `/projects` comes from
-`site_nav_manifest.ts`, generated from the data, so the layout every page
-shares loads a few names and not the data files.
-
-Routes are typed: the manifests are literal (`as const`), so
-`resolve(skill.path)` checks against the routes that exist. Don't cast a
-path to get past `resolve`; emit or declare the literal.
+- **`site_sections.ts` is the list of top-level sections**, each with an
+  emoji and a one-line summary. The sidebar and the landing page both render
+  it, so adding, renaming, or reordering a section is an edit there.
+- **Under a section the sidebar lists what that section's own data names**:
+  the skills and their references (`skills/skills_manifest.ts`), the tools
+  (`tools/tools_manifest.ts`), the coherence pages, the stack-wide project
+  pages and the projects, and for `/values` and `/glossary` the page's
+  sections. What it lists under `/coherence`, `/projects` and `/glossary`
+  comes from `site_nav_manifest.ts`, generated from the data, so the layout
+  every page shares loads a few names and not the data files.
+- **`PageSections.svelte` gives a page a column of its sections** on wide
+  screens; at or below 1000px the sidebar lists them instead.
+- **Routes are typed.** The manifests are literal (`as const`), so
+  `resolve(skill.path)` checks against the routes that exist. Don't cast a
+  path to get past `resolve`; emit or declare the literal.
+- **Where a new page goes**: a view of one section's data is a page in that
+  section; a page that reads several sections, as `/projects` does, or
+  brings data of its own, is a section of its own. A view is a route, so it
+  can be linked and read without scripts.
 
 ## The data pages
 
@@ -196,170 +173,24 @@ follow it:
 - **A small module names the page's sections or the section's pages**
   (`values_sections.ts`, `coherence_pages.ts`) for headings, the column, the
   sidebar, and the links between pages.
+- **Its prose is claims, not an essay.** An intro or a passage says what
+  the data shows and how to read it, as short as lets the page be read, and
+  is evidence-linked like any other record.
 - **Tests in `src/test/`** hold the data's internal consistency.
 - **Only projects the [Fuz stack page](https://www.fuz.dev/stack) announces
   are named.** `stack_projects.ts` is this site's list of them, each with its
   repos. The evidence task holds that list to the stack page, and every repo
-  a link names on either page to it. A project named only in prose is held
-  by hand.
-
-### Coherence
-
-`src/routes/coherence/coherence.ts`: failures as rows, the ladder's rungs
-(person, session, written, tool, shape) as columns, a hold in each cell, and
-the inventories some holds point at (rules that moved down the ladder,
-oracle comparisons, actions kept with a person, gates). Each failure row has
-its own `reviewed` flag. The section's prose (`intro`, `passages`, each
-family's `summary`) is in the data file too.
-
-The section is several pages over that one file, listed in
-`coherence_pages.ts`: the index is the opening and the grid, its rows grouped
-by family; each family has a page of its failures and their holds
-(`FamilyPage.svelte`, behind a thin route per family); and each table has a
-page. A page does one job, so a new table or family is a new page, not a
-longer one.
-
-- **The rung is a hold's strength and its status is only its coverage**:
-  `throughout` or `in_places`. A hold in places says what it leaves out in
-  `gap`, and a test holds the two together, so what is not done never hides
-  in `does`.
-- **A rung that cannot hold a failure** is an `UnreachableHold`, which
-  carries a reason and nothing else.
-- **A blank cell** means nothing at that rung is aimed at the failure. The
-  holds that apply to every row (review after landing, the gate) are listed
-  once.
-- **The tables sort by how soon a check reports** (`RunWhenId`), not by how
-  much it catches.
-- **The agent harness's deny rules are not public.** The page says so where
-  it relies on them, and spells out no rule that fuz_repos's docs don't.
-- **A row of the gates or oracles table may carry probes** (`probe.ts`): a
-  string that a named file, check script or CI step of a repo must have, or
-  must not have, for the row to stand. An oracle row carries them per run,
-  so each says when the comparison runs. A probe of a check script or a
-  workflow is checked against the snapshot by `src/test/probe.test.ts`, in
-  the gate, and a probe of a file by the evidence task. Write one for a new
-  row, as short as will fail when the row stops being true, with no version
-  or count in it. A probe that passes says a command is still wired where
-  the row says, not that the check is sound. A probe reads only the text it
-  names: a `lacks` does not see the same thing reached through another
-  script or switched on by an environment variable, so prefer the string of
-  the call itself over a name that also appears in a comment.
-- **A gate row that speaks of a class of repos names it** (`where_class`),
-  and the page lists the class's members from the snapshot
-  (`projects/repo_classes.ts`). A class says only what the snapshot shows:
-  a repo that reaches the same check through a script its check script
-  calls is not a member, so the row names it in words. A class of CI steps
-  counts a command a change is held to: in a workflow that runs on a push or
-  a pull request, in a step that fails its job, and not a shell comment.
-- **The opening is mdz**, and a paragraph of it that cites something is an
-  evidence entry like any other. A paragraph that names a project is in that
-  project's lens.
-
-`/coherence/gaps` is a view of the same file: every `gap`, blank rung,
-out-of-reach rung and `wanted` line by failure, the kept actions with no part
-that a tool refuses or a permission rule denies, and the CI gaps. It is computed, so a gap is corrected on the
-hold that states it.
+  a link names to it. A project named only in prose is held by hand.
 
 ### Values
 
 `src/routes/values/values.ts`: the values and the kind of thing each is
 (gate, default, objective, budget, overarching), the order each project
 states them in, how the order among the performance axes changes by context,
-and recorded decisions where one value beat another. The page is a sketch: it draws the same data
-several ways so the views worth keeping can be chosen, and its section
-intros still carry sentences of their own, to move into the data file when
-the views settle.
-
-### Projects
-
-Every project in `stack_projects.ts` has a page, built by
-`projects/project_page.ts` from two sources, neither of which adds a claim.
-
-**The snapshot.** `projects/stack_snapshot.task.ts` reads each stack repo at
-its main branch and writes `projects/stack_snapshot.json`. For each repo it
-holds:
-
-- **An edge for each dependency on another project**, at the strongest kind
-  the repo declares, from its root `package.json` and its `cargo metadata`.
-- **What it declares from outside the stack**, by name, outside the dev
-  tables.
-- **Its `check` script**, whether its `package.json` has an exports map, and
-  the lines of its `CLAUDE.md` that comment its check command
-  (`check_lines.ts`): a line in a code block that is `gro check` or
-  `npm run check` with a `#` comment, or whose comment says to run it before
-  committing.
-- **Its workflows**: what triggers each, and each job's steps in file order,
-  a step being a command or an action with how it is pinned, and whether it
-  may fail without failing its job
-  (`workflow_read.ts`, over `yaml_subset.ts`, which reads the YAML these
-  files use and refuses the rest).
-- **The commit it was read at.**
-
-The same task reads the stack page's data into `projects/stack_facets.json`:
-each project's layer, status, languages and site, with the page's own gloss
-of each status. A tagline or a layer's blurb stays on the stack page.
-
-`stack_read.ts` is the reader, and each rule that turns a file into data is
-a pure, tested module beside it (`stack_edges.ts`, `check_lines.ts`,
-`workflow_read.ts`, `stack_facets.ts`). `stack_snapshot.ts` and
-`stack_facets.ts` are the schemas, and `stack_data.ts` parses the committed
-files with them and is what the pages read. The task imports the schemas and
-never the parsed files, so it can rewrite a file that no longer parses.
-
-- Both files are committed and dated, and the gate never regenerates them.
-  `--check` compares them with the repos and fails on a difference. Rerun
-  the task when a stack repo changes a manifest, a workflow or the line of
-  its `CLAUDE.md` that comments its check command, or when the stack page
-  changes.
-- It reads through git, so a sibling may have uncommitted work. It refuses
-  only a repo whose `Cargo.toml` files differ from the main branch or whose
-  workspace takes in a crate the main branch does not have, since
-  `cargo metadata` reads the working tree, and a stack page whose data file
-  does, since that is imported as a module. It does not fetch: run it after
-  the siblings are pulled.
-- It fails and writes nothing when it cannot place a name it should know: an
-  `@fuzdev` package that maps to no project, a crate path that leads off the
-  stack, a git source that names a stack crate, a workflow it cannot read
-  whole, or a stack page whose projects are not this site's list. A registry
-  crate counts as the stack's only when the stack may publish one by that
-  name.
-- What a test or tooling crate depends on (`xtask`, `testing_*`, a crate the
-  release audit marks `dev_only`) is a dev dependency, whatever its manifest
-  table says. A bench, debug or test-support crate under another name is not
-  recognized, so what it uses is listed as the workspace's.
-- It records no versions, an action's included, so it changes when a
-  relationship does.
-- A package built into an ignored directory is in no committed manifest, so
-  `stack_projects.ts` names those under `packages`.
-- A page quotes what the snapshot holds and does not say which command is
-  the gate. That is a claim, and belongs on a data page. The sentences a
-  page shows about the snapshot's limits are `snapshot_notes`, in
-  `stack_snapshot.ts`.
-
-**The stack-wide pages** are listed in `projects/project_views.ts`, each a
-view of the snapshot across every repo. `repo_classes.ts` computes the
-classes of repos the gates table speaks of.
-
-**The lens.** `src/routes/projects/project_lens.ts` computes, for each entry of
-`stack_projects.ts`, every record of the two data files that names the
-project or links it: one of its repos, or for the project this site is, a
-skill route. A record is searched whole, every string in it, and a test
-walks both data files to hold that. A record's probes are the exception: a
-probe counts by the repo it is of, since its strings are commands, where
-`gro check` names no project. `/projects/{name}` renders the lens and
-links each record back to where it lives. The pages add no claims: a
-sentence about a project is written on a data page, and a project the data
-never names has a page that says so.
-
-A name is matched as a whole lowercase word, so `fuz` is not found in
-`fuz_schema`, `fuz-stack` or `Fuz`, and never inside a link's URL. A record
-about a class of repos ("the repos whose check script runs gro's check") names no
-project and is in no lens.
-
-Where a new page goes: a view of one section's data is a page in that
-section; a page that reads several sections, as this one does, or brings data
-of its own, is a section of its own. A view is a route, so it can be linked
-and read without scripts.
+and recorded decisions where one value beat another. The page is a sketch:
+it draws the same data several ways so the views worth keeping can be
+chosen, and its section intros still carry sentences of their own, to move
+into the data file when the views settle.
 
 ### Glossary
 
@@ -374,13 +205,15 @@ resolved by the evidence task with the rest, and the page carries its own
 
 `gro task src/routes/evidence_check.task.ts` resolves every evidence link in
 the coherence, values and glossary data against this repo and its sibling
-checkouts: the file exists, and
-for Markdown so does the heading the link names. It checks the coherence
-data's probes of a file the same way. It also holds
-`stack_projects.ts`, and the repos the links name, to the stack page's list,
-read from the fuz.dev checkout. Run it after changing a data file, and
-when a cited repo renames a doc. `gro check` covers only the links to this
-site's own skill pages, since the siblings aren't in CI. The checker is `src/routes/evidence.ts`.
+checkouts: the file exists, and for Markdown so does the heading the link
+names. It checks the coherence data's probes of a file the same way, and
+holds `stack_projects.ts`, and the repos the links name, to the stack page's
+list, read from the fuz.dev checkout. The checker is
+`src/routes/evidence.ts`.
+
+Run it after changing a data file, and when a cited repo renames a doc.
+`gro check` covers only the links to this site's own skill pages, since the
+siblings aren't in CI.
 
 A link that resolves says the document exists, not that the sentence beside
 it is true. A probe says more, and only for the part of a sentence a file
@@ -395,20 +228,29 @@ Each skill lives in `skills/<skill-name>/` in the
 frontmatter, and optionally `references/*.md`, each with a one-line
 `description` in its frontmatter.
 
-| Skill       | Purpose                                                                      |
-| ----------- | ---------------------------------------------------------------------------- |
-| `fuz-stack` | Coding conventions and patterns for `@fuzdev` TypeScript, Svelte 5, and Rust |
-| `grimoire`  | Grimoire pattern: lore, quests, and arcs for cross-repo coordination         |
+- `fuz-stack` - coding conventions and patterns for `@fuzdev` TypeScript,
+  Svelte 5, and Rust. Its `SKILL.md` lists its references by task.
+- `grimoire` - the grimoire pattern: lore, quests, and arcs for cross-repo
+  coordination
 
 The skills are what agents working in the stack actually load, and
 `/coherence` cites them as evidence, so an edit to one is an edit to a rule.
-`fuz-stack`'s `SKILL.md` lists its references by task; the references index
-at `/skills/fuz-stack/references` lists them with their descriptions.
-
+After editing anything under `skills/`, run `gro gen`:
 `src/routes/skills/skill_docs.gen.ts` discovers the skills and generates
-their routes and the manifest. After editing anything under `skills/`, run
-`gro gen`. The pattern, and the mdz traps to avoid in skill Markdown, are in
-`src/routes/skills/CLAUDE.md`.
+their routes and the manifest. The pattern, and the mdz traps to avoid in
+skill Markdown, are in `src/routes/skills/CLAUDE.md`.
+
+## Key dependencies
+
+- Svelte 5 and SvelteKit, with the static adapter
+- fuz_css (@fuzdev/fuz_css) - styling and the design system
+- fuz_ui (@fuzdev/fuz_ui) - the app shell, theming, and the about page's components
+- mdz (@fuzdev/mdz) - renders the skill docs and the evidence links
+- fuz_code (@fuzdev/fuz_code) - syntax highlighting in the skill docs
+- fuz_schema (@fuzdev/fuz_schema) - the tasks' `Args`, and the schema the snapshot is parsed with
+- blake3 (@fuzdev/blake3-wasm) - hashing for `/tools/hash`
+- svelte-docinfo - analyzes this repo for the about page's summary
+- Gro (@fuzdev/gro) - task runner and toolchain
 
 ## Project standards
 

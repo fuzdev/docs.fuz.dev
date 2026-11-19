@@ -24,7 +24,7 @@ export const site_sections = [
 	{
 		name: 'coherence',
 		icon: '🪜',
-		summary: 'how agent-written code goes wrong, and what holds each failure'
+		summary: 'how agent-written work goes wrong, and what holds each failure'
 	},
 	{
 		name: 'values',

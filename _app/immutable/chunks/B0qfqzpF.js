@@ -1,0 +1,1 @@
+var e=[`gro check`,`npm run check`];export{e as t};

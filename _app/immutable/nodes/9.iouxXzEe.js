@@ -1,0 +1,1 @@
+import"../chunks/4hYOTDS5.js";import{t as e}from"../chunks/D3Hv-EwF.js";function t(t){e(t,{family:`checks`})}export{t as component};

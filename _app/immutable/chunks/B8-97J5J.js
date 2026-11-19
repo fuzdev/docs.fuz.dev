@@ -1,1 +1,0 @@
-var e={values:`The values`,orders:`Stated orders`,contexts:`By context`,decisions:`Decisions`};export{e as t};

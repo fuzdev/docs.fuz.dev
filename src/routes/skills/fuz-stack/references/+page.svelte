@@ -8,11 +8,19 @@
 	const skill = skills.find((s) => s.name === 'fuz-stack')!;
 </script>
 
+<svelte:head>
+	<title>references - fuz-stack - docs.fuz.dev</title>
+</svelte:head>
+
 <h1>References</h1>
+<p>
+	The reference documents of the <a href={resolve(skill.path)}>fuz-stack</a> skill, each read when
+	its task comes up.
+</p>
 <ul>
 	{#each skill.references as ref (ref.slug)}
 		<li>
-			<a href={resolve(('/skills/fuz-stack/references/' + ref.slug) as any)}>{ref.title}</a>
+			<a href={resolve(ref.path)}>{ref.title}</a>
 			— {ref.description}
 		</li>
 	{/each}

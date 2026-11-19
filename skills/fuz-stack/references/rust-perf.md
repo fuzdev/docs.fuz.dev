@@ -45,8 +45,9 @@ measured, on what, against what.
   regression instrument uses plain builds on both sides.
 - **Corpora are pinned.** Benches and audits read real code from the
   `corpora` checkout at a recorded tree, so two runs measure the same bytes.
-- **Profile with Linux `perf`** on a `profiling` profile (`inherits =
-  "release"`, `debug` on, `strip = false`; codegen is identical to release):
+- **Profile with Linux `perf`** on a `profiling` profile
+  (`inherits = "release"`, `debug` on, `strip = false`; codegen is identical
+  to release):
   `perf record --call-graph=dwarf`, then `perf report` and `perf annotate`.
   `heaptrack` for allocation sites.
 - **Sizes are gated like speed**: a WASM artifact has a committed size band

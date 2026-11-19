@@ -13,13 +13,13 @@ const parse_frontmatter = (
 	if (end === -1) return { content: raw, frontmatter };
 	const yaml_block = raw.slice(3, end).trim();
 	for (const line of yaml_block.split('\n')) {
+		// top-level keys only: an indented line belongs to a nested map like `metadata`
+		if (line.startsWith(' ') || line.startsWith('\t')) continue;
 		const colon = line.indexOf(':');
 		if (colon === -1) continue;
 		const key = line.slice(0, colon).trim();
 		const value = line.slice(colon + 1).trim();
-		if (key && value && !key.startsWith(' ')) {
-			frontmatter[key] = value;
-		}
+		if (key && value) frontmatter[key] = value;
 	}
 	return { content: raw.slice(end + 3).trimStart(), frontmatter };
 };
@@ -85,9 +85,11 @@ export const gen: Gen = ({ origin_path }) => {
 
 	const skills_meta: Array<{
 		name: string;
+		path: string;
+		references_path: string | null;
 		title: string;
 		description: string;
-		references: Array<{ slug: string; title: string; description: string }>;
+		references: Array<{ slug: string; path: string; title: string; description: string }>;
 	}> = [];
 
 	const output_files: Array<{ content: string; filename: string }> = [];
@@ -105,8 +107,13 @@ export const gen: Gen = ({ origin_path }) => {
 		// read references if directory exists
 		const refs_dir = join(skill_dir, 'references');
 		const has_refs = existsSync(refs_dir);
-		const references: Array<{ slug: string; title: string; description: string; content: string }> =
-			[];
+		const references: Array<{
+			slug: string;
+			title: string;
+			description: string;
+			content: string;
+			source: string;
+		}> = [];
 
 		if (has_refs) {
 			const ref_files = readdirSync(refs_dir)
@@ -124,17 +131,22 @@ export const gen: Gen = ({ origin_path }) => {
 				const title = extract_title(ref_content);
 				const slug = to_slug(filename);
 				const content = rewrite_md_links(ref_content);
-				references.push({ slug, title, description, content });
+				const source = `skills/${skill_name}/references/${filename}`;
+				references.push({ slug, title, description, content, source });
 			}
 		}
 
 		// collect metadata for manifest
+		const skill_path = `/skills/${skill_name}`;
 		skills_meta.push({
 			name: skill_name,
+			path: skill_path,
+			references_path: references.length > 0 ? `${skill_path}/references` : null,
 			title: skill_title,
 			description: skill_description,
 			references: references.map((r) => ({
 				slug: r.slug,
+				path: `${skill_path}/references/${r.slug}`,
 				title: r.title,
 				description: r.description
 			}))
@@ -144,15 +156,11 @@ export const gen: Gen = ({ origin_path }) => {
 		output_files.push({
 			content: `${banner}
 
-export interface SkillDoc {
-	slug: string;
-	title: string;
-	content: string;
-}
+import type {SkillDoc} from '../skill_doc.ts';
 
-export const skill_main: SkillDoc = ${JSON.stringify({ slug: 'overview', title: skill_title, content: rewrite_md_links(skill_content) })};
+export const skill_main: SkillDoc = ${JSON.stringify({ slug: 'overview', title: skill_title, content: rewrite_md_links(skill_content), source: `skills/${skill_name}/SKILL.md` })};
 
-export const skill_references: Array<SkillDoc> = ${JSON.stringify(references.map((r) => ({ slug: r.slug, title: r.title, content: r.content })))};
+export const skill_references: Array<SkillDoc> = ${JSON.stringify(references.map((r) => ({ slug: r.slug, title: r.title, content: r.content, source: r.source })))};
 
 ${banner}
 `,
@@ -164,16 +172,11 @@ ${banner}
 			content: `${svelte_banner}
 
 <script lang="ts">
-	import Mdz from '@fuzdev/mdz/Mdz.svelte';
-	import MdzRoot from '@fuzdev/mdz/MdzRoot.svelte';
-	import Code from '@fuzdev/fuz_code/Code.svelte';
-
+	import SkillDocPage from '../SkillDocPage.svelte';
 	import {skill_main} from './skill_data.ts';
 </script>
 
-<MdzRoot codeblock={Code}>
-	<Mdz content={skill_main.content} base="/skills/${skill_name}/" />
-</MdzRoot>
+<SkillDocPage doc={skill_main} skill="${skill_name}" base="/skills/${skill_name}/" />
 
 ${svelte_banner}
 `,
@@ -193,11 +196,19 @@ ${svelte_banner}
 	const skill = skills.find((s) => s.name === '${skill_name}')!;
 </script>
 
+<svelte:head>
+	<title>references - ${skill_name} - docs.fuz.dev</title>
+</svelte:head>
+
 <h1>References</h1>
+<p>
+	The reference documents of the <a href={resolve(skill.path)}>${skill_name}</a> skill, each read
+	when its task comes up.
+</p>
 <ul>
 	{#each skill.references as ref (ref.slug)}
 		<li>
-			<a href={resolve(('/skills/${skill_name}/references/' + ref.slug) as any)}>{ref.title}</a>
+			<a href={resolve(ref.path)}>{ref.title}</a>
 			— {ref.description}
 		</li>
 	{/each}
@@ -216,16 +227,15 @@ ${svelte_banner}
 				content: `${svelte_banner}
 
 <script lang="ts">
-	import Mdz from '@fuzdev/mdz/Mdz.svelte';
-	import MdzRoot from '@fuzdev/mdz/MdzRoot.svelte';
-	import Code from '@fuzdev/fuz_code/Code.svelte';
-
+	import SkillDocPage from '../../../SkillDocPage.svelte';
 	import {skill_references} from '../../skill_data.ts';
 </script>
 
-<MdzRoot codeblock={Code}>
-	<Mdz content={skill_references[${i}]!.content} base="/skills/${skill_name}/references/" />
-</MdzRoot>
+<SkillDocPage
+	doc={skill_references[${i}]!}
+	skill="${skill_name}"
+	base="/skills/${skill_name}/references/"
+/>
 
 ${svelte_banner}
 `,
@@ -239,12 +249,18 @@ ${svelte_banner}
 
 export interface SkillMeta {
 	name: string;
+	/** The skill's route. */
+	path: string;
+	/** The route of the references index, or \`null\` for a skill without references. */
+	references_path: string | null;
 	title: string;
+	/** The frontmatter description an agent matches a task against. */
 	description: string;
-	references: Array<{slug: string; title: string; description: string}>;
+	references: ReadonlyArray<{slug: string; path: string; title: string; description: string}>;
 }
 
-export const skills: Array<SkillMeta> = ${JSON.stringify(skills_meta)};
+// literal, so a \`path\` is a route \`resolve\` accepts
+export const skills = ${JSON.stringify(skills_meta)} as const satisfies ReadonlyArray<SkillMeta>;
 
 ${banner}
 `;

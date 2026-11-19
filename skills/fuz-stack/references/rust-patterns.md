@@ -158,8 +158,9 @@ unwrap_used = "warn"
   attribute (a wit-bindgen component), and the audit refuses it.
 - `Arc::clone(&x)`, not `x.clone()` (`clone_on_ref_ptr`), so the site reads
   as a refcount bump.
-- Nursery's `doc_link_code` rejects ``[`Arc`]`<`[`T`]`>``. Wrap the whole
-  expression in `<code>`.
+- Nursery's `doc_link_code` rejects a generic spelled as adjacent code-span
+  links (a linked `Arc`, a `<` span, a linked `T`, a `>` span). Wrap the
+  whole expression in `<code>`.
 
 ## Release profile
 

@@ -1,6 +1,7 @@
 import { describe, test, assert } from 'vitest';
 
 import {
+	coherence_entries,
 	claims_checked,
 	failure_blank_rungs,
 	failure_holds,
@@ -204,11 +205,15 @@ describe('prose', () => {
 		assert.ok(written_by.trim());
 	});
 
-	// a link here would be one the evidence check never sees
-	test('the prose carries no links', () => {
-		for (const text of [...intro, ...Object.values(passages)]) {
+	// a link in a passage would be one the evidence check never sees; the opening's are entries
+	test("the passages carry no links, and the opening's links are checked", () => {
+		for (const text of Object.values(passages)) {
 			assert.ok(!text.includes(']('), text);
 		}
+		const checked = new Set(coherence_entries().map((entry) => entry.content));
+		const linked = intro.filter((paragraph) => paragraph.includes(']('));
+		assert.ok(linked.length > 0);
+		for (const paragraph of linked) assert.ok(checked.has(paragraph), paragraph);
 	});
 });
 

@@ -5,7 +5,9 @@
  *
  * A record is searched whole, every string in it, so no field can be left
  * out. A record that speaks of a class of repos ("the TypeScript repos")
- * names no project and is in no lens.
+ * names no project and is in no lens. A record's probes are the exception:
+ * their strings are commands and paths, where a project's name is only a
+ * word in a command, so a probe counts by the repo it is of and nothing else.
  *
  * @module
  */
@@ -15,6 +17,7 @@ import { escape_regexp } from '@fuzdev/fuz_util/regexp.ts';
 import {
 	failure_holds,
 	failures,
+	intro,
 	gate_gaps,
 	gates,
 	kept_actions,
@@ -28,6 +31,7 @@ import {
 	type OracleComparison,
 	type RungId
 } from '#routes/coherence/coherence.ts';
+import type { Probe } from '#routes/probe.ts';
 import { STACK_OWNER, type StackProject } from '#routes/stack_projects.ts';
 import {
 	contexts,
@@ -45,6 +49,8 @@ import {
 /** What the site's data says of one project. */
 export interface ProjectLens {
 	project: StackProject;
+	/** The paragraphs of the coherence section's opening that name it, as mdz. */
+	intro: Array<string>;
 	/** The failures whose own name or summary names it, in grid order. */
 	failures: Array<Failure>;
 	/** The holds that name it, in grid order. */
@@ -118,27 +124,50 @@ export const text_mentions_project = (text: string, project: StackProject): bool
 	);
 };
 
-/** Every string in a record, however deep. */
+/** The key a record keeps its probes under, at any depth. */
+const PROBES_KEY = 'probes';
+
+/** Every string in a record, however deep, leaving out its probes. */
 export const record_strings = (record: unknown, strings: Array<string> = []): Array<string> => {
 	if (typeof record === 'string') {
 		strings.push(record);
 	} else if (Array.isArray(record)) {
 		for (const item of record) record_strings(item, strings);
 	} else if (typeof record === 'object' && record !== null) {
-		for (const value of Object.values(record)) record_strings(value, strings);
+		for (const [key, value] of Object.entries(record)) {
+			if (key !== PROBES_KEY) record_strings(value, strings);
+		}
 	}
 	return strings;
 };
 
-/** Whether any string in a record names a project or links it. */
+/** The repo of every probe in a record, however deep. */
+export const record_probe_repos = (record: unknown, repos: Array<string> = []): Array<string> => {
+	if (Array.isArray(record)) {
+		for (const item of record) record_probe_repos(item, repos);
+	} else if (typeof record === 'object' && record !== null) {
+		for (const [key, value] of Object.entries(record)) {
+			if (key === PROBES_KEY && Array.isArray(value)) {
+				for (const probe of value as Array<Probe>) repos.push(probe.repo);
+			} else {
+				record_probe_repos(value, repos);
+			}
+		}
+	}
+	return repos;
+};
+
+/** Whether any string in a record names a project or links it, or a probe in it is of one of its repos. */
 export const record_mentions_project = (record: unknown, project: StackProject): boolean =>
-	record_strings(record).some((text) => text_mentions_project(text, project));
+	record_strings(record).some((text) => text_mentions_project(text, project)) ||
+	record_probe_repos(record).some((repo) => project.repos.includes(repo));
 
 /** Everything the data pages say of a project. */
 export const project_lens = (project: StackProject): ProjectLens => {
 	const names = (record: unknown): boolean => record_mentions_project(record, project);
 	return {
 		project,
+		intro: intro.filter(names),
 		failures: failures.filter((f) => names([f.name, f.summary])),
 		holds: failures.flatMap((failure) =>
 			failure_holds(failure)
@@ -161,6 +190,7 @@ export const project_lens = (project: StackProject): ProjectLens => {
 
 /** How many records a lens holds, which is zero for a project the data never names. */
 export const project_lens_size = (lens: ProjectLens): number =>
+	lens.intro.length +
 	lens.failures.length +
 	lens.holds.length +
 	lens.comparisons.length +
@@ -178,6 +208,7 @@ export const project_lens_size = (lens: ProjectLens): number =>
 /** A project page's sections that have something in them, each title by its anchor, in page order. */
 export const project_lens_sections = (lens: ProjectLens): Record<string, string> => {
 	const sections: Record<string, string> = {};
+	if (lens.intro.length > 0) sections.opening = 'In the opening of the coherence section';
 	if (lens.failures.length > 0 || lens.holds.length > 0) sections.holds = 'Holds that name it';
 	if (lens.comparisons.length > 0) sections.oracles = 'Comparisons that name it';
 	if (lens.gates.length > 0 || lens.gate_gaps.length > 0) sections.gates = 'Gates';

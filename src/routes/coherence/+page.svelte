@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Mdz from '@fuzdev/mdz/Mdz.svelte';
 	import { resolve } from '$app/paths';
 	import { site_context } from '@fuzdev/fuz_ui/site.svelte.ts';
 
@@ -44,7 +45,7 @@
 	<header>
 		<h1>Keeping software coherent at agent speed</h1>
 		{#each intro as paragraph (paragraph)}
-			<p class="width_atmost_md">{paragraph}</p>
+			<p class="width_atmost_md"><Mdz content={paragraph} inline /></p>
 		{/each}
 		<p class="width_atmost_md">
 			The projects named are the ones on the <a href="https://www.fuz.dev/stack">Fuz stack page</a>.

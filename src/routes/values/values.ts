@@ -188,10 +188,13 @@ export const values: Array<Value> = [
 		name: 'Security',
 		terms: ['security'],
 		means:
-			'Code acts only on what it was handed, and a misconfiguration with a security consequence fails loudly.',
+			'Security is a constant priority, weighed in each design from the start. Code acts only on what it was handed, a misconfiguration with a security consequence fails loudly, and the behavior an attacker would probe is written as test suites that run against each backend.',
 		question: 'What can this reach that it was not given?',
 		passes: [
-			"gro's [authority model](https://github.com/fuzdev/gro/blob/main/src/docs/authority.md#imports-or-globals), where the network is an import and no global carries authority"
+			"gro's [authority model](https://github.com/fuzdev/gro/blob/main/src/docs/authority.md#imports-or-globals), where the network is an import and no global carries authority",
+			"fuz_app's [composable suites](https://github.com/fuzdev/fuz_app/blob/main/src/test/CLAUDE.md#composable-test-suites), which give an app built on it the attack-surface, adversarial-header, rate-limiting and data-exposure tests that fuz_app runs on itself",
+			"fuz_app's [cross-backend tests](https://github.com/fuzdev/fuz_app/blob/main/src/test/CLAUDE.md#cross-backend-self-tests-srctestcross_backend), where one set of security cases, among them the credential ceiling, the privilege gates and login enumeration, runs over the wire against each backend",
+			"fuz_app's [security reference](https://github.com/fuzdev/fuz_app/blob/main/docs/security.md#security-posture), which names the attackers its auth stack is designed against"
 		],
 		shortfall:
 			"gro's runtime says its security is not finished, and fuz_forge says its security is not ready to be trusted."

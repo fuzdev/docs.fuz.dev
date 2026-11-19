@@ -2,7 +2,7 @@ import { describe, test, assert } from 'vitest';
 import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { coherence_entries } from '#routes/coherence/coherence.ts';
+import { coherence_entries, intro as coherence_intro } from '#routes/coherence/coherence.ts';
 import { glossary_entries } from '#routes/glossary/glossary.ts';
 import {
 	entries_to_links,
@@ -428,13 +428,18 @@ describe("the pages' data", () => {
 	const entries = [...coherence_entries(), ...values_entries(), ...glossary_entries()];
 	const links = entries_to_links(entries);
 
+	// a record's entry is one claim with its one source; a paragraph of the coherence
+	// opening holds several sentences, and may cite one for each
 	test('every entry links exactly one artifact, by https or a route on this site', () => {
 		for (const { record, content } of entries) {
 			const references = mdz_references(content);
-			assert.strictEqual(references.length, 1, `${record}: "${content}"`);
-			const target = evidence_target_parse(references[0]!);
-			if (target.kind === 'external') {
-				assert.match(target.url, /^https:\/\/[^\s)]+$/, `${record}: ${target.url}`);
+			if (coherence_intro.includes(content)) assert.ok(references.length >= 1, record);
+			else assert.strictEqual(references.length, 1, `${record}: "${content}"`);
+			for (const reference of references) {
+				const target = evidence_target_parse(reference);
+				if (target.kind === 'external') {
+					assert.match(target.url, /^https:\/\/[^\s)]+$/, `${record}: ${target.url}`);
+				}
 			}
 		}
 	});

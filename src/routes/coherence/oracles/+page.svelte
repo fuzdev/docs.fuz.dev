@@ -5,13 +5,16 @@
 		oracle_comparisons,
 		oracle_kind_ids,
 		oracle_kinds,
+		passages,
 		run_whens
 	} from '#routes/coherence/coherence.ts';
 	import InventoryHeader from '#routes/coherence/InventoryHeader.svelte';
+	import Probes from '#routes/coherence/Probes.svelte';
 	import RunLegend from '#routes/coherence/RunLegend.svelte';
 </script>
 
 <InventoryHeader inventory="oracles" />
+<p class="width_atmost_md">{passages.probes}</p>
 <RunLegend />
 <div class="overflow-x:auto">
 	<table>
@@ -39,9 +42,13 @@
 								<strong>{run_whens[run.when].label}</strong
 								>{#if run.what}<span class="text_70">: {run.what}</span>{/if}
 							</div>
+							<Probes probes={run.probes ?? []} />
 						{/each}
 					</td>
-					<td><Mdz content={comparison.source} inline /></td>
+					<td>
+						<Mdz content={comparison.source} inline />
+						<Probes probes={comparison.probes ?? []} />
+					</td>
 				</tr>
 			{/each}
 		</tbody>

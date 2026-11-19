@@ -19,8 +19,11 @@
 	import DepEdges from '#routes/projects/DepEdges.svelte';
 	import { project_pages } from '#routes/projects/project_page.ts';
 	import { project_lens_size } from '#routes/projects/project_lens.ts';
+	import ProjectFacets from '#routes/projects/ProjectFacets.svelte';
+	import RepoChecks from '#routes/projects/RepoChecks.svelte';
+	import { repo_classes } from '#routes/projects/repo_classes.ts';
 	import { stack_snapshot } from '#routes/projects/stack_data.ts';
-	import { snapshot_notes } from '#routes/projects/stack_snapshot.ts';
+	import { dep_kind_labels, dep_kinds, snapshot_notes } from '#routes/projects/stack_snapshot.ts';
 	import { terms } from '#routes/values/values.ts';
 
 	const { data }: { data: { name: string } } = $props();
@@ -40,6 +43,9 @@
 	<PageSections {sections}>
 		<header>
 			<h1>{project.name}</h1>
+			{#if project_page.facets}
+				<p><ProjectFacets facets={project_page.facets} layer /></p>
+			{/if}
 			<p class="width_atmost_md">
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 				<a href="https://github.com/fuzdev/{project.repos[0]}">{project.name}</a> as this site sees
@@ -81,43 +87,72 @@
 			</p>
 		{/if}
 
-		{#if project_page.repos.length > 0}
+		{#if sections.third_party}
 			<section>
-				<h2 id="commands">{sections.commands}</h2>
+				<h2 id="third_party">{sections.third_party}</h2>
 				{#each project_page.repos as repo (repo.repo)}
-					{#if project_page.repos.length > 1}<h3>{repo.repo}</h3>{/if}
-					{#if repo.check_script !== null}
-						<p class="width_atmost_md">
-							The <code>check</code> script of its <code>package.json</code>:
-						</p>
-						<pre class="commands">{repo.check_script}</pre>
-					{:else}
-						<p class="width_atmost_md">
-							{repo.npm ? 'Its package.json has no check script.' : 'It has no package.json.'}
-							{repo.cargo ? 'It has a Cargo workspace, whose checks are cargo commands.' : ''}
-						</p>
+					{#if repo.third_party.length > 0}
+						{#if project_page.repos.length > 1}<h3>{repo.repo}</h3>{/if}
+						<dl class="record-fields">
+							{#each dep_kinds as kind (kind)}
+								{@const group = repo.third_party.filter((dep) => dep.kind === kind)}
+								{#if group.length > 0}
+									<dt title={dep_kind_labels[kind].meaning}>{dep_kind_labels[kind].label}</dt>
+									<dd>
+										{#each [...new Set(group.map((dep) => dep.manifest))] as manifest (manifest)}
+											<div>
+												<small class="text_70">
+													{manifest === 'npm' ? 'package.json' : 'Cargo.toml'}:
+												</small>
+												{group
+													.filter((dep) => dep.manifest === manifest)
+													.map((dep) => dep.name)
+													.join(', ')}
+											</div>
+										{/each}
+									</dd>
+								{/if}
+							{/each}
+						</dl>
 					{/if}
-					{#each repo.workflows as workflow (workflow.file)}
-						<details>
-							<summary>
-								The commands of <code>.github/workflows/{workflow.file}</code>
-							</summary>
-							<ol>
-								{#each workflow.runs as run, index (index)}
-									<li><pre class="commands">{run}</pre></li>
-								{/each}
-							</ol>
-						</details>
-					{:else}
-						<p class="width_atmost_md">It has no CI workflow.</p>
-					{/each}
 				{/each}
 				<p class="width_atmost_md">
 					<small>
 						Read from the repo on
 						<time datetime={stack_snapshot.checked}>{stack_snapshot.checked}</time>.
-						{snapshot_notes.commands}
+						{snapshot_notes.third_party} See
+						<a href={resolve('/projects/third-party')}>everything the stack declares</a>.
 					</small>
+				</p>
+			</section>
+		{/if}
+
+		{#if project_page.repos.length > 0}
+			<section>
+				<h2 id="commands">{sections.commands}</h2>
+				{#each project_page.repos as repo (repo.repo)}
+					{#if project_page.repos.length > 1}<h3>{repo.repo}</h3>{/if}
+					<RepoChecks {repo} />
+				{/each}
+				<p class="width_atmost_md">
+					<small>
+						Read from the repo on
+						<time datetime={stack_snapshot.checked}>{stack_snapshot.checked}</time>.
+						{snapshot_notes.commands} {snapshot_notes.check_lines} {snapshot_notes.main} See
+						<a href={resolve('/projects/checks')}>every repo's checks</a>.
+					</small>
+				</p>
+			</section>
+		{/if}
+
+		{#if lens.intro.length > 0}
+			<section>
+				<h2 id="opening">{sections.opening}</h2>
+				{#each lens.intro as paragraph (paragraph)}
+					<p class="width_atmost_md"><Mdz content={paragraph} inline /></p>
+				{/each}
+				<p>
+					<small>From the <a href={resolve('/coherence')}>coherence</a> section's index.</small>
 				</p>
 			</section>
 		{/if}
@@ -194,9 +229,24 @@
 			</section>
 		{/if}
 
-		{#if lens.gates.length > 0 || lens.gate_gaps.length > 0}
+		{#if sections.gates}
 			<section>
 				<h2 id="gates">{sections.gates}</h2>
+				{#if project_page.class_gates.length > 0}
+					<ul class="unstyled">
+						{#each project_page.class_gates as { gate, repos } (gate.gate)}
+							<li class="mb_sm">
+								<strong>{gate.gate}</strong>
+								<span class="text_70">({run_whens[gate.runs].label.toLowerCase()})</span>:
+								{gate.catches}.
+								<span class="text_70">
+									{repos.map((repo) => repo.repo).join(', ')} {repos.length === 1 ? 'is' : 'are'}
+									among the repos {gate.where_class ? repo_classes[gate.where_class].label : ''}.
+								</span>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 				{#if lens.gates.length > 0}
 					<ul class="unstyled">
 						{#each lens.gates as gate (gate.gate)}
@@ -221,8 +271,8 @@
 						From
 						<a href={resolve(coherence_inventory_pages.gates.path)}>
 							{coherence_inventory_pages.gates.title}
-						</a>. A gate is listed here when its row names the project or links its repo, so one
-						that every repo of a kind runs may be missing.
+						</a>. A gate is listed here when its row names the project or links its repo, or speaks
+						of a class of repos that the snapshot puts this one in.
 					</small>
 				</p>
 			</section>
@@ -337,11 +387,3 @@
 		{/if}
 	</PageSections>
 {/if}
-
-<style>
-	/* a command is read whole, so it wraps and never scrolls sideways */
-	.commands {
-		white-space: pre-wrap;
-		overflow-wrap: anywhere;
-	}
-</style>

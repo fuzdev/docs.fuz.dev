@@ -15,6 +15,8 @@
  */
 
 import type { EvidenceEntry } from '#routes/evidence.ts';
+import type { Probe } from '#routes/probe.ts';
+import type { RepoClassId } from '#routes/projects/repo_classes.ts';
 
 /** What does the work of holding a failure, from a person's judgment to the system's shape. */
 export type RungId = 'person' | 'session' | 'written' | 'tool' | 'shape';
@@ -133,6 +135,8 @@ export interface OracleRun {
 	when: RunWhenId;
 	/** Which part of the comparison, when a row has more than one. */
 	what?: string;
+	/** What a file must show for the comparison to still run at this time. */
+	probes?: Array<Probe>;
 }
 
 /** One comparison of a project against something that already has the right behavior. */
@@ -143,6 +147,8 @@ export interface OracleComparison {
 	how: string;
 	/** Soonest first. */
 	runs: Array<OracleRun>;
+	/** What a file must show for the comparison to exist at all. */
+	probes?: Array<Probe>;
 	/** mdz with one link, to the document that describes the comparison. */
 	source: string;
 }
@@ -163,6 +169,10 @@ export interface Gate {
 	catches: string;
 	runs: RunWhenId;
 	where: string;
+	/** The class of repos `where` speaks of, when it names one, whose members a page computes. */
+	where_class?: RepoClassId;
+	/** What a file must show for the gate to still run where and when the row says. */
+	probes?: Array<Probe>;
 	/** mdz with one link. */
 	source: string;
 }
@@ -173,9 +183,11 @@ export const claims_checked = '2026-11-19';
 /** The model that wrote this file and the page that renders it. */
 export const written_by = 'Claude Fable 5.2';
 
-/** The section's opening, a paragraph each, shown on its index. */
+/** The section's opening, a paragraph each as mdz, shown on its index. */
 export const intro: Array<string> = [
-	"Agents write much of the Fuz stack's code, and their commits land before the maintainer reads them. At that speed one person's reading cannot be what keeps the software right. This page lists the ways agent-written work goes wrong here, and what holds each one.",
+	"Agents write much of the Fuz stack's code. Whether a session commits its work depends on what it was asked to do, so some work waits uncommitted for the maintainer to read, and some commits land on the main branch before the maintainer has read them. At that speed one person's reading cannot be what keeps the software right. This page lists the ways agent-written work goes wrong here, and what holds each one.",
+	"So part of the review happens after the fact. Work is reviewed before it is committed, and commits that have landed are [reviewed too](/skills/grimoire#work-loop), by agents when asked and by the maintainer, for whom it is sometimes the first reading. The release is the checkpoint for that review: versions and publishing are the maintainer's, and a common pattern is to review all the work since the last release before making the next one.",
+	"Two of the stack's projects are made for that reading. zzz is for reading work on the maintainer's own machine, and its [projects page](https://github.com/fuzdev/zzz/blob/main/docs/projects.md#projects) shows each repo's uncommitted work and its distance from origin. fuz_forge is for commits that have landed: it [shows a repo's commit log and its diffs to a reader](https://github.com/fuzdev/fuz_forge/blob/main/docs/forge.md#initial-focus), with no pull request to approve first.",
 	'What is at stake is coherence: software that still reads as one design, with one way to do each thing, one name for each concept, documents that are still true, and checks that mean what they say. The rows fall into families. The first is that loss itself, a design that drifts. The other three are how it starts: checks that mean less than they say, claims that nothing confirmed, and sessions that repeat a mistake, collide or overstep.',
 	"A hold is whatever stops a failure or catches it. Holds sit on the rungs of a ladder, from a person's judgment down to the shape of the system. Each rung down depends less on anyone remembering than the one before it. A rule moves down when a lower form of it is simpler to keep than the rule alone: a check that holds it, or a structure that makes it unnecessary."
 ];
@@ -194,7 +206,11 @@ export const passages = {
 		'These are the actions the stack keeps with the maintainer. Each row lists every mechanism that holds some part of the action, hardest to get past first, and says which part.',
 	gates:
 		'A gate is a check that gives a verdict on a change. These are the kinds the stack runs, sorted by how soon each reports, as the oracles are.',
-	gate_gaps: 'Where CI runs less than the local gate, or does not run:'
+	gate_gaps: 'Where CI runs less than the local gate, or does not run:',
+	probes:
+		'A row may carry probes: a string that a named file, check script or CI step of the repo must have, or must not have, for the row to still be true in the way a file can show. The tests of this site check the ones about a check script or a CI step against its snapshot of the repos, and the evidence task checks the ones about a file. A probe that passes says the file, script or step still has the text the row depends on. It does not say the check is sound. A probe reads only the text it names, so one that says a step is absent does not see the same thing reached through another script or switched on by an environment variable.',
+	where_class:
+		"Where a row speaks of a class of repos, the repos under it are the class's members, computed from this site's snapshot of each repo's files. A repo that reaches the same check another way, such as through a script its check script calls, is not listed unless the row names it."
 };
 
 /** In the order the grid groups its rows. */
@@ -1064,8 +1080,51 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: "Fixtures hold Prettier's output with each difference documented, the recordings are checked against a live, pinned Prettier, and a corpus diff fails on lost content or a new uncataloged difference",
 		runs: [
-			{ when: 'every_change', what: 'fixtures, against a live Prettier' },
-			{ when: 'release', what: 'corpus diff' }
+			{
+				when: 'every_change',
+				what: 'fixtures, against a live Prettier',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'package.json',
+						has: '"test": "cargo test --workspace"'
+					},
+					{ kind: 'workflow', repo: 'tsv', file: 'check.yml', has: 'npm run check' },
+					{
+						kind: 'workflow',
+						repo: 'tsv',
+						file: 'check.yml',
+						has: 'npm ci --prefix crates/tsv_debug/sidecar'
+					}
+				]
+			},
+			{
+				when: 'release',
+				what: 'corpus diff',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/conformance.ts',
+						has: 'run_corpus_compare_format'
+					},
+					{ kind: 'check_script', repo: 'tsv', lacks: 'conformance:all' },
+					{ kind: 'workflow', repo: 'tsv', lacks: 'conformance:all' },
+					{ kind: 'check_script', repo: 'tsv', lacks: 'corpus:compare' },
+					{ kind: 'workflow', repo: 'tsv', lacks: 'corpus:compare' }
+				]
+			}
+		],
+		probes: [
+			{ kind: 'file', repo: 'tsv', path: 'tests/fixtures_tests.rs', has: 'sidecar::check().await' }
 		],
 		source: '[CI workflow](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml)'
 	},
@@ -1075,8 +1134,28 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'law',
 		how: 'Formatting twice gives the same result, on every fixture and across a real-code corpus',
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'corpus' }
+			{
+				when: 'every_change',
+				what: 'fixtures',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'crates/tsv_debug/src/fixtures/validation/mod.rs',
+						has: 'validate_formatter_idempotent'
+					}
+				]
+			},
+			{
+				when: 'release',
+				what: 'corpus',
+				probes: [
+					{ kind: 'file', repo: 'tsv', path: 'scripts/publish.ts', has: "['run', 'audit:corpus']" },
+					{ kind: 'check_script', repo: 'tsv', lacks: 'audit:corpus' },
+					{ kind: 'workflow', repo: 'tsv', lacks: 'audit:corpus' }
+				]
+			}
 		],
 		source:
 			'[corpus bundle](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#the-corpus-bundle-auditcorpus)'
@@ -1087,8 +1166,24 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'law',
 		how: 'Formatted output parses back to the same document as its source',
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'corpus' }
+			{
+				when: 'every_change',
+				what: 'fixtures',
+				probes: [{ kind: 'check_script', repo: 'tsv', has: 'npm run roundtrip:audit &&' }]
+			},
+			{
+				when: 'release',
+				what: 'corpus',
+				probes: [
+					{ kind: 'file', repo: 'tsv', path: 'scripts/publish.ts', has: "['run', 'audit:corpus']" },
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/corpus_audit.ts',
+						has: "'roundtrip_audit'"
+					}
+				]
+			}
 		],
 		source:
 			'[round-trip audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#formatreparse-round-trip-audit-roundtripaudit)'
@@ -1099,8 +1194,43 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'law',
 		how: 'A Svelte component renders the same before and after formatting',
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'corpus' }
+			{
+				when: 'every_change',
+				what: 'fixtures',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'tests/fixtures_tests.rs',
+						has: 'sidecar::check().await'
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'crates/tsv_debug/src/fixtures/validation/errors.rs',
+						has: 'RenderEquivalenceMismatch'
+					}
+				]
+			},
+			{
+				when: 'release',
+				what: 'corpus',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/conformance.ts',
+						has: "'render:audit (pinned checkouts)'"
+					}
+				]
+			}
 		],
 		source:
 			'[render audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#render-equivalence-audit-renderaudit)'
@@ -1111,8 +1241,40 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: "Fixtures hold the canonical parser's syntax tree, the recordings are checked against the live parser, and a deep diff over real codebases classifies every difference against a catalog",
 		runs: [
-			{ when: 'every_change', what: 'fixtures, against the live parsers' },
-			{ when: 'release', what: 'corpus diff' }
+			{
+				when: 'every_change',
+				what: 'fixtures, against the live parsers',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{
+						kind: 'workflow',
+						repo: 'tsv',
+						file: 'check.yml',
+						has: 'npm ci --prefix crates/tsv_debug/sidecar'
+					}
+				]
+			},
+			{
+				when: 'release',
+				what: 'corpus diff',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/conformance.ts',
+						has: 'run_corpus_compare_parse'
+					}
+				]
+			}
+		],
+		probes: [
+			{ kind: 'file', repo: 'tsv', path: 'tests/fixtures_tests.rs', has: 'sidecar::check().await' }
 		],
 		source: '[fixture tests](https://github.com/fuzdev/tsv/blob/main/tests/fixtures_tests.rs)'
 	},
@@ -1122,9 +1284,47 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: "Fixtures hold ts-blank-space's output, a corpus diff runs against it, and a Node cross-check of the fixtures runs by hand",
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'corpus diff' },
-			{ when: 'on_demand', what: 'Node cross-check' }
+			{
+				when: 'every_change',
+				what: 'fixtures',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{ kind: 'file', repo: 'tsv', path: 'tests/strip_fixtures_tests.rs' }
+				]
+			},
+			{
+				when: 'release',
+				what: 'corpus diff',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'package.json',
+						has: 'npm run strip:corpus:run && npm run imports:corpus:run'
+					}
+				]
+			},
+			{
+				when: 'on_demand',
+				what: 'Node cross-check',
+				probes: [
+					{ kind: 'file', repo: 'tsv', path: 'package.json', has: '"strip:fixtures:oracle"' },
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/strip_fixtures.ts',
+						has: 'stripTypeScriptTypes'
+					},
+					{ kind: 'check_script', repo: 'tsv', lacks: 'strip:fixtures:oracle' },
+					{ kind: 'workflow', repo: 'tsv', lacks: 'strip:fixtures:oracle' }
+				]
+			}
 		],
 		source:
 			'[strip fixtures](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#strip-fixture-validation-stripfixturesvalidate)'
@@ -1135,9 +1335,42 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: "Fixtures hold records read off the canonical parsers' trees, the recordings are checked against those parsers by hand, and the records must agree with oxc-parser's over a corpus",
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'corpus' },
-			{ when: 'on_demand', what: 'recordings against the parsers' }
+			{
+				when: 'every_change',
+				what: 'fixtures',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{ kind: 'file', repo: 'tsv', path: 'tests/imports_fixtures_tests.rs' },
+					{ kind: 'file', repo: 'tsv', path: 'tests/imports_self_check_tests.rs' }
+				]
+			},
+			{
+				when: 'release',
+				what: 'corpus',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'package.json',
+						has: 'npm run strip:corpus:run && npm run imports:corpus:run'
+					}
+				]
+			},
+			{
+				when: 'on_demand',
+				what: 'recordings against the parsers',
+				probes: [
+					{ kind: 'file', repo: 'tsv', path: 'package.json', has: '"imports:fixtures:validate"' },
+					{ kind: 'check_script', repo: 'tsv', lacks: 'imports:fixtures:validate' },
+					{ kind: 'workflow', repo: 'tsv', lacks: 'imports:fixtures:validate' }
+				]
+			}
 		],
 		source:
 			'[import differential](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#import-corpus-differential-importscorpus)'
@@ -1148,9 +1381,45 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'twin',
 		how: 'Both unit suites assert against shared case tables, and a cross-backend suite runs both servers',
 		runs: [
-			{ when: 'every_change', what: 'shared case tables' },
-			{ when: 'on_demand', what: 'cross-backend suite' }
+			{
+				when: 'every_change',
+				what: 'shared case tables',
+				probes: [
+					{ kind: 'check_script', repo: 'fuz_forge', has: 'gro check' },
+					{
+						kind: 'file',
+						repo: 'fuz_forge',
+						path: 'src/test/fixtures/parity/parity_fixtures.meta.test.ts'
+					},
+					{
+						kind: 'file',
+						repo: 'fuz_forge',
+						path: 'crates/fuz_forge_server/tests/parity_fixture_census.rs'
+					},
+					{
+						kind: 'workflow',
+						repo: 'fuz_forge',
+						file: 'check.yml',
+						has: 'cargo test --locked --workspace'
+					},
+					{ kind: 'workflow', repo: 'fuz_forge', file: 'check.yml', has: 'gro check' }
+				]
+			},
+			{
+				when: 'on_demand',
+				what: 'cross-backend suite',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'fuz_forge',
+						path: 'vite.config.ts',
+						has: "'cross_backend_parity'"
+					},
+					{ kind: 'workflow', repo: 'fuz_forge', lacks: 'cross_backend' }
+				]
+			}
 		],
+		probes: [{ kind: 'file', repo: 'fuz_forge', path: 'src/test/fixtures/parity/load.ts' }],
 		source:
 			'[parity fixtures](https://github.com/fuzdev/fuz_forge/blob/main/src/test/CLAUDE.md#parity-fixtures-fixturesparity)'
 	},
@@ -1159,7 +1428,26 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Postgres',
 		kind: 'reference',
 		how: 'SQL fixtures run through both, compared in the binary format against recorded Postgres results and in the text format live',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'pglet',
+						path: 'crates/xtask/src/gates.rs',
+						has: 'Gate::new("test:fixtures"'
+					},
+					{
+						kind: 'file',
+						repo: 'pglet',
+						path: 'package.json',
+						has: 'pglet_tests --bin test_fixtures'
+					},
+					{ kind: 'workflow', repo: 'pglet', file: 'check.yml', has: 'test:fixtures' }
+				]
+			}
+		],
 		source:
 			'[fixtures](https://github.com/fuzdev/pglet/blob/main/tests/README.md#fixtures-fixtures)'
 	},
@@ -1168,7 +1456,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'The TypeScript library',
 		kind: 'twin',
 		how: 'The TypeScript side generates fixtures and the Rust tests assert both evaluators against them, with differences declared',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{ kind: 'file', repo: 'fuz_schema', path: 'crates/fuz_schema/tests/fixtures.rs' },
+					{ kind: 'file', repo: 'fuz_schema', path: 'src/test/json.fixtures.test.ts' },
+					{ kind: 'workflow', repo: 'fuz_schema', file: 'check.yml', has: 'cargo test --workspace' }
+				]
+			}
+		],
 		source: '[fixtures](https://github.com/fuzdev/fuz_schema/blob/main/docs/rust.md#fixtures)'
 	},
 	{
@@ -1176,7 +1473,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Zod and Valibot',
 		kind: 'reference',
 		how: 'Where the two agree, it gives the same result or declares the difference',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{ kind: 'check_script', repo: 'fuz_schema', has: 'gro check' },
+					{ kind: 'file', repo: 'fuz_schema', path: 'src/test/schema.differential.test.ts' },
+					{ kind: 'workflow', repo: 'fuz_schema', file: 'check.yml', has: 'gro check' }
+				]
+			}
+		],
 		source:
 			'[differential](https://github.com/fuzdev/fuz_schema/blob/main/docs/testing.md#the-differential)'
 	},
@@ -1185,7 +1491,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Its one-shot parser',
 		kind: 'twin',
 		how: 'Whole and chunked input must give the same tree',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{ kind: 'check_script', repo: 'mdz', has: 'gro check' },
+					{ kind: 'file', repo: 'mdz', path: 'src/test/mdz_parser_parity.test.ts' },
+					{ kind: 'workflow', repo: 'mdz', has: 'gro check' }
+				]
+			}
+		],
 		source: '[architecture](https://github.com/fuzdev/mdz/blob/main/CLAUDE.md#architecture)'
 	},
 	{
@@ -1193,7 +1508,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "gro's Node implementations",
 		kind: 'twin',
 		how: 'Each case runs under the Rust runtime and must equal what the Node version printed, with differences declared per case',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{ kind: 'file', repo: 'gro', path: 'crates/gro_cli/tests/host.rs', has: 'expected.json' },
+					{ kind: 'file', repo: 'gro', path: 'crates/gro_cli/tests/fixtures/host/oracle.js' },
+					{ kind: 'workflow', repo: 'gro', file: 'check.yml', has: 'cargo xtask check-rust' }
+				]
+			}
+		],
 		source:
 			'[Rust workspace](https://github.com/fuzdev/gro/blob/main/CLAUDE.md#rust-workspace-experimental)'
 	},
@@ -1202,7 +1526,12 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'Itself, on mutated input',
 		kind: 'law',
 		how: 'Seeded mutations of the fixtures go through parse, format and reparse, and a panic, a second pass that formats differently, or a lost node fails',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [{ kind: 'check_script', repo: 'tsv', has: 'npm run fuzz:audit &&' }]
+			}
+		],
 		source:
 			'[fuzzer](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#seeded-mutational-fuzzer-fuzzaudit)'
 	},
@@ -1211,7 +1540,12 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'The reconstruction its npm package ships',
 		kind: 'twin',
 		how: 'The two implementations of one definition of line and column must agree on every fixture',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [{ kind: 'check_script', repo: 'tsv', has: 'npm run check:loc' }]
+			}
+		],
 		source:
 			'[loc cross-grade](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#loc-cross-grade-checkloc)'
 	},
@@ -1220,7 +1554,20 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'git check-ignore',
 		kind: 'reference',
 		how: 'Nested ignore files are built in a throwaway repo, and the matcher must agree with git on every candidate path',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'crates/tsv_ignore/tests/git_oracle.rs',
+						has: 'check-ignore'
+					}
+				]
+			}
+		],
 		source:
 			'[git oracle test](https://github.com/fuzdev/tsv/blob/main/crates/tsv_ignore/tests/git_oracle.rs)'
 	},
@@ -1229,7 +1576,25 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "Node's resolution",
 		kind: 'reference',
 		how: 'Node resolves each case to a committed expectation, and the Rust resolver must match it unless the case declares a departure',
-		runs: [{ when: 'every_change' }],
+		runs: [
+			{
+				when: 'every_change',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'gro',
+						path: 'crates/gro_runtime/src/resolver/tests/node_differential.rs'
+					},
+					{
+						kind: 'file',
+						repo: 'gro',
+						path: 'crates/gro_runtime/tests/fixtures/resolution/expected.json'
+					},
+					{ kind: 'file', repo: 'gro', path: 'src/test/resolution_differential.test.ts' },
+					{ kind: 'workflow', repo: 'gro', file: 'check.yml', has: 'cargo xtask check-rust' }
+				]
+			}
+		],
 		source:
 			'[departures from Node](https://github.com/fuzdev/gro/blob/main/src/docs/resolver.md#departures-from-node)'
 	},
@@ -1238,7 +1603,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'tsv native build',
 		kind: 'build',
 		how: 'Both engines must return the same bytes, exit code and error output',
-		runs: [{ when: 'ci' }],
+		runs: [
+			{
+				when: 'ci',
+				probes: [
+					{ kind: 'workflow', repo: 'tsv', file: 'check.yml', has: 'npm run engines:audit' },
+					{ kind: 'check_script', repo: 'tsv', lacks: 'engines:audit' }
+				]
+			}
+		],
+		probes: [{ kind: 'file', repo: 'tsv', path: 'scripts/engine_parity.ts' }],
 		source:
 			'[engine parity](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#engine-parity-audit-enginesaudit)'
 	},
@@ -1247,7 +1621,25 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'The same backend on Bun',
 		kind: 'build',
 		how: 'Every conformance case is sent to both and the answers compared',
-		runs: [{ when: 'ci' }],
+		runs: [
+			{
+				when: 'ci',
+				probes: [
+					{
+						kind: 'workflow',
+						repo: 'fuz_app',
+						file: 'check.yml',
+						has: 'npm run test:cross:ts-differential'
+					},
+					{
+						kind: 'file',
+						repo: 'fuz_app',
+						path: 'package.json',
+						has: 'cross_backend_ts_differential'
+					}
+				]
+			}
+		],
 		source:
 			'[cross-backend tests](https://github.com/fuzdev/fuz_app/blob/main/src/test/CLAUDE.md#cross-backend-self-tests-srctestcross_backend)'
 	},
@@ -1256,7 +1648,15 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'npm',
 		kind: 'reference',
 		how: 'From one lockfile, what it installs must be a superset of what npm installs, with matching links',
-		runs: [{ when: 'ci' }],
+		runs: [
+			{
+				when: 'ci',
+				probes: [
+					{ kind: 'workflow', repo: 'fuz', file: 'check.yml', has: 'scripts/fuzi-gate.sh' },
+					{ kind: 'file', repo: 'fuz', path: 'scripts/fuzi-gate.sh' }
+				]
+			}
+		],
 		source:
 			'[installer gate](https://github.com/fuzdev/fuz/blob/main/scripts/fuzi-gate/README.md#what-it-asserts-per-fixture-both-libcs)'
 	},
@@ -1265,7 +1665,19 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'The same commit built at another path',
 		kind: 'build',
 		how: 'Two release builds of one commit must be the same, byte for byte',
-		runs: [{ when: 'ci' }],
+		runs: [
+			{
+				when: 'ci',
+				probes: [
+					{
+						kind: 'workflow',
+						repo: 'gro',
+						file: 'check.yml',
+						has: 'cargo xtask check-reproducible'
+					}
+				]
+			}
+		],
 		source:
 			'[Rust workspace](https://github.com/fuzdev/gro/blob/main/CLAUDE.md#rust-workspace-experimental)'
 	},
@@ -1274,7 +1686,26 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "The test suites of Svelte's compiler and acorn-typescript",
 		kind: 'suite',
 		how: 'Accept and reject verdicts must match, and differences in tree shape are reported without failing',
-		runs: [{ when: 'release' }],
+		runs: [
+			{
+				when: 'release',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/conformance.ts',
+						has: 'SVELTE_FIXTURES_GATE'
+					},
+					{ kind: 'file', repo: 'tsv', path: 'benches/js/conformance.ts', has: 'TS_FIXTURES_GATE' }
+				]
+			}
+		],
 		source:
 			'[suite conformance](https://github.com/fuzdev/tsv/blob/main/benches/js/CLAUDE.md#conformancesvelte-fixtures)'
 	},
@@ -1283,7 +1714,25 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "The TypeScript compiler's recorded baselines",
 		kind: 'suite',
 		how: "The compiler's baselines over its own test cases decide which programs are valid, and a rejection outside the ledger fails",
-		runs: [{ when: 'release' }],
+		runs: [
+			{
+				when: 'release',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'benches/js/conformance.ts',
+						has: 'run_ts_repo_compare'
+					}
+				]
+			}
+		],
 		source:
 			'[the oracle](https://github.com/fuzdev/tsv/blob/main/docs/conformance_tsc.md#the-oracle)'
 	},
@@ -1292,7 +1741,25 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'test262',
 		kind: 'suite',
 		how: 'The programs that should parse must parse, held to a pinned count, and wrongly accepted programs are reported without failing',
-		runs: [{ when: 'release' }],
+		runs: [
+			{
+				when: 'release',
+				probes: [
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'scripts/publish.ts',
+						has: "['run', 'conformance:all']"
+					},
+					{
+						kind: 'file',
+						repo: 'tsv',
+						path: 'package.json',
+						has: '"conformance:all": "npm run conformance:test262'
+					}
+				]
+			}
+		],
 		source:
 			'[current results](https://github.com/fuzdev/tsv/blob/main/docs/conformance_test262.md#current-results)'
 	},
@@ -1302,8 +1769,26 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: 'Each build must reproduce test vectors generated from the native crate',
 		runs: [
-			{ when: 'release', what: 'the publish steps' },
-			{ when: 'on_demand', what: 'by hand' }
+			{
+				when: 'release',
+				what: 'the publish steps',
+				probes: [
+					{ kind: 'file', repo: 'blake3', path: 'scripts/lib/release.ts', has: "'test:wasm'" }
+				]
+			},
+			{
+				when: 'on_demand',
+				what: 'by hand',
+				probes: [
+					{ kind: 'file', repo: 'blake3', path: 'package.json', has: '"test:wasm"' },
+					{ kind: 'check_script', repo: 'blake3', lacks: 'test:wasm' },
+					{ kind: 'check_script', repo: 'blake3', lacks: 'npm run test &&' },
+					{ kind: 'check_script', repo: 'blake3', lacks: 'test_wasm.ts' }
+				]
+			}
+		],
+		probes: [
+			{ kind: 'file', repo: 'blake3', path: 'scripts/test_wasm.ts', has: 'test_vectors.json' }
 		],
 		source: '[test vectors](https://github.com/fuzdev/blake3/blob/main/CLAUDE.md#test-vectors)'
 	},
@@ -1312,7 +1797,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'The fuz spine crates, Rust',
 		kind: 'twin',
 		how: 'One suite runs against both over HTTP, WebSocket and SSE, and their schemas, action manifests and conformance answers are compared',
-		runs: [{ when: 'on_demand' }],
+		runs: [
+			{
+				when: 'on_demand',
+				probes: [
+					{ kind: 'file', repo: 'fuz_app', path: 'package.json', has: '"test:cross:parity"' },
+					{ kind: 'file', repo: 'fuz_app', path: 'src/test/cross_backend/run_cross.ts' },
+					{ kind: 'workflow', repo: 'fuz_app', lacks: 'test:cross:parity' }
+				]
+			}
+		],
 		source:
 			'[cross-backend tests](https://github.com/fuzdev/fuz_app/blob/main/src/test/CLAUDE.md#cross-backend-self-tests-srctestcross_backend)'
 	},
@@ -1321,7 +1815,21 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: "fuz_app's shared cross-backend suites",
 		kind: 'suite',
 		how: 'The suites that fuz_app ships run against the zzz server',
-		runs: [{ when: 'on_demand' }],
+		runs: [
+			{
+				when: 'on_demand',
+				probes: [
+					{ kind: 'file', repo: 'zzz', path: 'package.json', has: '"test:cross"' },
+					{
+						kind: 'file',
+						repo: 'zzz',
+						path: 'src/test/cross_backend/spine_suites.cross.test.ts',
+						has: 'describe_spine_cross_suites'
+					},
+					{ kind: 'workflow', repo: 'zzz', lacks: 'test:cross' }
+				]
+			}
+		],
 		source:
 			'[development stage](https://github.com/fuzdev/zzz/blob/main/CLAUDE.md#development-stage)'
 	},
@@ -1330,7 +1838,16 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		against: 'zap, previous main build',
 		kind: 'previous',
 		how: 'Both binaries run against identical virtual machines and must report the same, which shows equivalence and not correctness',
-		runs: [{ when: 'on_demand' }],
+		runs: [
+			{
+				when: 'on_demand',
+				probes: [
+					{ kind: 'file', repo: 'zap', path: 'crates/xtask/src/differential/mod.rs' },
+					{ kind: 'file', repo: 'zap', path: 'crates/xtask/src/main.rs', has: 'differential' },
+					{ kind: 'workflow', repo: 'zap', lacks: 'differential' }
+				]
+			}
+		],
 		source:
 			'[differential harness](https://github.com/fuzdev/zap/blob/main/docs/differential.md#the-differential-harness)'
 	}
@@ -1404,14 +1921,25 @@ export const gates: Array<Gate> = [
 		gate: 'Types, tests, lints and format',
 		catches: 'Type errors, regressions, lint errors and style drift',
 		runs: 'every_change',
-		where: "The repos whose gate is gro's check, with lints where the repo has a lint config",
+		where:
+			"The repos whose check script runs gro's check, with lints where the repo has a lint config. pglet's check script reaches it through a script of its own, for its TypeScript",
+		where_class: 'check_gro',
+		probes: [
+			{ kind: 'check_script', repo: 'pglet', has: 'npm run check:ts' },
+			{ kind: 'file', repo: 'pglet', path: 'package.json', has: '"check:ts": "gro check' }
+		],
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{
 		gate: 'Drift in generated files',
 		catches: 'A generated file that no longer matches its source',
 		runs: 'every_change',
-		where: "The repos whose gate is gro's check",
+		where: "The repos whose check script runs gro's check, and pglet's TypeScript the same way",
+		where_class: 'check_gro',
+		probes: [
+			{ kind: 'check_script', repo: 'pglet', has: 'npm run check:ts' },
+			{ kind: 'file', repo: 'pglet', path: 'package.json', has: '"check:ts": "gro check' }
+		],
 		source:
 			'[checking generated files](https://github.com/fuzdev/gro/blob/main/src/docs/gen.md#checking-generated-files)'
 	},
@@ -1419,7 +1947,9 @@ export const gates: Array<Gate> = [
 		gate: 'Format, lints as errors, tests and doc links',
 		catches: 'Lint and test failures and broken doc links',
 		runs: 'every_change',
-		where: 'The Rust workspaces, less the CI gaps listed below',
+		where:
+			'The Rust workspaces, less the CI gaps listed below, and less zervo, whose lints only warn and which checks no doc links',
+		probes: [{ kind: 'file', repo: 'zervo', path: 'Cargo.toml', has: 'all = { level = "warn"' }],
 		source: '[Rust gate](/skills/fuz-stack/references/rust-patterns#the-gate)'
 	},
 	{
@@ -1428,6 +1958,22 @@ export const gates: Array<Gate> = [
 			'A forbidden crate or a test-only feature in a release build, a broken layering rule, and a copied lint table that has drifted',
 		runs: 'every_change',
 		where: 'fuz, fuz_forge and zap. pglet runs an audit of its own, for its test-only crate alone',
+		probes: [
+			{ kind: 'workflow', repo: 'fuz', has: 'cargo xtask check-release' },
+			{ kind: 'file', repo: 'fuz', path: 'CLAUDE.md', has: 'cargo xtask check-release' },
+			{ kind: 'workflow', repo: 'fuz_forge', has: 'cargo xtask check-release' },
+			{ kind: 'file', repo: 'fuz_forge', path: 'CLAUDE.md', has: 'cargo xtask check-release' },
+			{ kind: 'workflow', repo: 'zap', has: 'cargo xtask check-release' },
+			{ kind: 'file', repo: 'zap', path: 'CLAUDE.md', has: 'cargo xtask check-release' },
+			{ kind: 'check_script', repo: 'pglet', has: 'npm run check:release' },
+			{ kind: 'workflow', repo: 'pglet', has: 'npm run check' },
+			{
+				kind: 'file',
+				repo: 'pglet',
+				path: 'crates/xtask/src/release.rs',
+				has: 'FORBIDDEN_CRATES: &[&str] = &["pglet_testing"]'
+			}
+		],
 		source: '[release audit](/skills/fuz-stack/references/rust-spine#check-release)'
 	},
 	{
@@ -1435,6 +1981,13 @@ export const gates: Array<Gate> = [
 		catches: 'Conformance coverage that quietly shrinks or shifts',
 		runs: 'every_change',
 		where: "pglet, and tsv's fixture validation",
+		probes: [
+			{ kind: 'workflow', repo: 'pglet', has: 'cargo xtask gates --check' },
+			{ kind: 'file', repo: 'pglet', path: 'tests/gates_baseline.txt', has: 'fixtures.passed' },
+			{ kind: 'check_script', repo: 'tsv', has: 'npm run test &&' },
+			{ kind: 'workflow', repo: 'tsv', has: 'npm run check' },
+			{ kind: 'file', repo: 'tsv', path: 'tests/fixtures_tests.rs', has: 'FIXTURES_MIN' }
+		],
 		source:
 			'[pinned counts](https://github.com/fuzdev/tsv/blob/main/docs/gate_counts.md#pinned-gate-counts)'
 	},
@@ -1444,6 +1997,22 @@ export const gates: Array<Gate> = [
 			'A suite that passes by skipping: a program a test needs is missing, or a database suite is left off the CI list',
 		runs: 'every_change',
 		where: 'zap for programs, fuz for the CI list',
+		probes: [
+			{ kind: 'workflow', repo: 'zap', has: 'cargo test' },
+			{
+				kind: 'file',
+				repo: 'zap',
+				path: 'crates/zap/tests/required_programs.rs',
+				has: 'the_programs_the_gated_tests_run_are_installed'
+			},
+			{ kind: 'workflow', repo: 'fuz', has: 'cargo test' },
+			{
+				kind: 'file',
+				repo: 'fuz',
+				path: 'crates/xtask/tests/db_suite_lists.rs',
+				has: '.github/workflows/check.yml'
+			}
+		],
 		source: '[testing rules](/skills/fuz-stack/references/rust-patterns#testing)'
 	},
 	{
@@ -1451,6 +2020,10 @@ export const gates: Array<Gate> = [
 		catches: 'A dead relative link or anchor in any Markdown file of the repo',
 		runs: 'every_change',
 		where: 'tsv',
+		probes: [
+			{ kind: 'check_script', repo: 'tsv', has: 'npm run conformance:audit' },
+			{ kind: 'workflow', repo: 'tsv', has: 'npm run check' }
+		],
 		source:
 			'[conformance audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#conformance-audit-conformanceaudit)'
 	},
@@ -1459,6 +2032,10 @@ export const gates: Array<Gate> = [
 		catches: 'A WebAssembly build that has grown',
 		runs: 'every_change',
 		where: 'pglet',
+		probes: [
+			{ kind: 'file', repo: 'pglet', path: 'crates/xtask/src/gates.rs', has: 'size:check' },
+			{ kind: 'workflow', repo: 'pglet', has: 'npm run size:check' }
+		],
 		source: '[gate runner](https://github.com/fuzdev/pglet/blob/main/CLAUDE.md#the-gate-runner)'
 	},
 	{
@@ -1466,6 +2043,21 @@ export const gates: Array<Gate> = [
 		catches: 'A startup snapshot that has grown past its committed budget',
 		runs: 'every_change',
 		where: 'gro',
+		probes: [
+			{ kind: 'workflow', repo: 'gro', has: 'cargo xtask check-rust' },
+			{
+				kind: 'file',
+				repo: 'gro',
+				path: 'crates/xtask/src/snapshot.rs',
+				has: 'suites/baseline/suite.json'
+			},
+			{
+				kind: 'file',
+				repo: 'gro',
+				path: 'crates/gro_bench/suites/baseline/suite.json',
+				has: '"snapshot_bytes"'
+			}
+		],
 		source:
 			'[baseline suite](https://github.com/fuzdev/gro/blob/main/crates/gro_bench/suites/baseline/suite.json)'
 	},
@@ -1474,14 +2066,24 @@ export const gates: Array<Gate> = [
 		catches:
 			'An exports map that no longer matches the source, which the local gate rewrites instead of failing on',
 		runs: 'ci',
-		where: "The repos whose CI runs gro's check",
+		where: "The repos with an exports map whose CI runs gro's check with its workspace flag",
+		where_class: 'ci_gro_exports',
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{
-		gate: 'Build, a clean tree after the run, and no TODO docs at the root',
-		catches: 'A broken build, uncommitted output and a TODO Markdown file at the repo root',
+		gate: 'Build',
+		catches: 'A broken build',
 		runs: 'ci',
-		where: "The repos whose CI runs gro's check with its build flag, which is most of them",
+		where: "The repos whose CI runs gro's check with its build flag",
+		where_class: 'ci_gro_build',
+		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
+	},
+	{
+		gate: 'A clean tree after the run, and no TODO docs at the root',
+		catches: 'Uncommitted output and a TODO Markdown file at the repo root',
+		runs: 'ci',
+		where: "The repos whose CI runs gro's check with its workspace flag",
+		where_class: 'ci_gro_workspace',
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{
@@ -1489,6 +2091,11 @@ export const gates: Array<Gate> = [
 		catches: 'A WebAssembly build or a native addon that has grown',
 		runs: 'ci',
 		where: 'tsv and fuz_schema',
+		probes: [
+			{ kind: 'workflow', repo: 'tsv', has: 'npm run validate:artifacts' },
+			{ kind: 'workflow', repo: 'tsv', has: 'npm run validate:napi' },
+			{ kind: 'workflow', repo: 'fuz_schema', has: 'wasm_size_ceiling.txt' }
+		],
 		source:
 			'[artifact validation](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#validateartifacts)'
 	},
@@ -1497,6 +2104,7 @@ export const gates: Array<Gate> = [
 		catches: 'A test that passes whether or not the code is right',
 		runs: 'ci',
 		where: "fuz's install script",
+		probes: [{ kind: 'workflow', repo: 'fuz', has: 'scripts/install-test-mutants.sh' }],
 		source:
 			'[mutation gate](https://github.com/fuzdev/fuz/blob/main/scripts/install-test/README.md#mutation-gate)'
 	},
@@ -1506,6 +2114,7 @@ export const gates: Array<Gate> = [
 			'A corpus that no longer matches its pinned upstreams, byte for byte, or whose license no longer reads as declared',
 		runs: 'ci',
 		where: 'corpora',
+		probes: [{ kind: 'workflow', repo: 'corpora', has: 'npm run materialize:check' }],
 		source: '[CI workflow](https://github.com/fuzdev/corpora/blob/main/.github/workflows/check.yml)'
 	},
 	{
@@ -1513,6 +2122,14 @@ export const gates: Array<Gate> = [
 		catches: 'A parser or formatter difference that no ledger records',
 		runs: 'release',
 		where: 'tsv',
+		probes: [
+			{ kind: 'file', repo: 'tsv', path: 'scripts/publish.ts', has: "['run', 'conformance:all']" },
+			{ kind: 'file', repo: 'tsv', path: 'package.json', has: '"conformance:all"' },
+			{ kind: 'check_script', repo: 'tsv', lacks: 'conformance:all' },
+			{ kind: 'workflow', repo: 'tsv', lacks: 'conformance:all' },
+			{ kind: 'check_script', repo: 'tsv', lacks: 'corpus:compare' },
+			{ kind: 'workflow', repo: 'tsv', lacks: 'corpus:compare' }
+		],
 		source: '[audits](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#overview)'
 	},
 	{
@@ -1520,6 +2137,11 @@ export const gates: Array<Gate> = [
 		catches: 'A test that passes whether or not the code is right',
 		runs: 'on_demand',
 		where: 'fuz_schema',
+		probes: [
+			{ kind: 'file', repo: 'fuz_schema', path: 'package.json', has: '"mutate"' },
+			{ kind: 'file', repo: 'fuz_schema', path: 'src/test/mutants.ts' },
+			{ kind: 'workflow', repo: 'fuz_schema', lacks: 'mutate' }
+		],
 		source: '[mutants](https://github.com/fuzdev/fuz_schema/blob/main/docs/testing.md#mutants)'
 	},
 	{
@@ -1527,6 +2149,10 @@ export const gates: Array<Gate> = [
 		catches: "A link in this site's data whose file or heading is gone",
 		runs: 'on_demand',
 		where: 'This site',
+		probes: [
+			{ kind: 'file', repo: 'docs.fuz.dev', path: 'src/routes/evidence_check.task.ts' },
+			{ kind: 'workflow', repo: 'docs.fuz.dev', lacks: 'evidence_check' }
+		],
 		source:
 			'[evidence check](https://github.com/fuzdev/docs.fuz.dev/blob/main/CLAUDE.md#evidence-check)'
 	},
@@ -1536,6 +2162,13 @@ export const gates: Array<Gate> = [
 			'A performance regression: tsv fails a row past a committed percentage, and gro asks for a written reason',
 		runs: 'on_demand',
 		where: 'gro and tsv',
+		probes: [
+			{ kind: 'file', repo: 'gro', path: 'crates/xtask/src/bench/base.rs', has: '--base' },
+			{ kind: 'workflow', repo: 'gro', lacks: 'xtask bench' },
+			{ kind: 'file', repo: 'tsv', path: 'package.json', has: '"perf:ab"' },
+			{ kind: 'check_script', repo: 'tsv', lacks: 'perf:ab' },
+			{ kind: 'workflow', repo: 'tsv', lacks: 'perf:ab' }
+		],
 		source: '[measure](/skills/fuz-stack/references/rust-perf#measure)'
 	}
 ];
@@ -1553,6 +2186,10 @@ export const gate_gaps: Array<string> = [
 
 /** Every mdz string in this data that carries a link, with its record. */
 export const coherence_entries = (): Array<EvidenceEntry> => [
+	// a paragraph of the opening is an entry when it cites something
+	...intro
+		.filter((paragraph) => paragraph.includes(']('))
+		.map((content) => ({ record: 'the opening', content })),
 	...failures.flatMap((failure) =>
 		failure_reached_holds(failure).flatMap(({ rung, hold }) =>
 			hold.evidence.map((content) => ({ record: hold_id(failure, rung), content }))
@@ -1566,4 +2203,24 @@ export const coherence_entries = (): Array<EvidenceEntry> => [
 	...kept_actions.map((a) => ({ record: `action: ${a.action}`, content: a.source })),
 	...gates.map((g) => ({ record: `gate: ${g.gate}`, content: g.source })),
 	...gate_gaps.map((content) => ({ record: 'gate gap', content }))
+];
+
+/** A probe of this data with the record it belongs to, for a failure message. */
+export interface ProbeEntry {
+	record: string;
+	probe: Probe;
+}
+
+/** Every probe in this data, with its record. */
+export const coherence_probes = (): Array<ProbeEntry> => [
+	...oracle_comparisons.flatMap((c) => {
+		const record = `oracle: ${c.project} against ${c.against}`;
+		return [
+			...(c.probes ?? []).map((probe) => ({ record, probe })),
+			...c.runs.flatMap((run) =>
+				(run.probes ?? []).map((probe) => ({ record: `${record}, ${run.when}`, probe }))
+			)
+		];
+	}),
+	...gates.flatMap((g) => (g.probes ?? []).map((probe) => ({ record: `gate: ${g.gate}`, probe })))
 ];

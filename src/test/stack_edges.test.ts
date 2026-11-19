@@ -5,7 +5,6 @@ import {
 	crate_is_dev_only,
 	type RepoManifests
 } from '#routes/projects/stack_edges.ts';
-import { workflow_run_commands } from '#routes/projects/workflow_commands.ts';
 import type { StackProject } from '#routes/stack_projects.ts';
 
 const projects: Array<StackProject> = [
@@ -217,54 +216,72 @@ describe('crate_is_dev_only', () => {
 	});
 });
 
-describe('workflow_run_commands', () => {
-	test('reads a plain command, with or without a list dash', () => {
-		const yaml = `jobs:
-  build:
-    steps:
-      - run: npm ci
-      - name: Check
-        run: npx @fuzdev/gro check --workspace --build
-`;
-		assert.deepEqual(workflow_run_commands(yaml), [
-			'npm ci',
-			'npx @fuzdev/gro check --workspace --build'
+describe('build_stack_edges, what is declared from outside the stack', () => {
+	test("lists a name once per manifest at its strongest kind, sorted, and never the stack's own", () => {
+		const { third_party, problems } = build([
+			repo('alpha', 'alpha', {
+				package_json: {
+					name: '@stack/alpha',
+					dependencies: { zimmerframe: '^1', '@stack/beta': '^1' },
+					peerDependencies: { svelte: '^5', acorn: '^8', zimmerframe: '^1' },
+					peerDependenciesMeta: { acorn: { optional: true } }
+				},
+				cargo: {
+					packages: [
+						crate('alpha_cli', [
+							{ name: 'serde', source: 'registry+https://example.test/index' },
+							{ name: 'cc', kind: 'build', source: 'registry+https://example.test/index' },
+							{ name: 'alpha_core', path: '/repos/alpha/crates/alpha_core' }
+						]),
+						crate('alpha_core', [{ name: 'serde', kind: 'build', source: 'registry+x' }])
+					]
+				}
+			}),
+			repo('beta', 'beta', { package_json: { name: '@stack/beta' } })
 		]);
-	});
-
-	test('reads a literal block with its own indentation kept, and a folded block as one line', () => {
-		const yaml = `    steps:
-      - name: Two
-        run: |
-          case "$x" in
-            a) echo a ;;
-          esac
-
-          cargo test --locked
-      - name: Folded
-        run: >-
-          cargo xtask gates
-          --check
-      - name: After
-        env:
-          A: '1'
-        run: echo done
-`;
-		assert.deepEqual(workflow_run_commands(yaml), [
-			'case "$x" in\n  a) echo a ;;\nesac\n\ncargo test --locked',
-			'cargo xtask gates --check',
-			'echo done'
+		assert.deepEqual(problems, []);
+		assert.deepEqual(third_party.get('alpha'), [
+			{ name: 'acorn', manifest: 'npm', kind: 'peer_optional' },
+			{ name: 'cc', manifest: 'cargo', kind: 'build' },
+			{ name: 'serde', manifest: 'cargo', kind: 'runtime' },
+			{ name: 'svelte', manifest: 'npm', kind: 'peer' },
+			{ name: 'zimmerframe', manifest: 'npm', kind: 'runtime' }
 		]);
+		assert.deepEqual(third_party.get('beta'), []);
 	});
 
-	test('reads nothing from a file with no steps, or from a key that only contains the word', () => {
-		assert.deepEqual(workflow_run_commands('on:\n  push:\n    branches: [main]\n'), []);
-		assert.deepEqual(workflow_run_commands('      dry_run: true\n      rerun: yes\n'), []);
+	test('leaves out the dev tables, and everything a test or tooling crate uses', () => {
+		const dep = { name: 'serde', source: 'registry+https://example.test/index' };
+		const { third_party } = build([
+			repo('alpha', 'alpha', {
+				package_json: { name: '@stack/alpha', devDependencies: { vitest: '^4' } },
+				cargo: {
+					packages: [
+						crate('xtask', [dep]),
+						crate('alpha_cli', [{ ...dep, name: 'insta', kind: 'dev' }])
+					]
+				}
+			})
+		]);
+		assert.deepEqual(third_party.get('alpha'), []);
 	});
 
-	test('throws on what it cannot read, so a command is never half read', () => {
-		assert.throws(() => workflow_run_commands('      - run: |2\n          x\n'));
-		assert.throws(() => workflow_run_commands('      - run: | # why\n          x\n'));
-		assert.throws(() => workflow_run_commands('      - run: npm ci\r\n'));
+	test("a registry crate that shares a name with one the stack does not publish is not the stack's", () => {
+		const { edges, third_party, problems } = build([
+			repo('alpha', 'alpha', {
+				cargo: {
+					packages: [
+						crate('alpha_cli', [{ name: 'beta', source: 'registry+https://example.test' }])
+					]
+				}
+			}),
+			// `publish` of `[]` is a crate that may be published nowhere
+			repo('beta', 'beta', { cargo: { packages: [crate('beta', [])] } })
+		]);
+		assert.deepEqual(problems, []);
+		assert.deepEqual(edges, []);
+		assert.deepEqual(third_party.get('alpha'), [
+			{ name: 'beta', manifest: 'cargo', kind: 'runtime' }
+		]);
 	});
 });

@@ -114,6 +114,14 @@ export const glossary_terms: Array<GlossaryTerm> = [
 		source: "This site's table of [gates](/coherence/gates)"
 	},
 	{
+		id: 'probe',
+		term: 'probe',
+		group: 'checks',
+		definition:
+			'A string that a named file, check script or CI step of a repo must have, or must not have, for a row of a table on this site to still stand. A probe that passes says the text is still there, not that the check it names is sound.',
+		source: "This site's table of [gates](/coherence/gates)"
+	},
+	{
 		id: 'local-gate',
 		term: 'local gate',
 		group: 'checks',

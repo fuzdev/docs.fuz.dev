@@ -1,6 +1,7 @@
 /**
  * Turns the stack repos' manifests into dependency edges between projects,
- * for the snapshot task. Pure, so its rules can be tested without a checkout.
+ * and into the list of what each repo declares from outside the stack, for
+ * the snapshot task. Pure, so its rules can be tested without a checkout.
  *
  * @module
  */
@@ -8,13 +9,19 @@
 import * as s from '@fuzdev/fuz_schema/schema.ts';
 
 import type { StackProject } from '#routes/stack_projects.ts';
-import { dep_kinds, type DepKind, type StackDepEdge } from './stack_snapshot.ts';
+import {
+	dep_kinds,
+	type DepKind,
+	type StackDepEdge,
+	type StackThirdParty
+} from './stack_snapshot.ts';
 
 /** The fields of a root `package.json` the snapshot reads. */
 export const PackageJson = s.loose_object({
 	name: s.optional(s.string),
 	private: s.optional(s.boolean),
 	scripts: s.optional(s.record(s.string)),
+	exports: s.optional(s.unknown),
 	dependencies: s.optional(s.record(s.string)),
 	peerDependencies: s.optional(s.record(s.string)),
 	peerDependenciesMeta: s.optional(s.record(s.loose_object({ optional: s.optional(s.boolean) }))),
@@ -28,6 +35,8 @@ export const CargoMetadata = s.loose_object({
 	packages: s.array(
 		s.loose_object({
 			name: s.string,
+			/** The absolute path of the crate's `Cargo.toml`. */
+			manifest_path: s.optional(s.string),
 			/** `null` when the crate may be published anywhere, a list of registries otherwise. */
 			publish: s.nullable(s.array(s.string)),
 			/** The crate's `[package.metadata]` table, where the release audit's `dev_only` is set. */
@@ -87,12 +96,18 @@ export const crate_is_dev_only = (crate: { name: string; metadata?: unknown }): 
 export interface StackEdgesResult {
 	/** Sorted by `to`, then `from_repo`, then `manifest`. */
 	edges: Array<StackDepEdge>;
+	/**
+	 * By repo, what its manifests declare that is no stack project's, outside the dev
+	 * tables, each name once per manifest at the strongest kind, sorted by name.
+	 */
+	third_party: Map<string, Array<StackThirdParty>>;
 	/** What could not be placed. A caller writes nothing when this is not empty. */
 	problems: Array<string>;
 }
 
 /**
- * Builds the edges between projects from every stack repo's manifests.
+ * Builds the edges between projects from every stack repo's manifests, and lists what
+ * each repo declares that the stack does not own.
  *
  * @param repos_path - the absolute path of the directory holding the checkouts, which a
  * crate's path dependency is read against
@@ -155,19 +170,43 @@ export const build_stack_edges = (
 		entry.via.set(kind, names.add(name));
 	};
 
+	// per repo, the kinds each outside name is declared at
+	const outside: Map<
+		string,
+		Map<string, { entry: Omit<StackThirdParty, 'kind'>; kinds: Set<DepKind> }>
+	> = new Map();
+	const add_outside = (
+		m: RepoManifests,
+		manifest: StackThirdParty['manifest'],
+		kind: DepKind,
+		name: string
+	): void => {
+		// a dev table is what a repo develops with, not what it asks a consumer to take
+		if (kind === 'dev') return;
+		const names = outside.get(m.repo)!;
+		const key = `${manifest}|${name}`;
+		const found = names.get(key) ?? { entry: { name, manifest }, kinds: new Set() };
+		found.kinds.add(kind);
+		names.set(key, found);
+	};
+
 	for (const m of manifests) {
+		outside.set(m.repo, new Map());
 		for (const [table, table_kind] of npm_tables) {
 			for (const name of Object.keys(m.package_json?.[table] ?? {})) {
 				const to = npm_names.get(name);
+				const optional_peer =
+					table_kind === 'peer' && m.package_json?.peerDependenciesMeta?.[name]?.optional === true;
+				const kind: DepKind = optional_peer ? 'peer_optional' : table_kind;
 				if (to === undefined) {
 					if (name.startsWith(`@${scope}/`)) {
 						problems.push(`${m.repo}: ${name} in ${table} maps to no stack project`);
+					} else {
+						add_outside(m, 'npm', kind, name);
 					}
 					continue;
 				}
-				const optional_peer =
-					table_kind === 'peer' && m.package_json?.peerDependenciesMeta?.[name]?.optional === true;
-				add(m, to, 'npm', optional_peer ? 'peer_optional' : table_kind, name);
+				add(m, to, 'npm', kind, name);
 			}
 		}
 		for (const crate of m.cargo?.packages ?? []) {
@@ -189,10 +228,15 @@ export const build_stack_edges = (
 					continue;
 				}
 				const known = crate_names.get(dep.name);
-				if (!known || known.project === m.project) continue;
+				if (!known) {
+					add_outside(m, 'cargo', kind, dep.name);
+					continue;
+				}
+				if (known.project === m.project) continue;
 				if (dep.source?.startsWith('registry+')) {
 					// a registry crate is the stack's only when the stack may publish one by that name
 					if (known.publishable) add(m, known.project, 'cargo', kind, dep.name, 'registry');
+					else add_outside(m, 'cargo', kind, dep.name);
 				} else {
 					// a git or other source that names a stack crate is an edge this cannot place
 					problems.push(
@@ -215,5 +259,16 @@ export const build_stack_edges = (
 				a.from_repo.localeCompare(b.from_repo, 'en') ||
 				a.manifest.localeCompare(b.manifest, 'en')
 		);
-	return { edges, problems };
+	const third_party: Map<string, Array<StackThirdParty>> = new Map();
+	for (const [repo, names] of outside) {
+		third_party.set(
+			repo,
+			[...names.values()]
+				.map(({ entry, kinds }) => ({ ...entry, kind: dep_kinds.find((k) => kinds.has(k))! }))
+				.toSorted(
+					(a, b) => a.name.localeCompare(b.name, 'en') || a.manifest.localeCompare(b.manifest, 'en')
+				)
+		);
+	}
+	return { edges, third_party, problems };
 };

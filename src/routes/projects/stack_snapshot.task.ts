@@ -1,155 +1,167 @@
 import { dirname } from 'node:path';
-import { fs, type FsDir } from '@fuzdev/gro/fs.ts';
-import { spawn, type SpawnProgram } from '@fuzdev/gro/spawn.ts';
+import { fs } from '@fuzdev/gro/fs.ts';
+import { spawn } from '@fuzdev/gro/spawn.ts';
 import type { Task } from '@fuzdev/gro/task.ts';
 import { TaskError } from '@fuzdev/gro/task_error.ts';
 import { meta } from '@fuzdev/fuz_schema/meta.ts';
 import * as s from '@fuzdev/fuz_schema/schema.ts';
 
 import { STACK_OWNER, stack_projects, type StackProject } from '#routes/stack_projects.ts';
+import { build_stack_edges } from './stack_edges.ts';
+import { build_stack_facets, StackFacets } from './stack_facets.ts';
 import {
-	build_stack_edges,
-	CargoMetadata,
-	PackageJson,
-	type RepoManifests
-} from './stack_edges.ts';
-import { StackSnapshot, type StackRepo, type StackWorkflow } from './stack_snapshot.ts';
-import { workflow_run_commands } from './workflow_commands.ts';
+	stack_page_read,
+	stack_repo_read,
+	StackReadError,
+	type StackReadDeps,
+	type StackRepoFiles
+} from './stack_read.ts';
+import { StackSnapshot, type StackRepo } from './stack_snapshot.ts';
 
 /** @nodocs */
 export const Args = s.object({
 	check: s.with_default(
-		meta(s.boolean, { description: 'compare the committed snapshot and write nothing' }),
+		meta(s.boolean, { description: 'compare the committed files and write nothing' }),
 		false
 	)
 });
 export type Args = s.Infer<typeof Args>;
 
-/** Where the snapshot is committed, in this repo. */
+/** Where the snapshot of the stack repos' own files is committed, in this repo. */
 const SNAPSHOT_PATH = 'src/routes/projects/stack_snapshot.json';
 
-interface RepoFiles extends RepoManifests {
-	check_script: string | null;
-	workflows: Array<StackWorkflow>;
-}
+/** Where what the stack page says of each project is committed, in this repo. */
+const FACETS_PATH = 'src/routes/projects/stack_facets.json';
 
-const read_repo = async (
-	repos_dir: FsDir,
-	repo: string,
-	project: string,
-	cargo: SpawnProgram
-): Promise<RepoFiles> => {
-	if (!(await repos_dir.exists(repo))) {
-		throw new TaskError(`no checkout of ${repo} beside this repo`);
-	}
-	const dir = repos_dir.dir(repo);
-
-	const package_text = await dir.read_text_if_exists('package.json');
-	const package_json =
-		package_text === null ? null : s.parse_or_throw(PackageJson, JSON.parse(package_text));
-
-	let cargo_metadata: CargoMetadata | null = null;
-	if (await dir.exists('Cargo.toml')) {
-		const result = await cargo.out(
-			['metadata', '--no-deps', '--offline', '--format-version', '1'],
-			{
-				cwd: dir
-			}
-		);
-		if (result.kind !== 'exited' || result.code !== 0) {
-			throw new TaskError(`cargo metadata failed in ${repo}: ${result.stderr.trim()}`);
-		}
-		cargo_metadata = s.parse_or_throw(CargoMetadata, JSON.parse(result.stdout));
-	}
-
-	const workflows: Array<StackWorkflow> = [];
-	if (await dir.exists('.github/workflows')) {
-		for await (const entry of dir.list('.github/workflows')) {
-			if (entry.kind !== 'file' || !/\.ya?ml$/.test(entry.name)) continue;
-			const yaml = await dir.read_text(`.github/workflows/${entry.name}`);
-			try {
-				workflows.push({ file: entry.name, runs: workflow_run_commands(yaml) });
-			} catch (error) {
-				throw new TaskError(`${repo}/.github/workflows/${entry.name}: ${error.message}`);
-			}
-		}
-	}
-	return {
-		repo,
-		project,
-		package_json,
-		cargo: cargo_metadata,
-		check_script: package_json?.scripts?.check ?? null,
-		workflows
-	};
+// what a committed file holds, or `null` for one that is missing or no longer parses,
+// which is then a file to rewrite
+const read_committed = async <T>(path: string, schema: s.Schema<T>): Promise<T | null> => {
+	const text = await fs.project.read_text_if_exists(path);
+	if (text === null) return null;
+	const parsed = s.parse(schema, JSON.parse(text));
+	return parsed.ok ? parsed.value : null;
 };
+
+// a snapshot without the day it was read and the commits it was read at, which say
+// when it was read and not what was found
+const snapshot_content = (snapshot: Pick<StackSnapshot, 'repos' | 'edges'>): string =>
+	JSON.stringify({
+		repos: snapshot.repos.map(({ commit: _, ...repo }) => repo),
+		edges: snapshot.edges
+	});
+const facets_content = ({ checked: _, commit: __, ...facets }: StackFacets): string =>
+	JSON.stringify(facets);
 
 /**
  * Run as `gro task src/routes/projects/stack_snapshot.task.ts`, with every stack repo
- * checked out beside this one and `cargo` installed. Writes the snapshot the project
- * pages read; with `--check`, writes nothing and fails when the repos have moved on.
+ * and the stack page's repo checked out beside this one, and `cargo` installed. Writes
+ * the two files the project pages read; with `--check`, writes nothing and fails when
+ * the repos have moved on.
  *
- * It reads each checkout's working tree, so run it with the siblings clean and on
- * their main branch.
+ * It reads each repo at the main branch its checkout last fetched, so a sibling may be
+ * mid-work. It refuses only where it must read the working tree: a repo whose
+ * `Cargo.toml` files, or a stack page whose data, are not what the main branch has.
  *
  * @nodocs
  */
 export const task: Task<Args> = {
-	summary: "read the stack repos' manifests and workflows into the committed snapshot",
+	summary: "read the stack repos' own files, and the stack page's data, into the committed files",
 	Args,
 	run: async ({ task_args, log }) => {
-		const repos_dir = await fs.open_dir(dirname(fs.project.path));
-		const cargo = spawn.program('cargo', { pass_env: ['RUSTUP_*', 'CARGO_HOME'] });
+		const deps: StackReadDeps = {
+			repos_dir: await fs.open_dir(dirname(fs.project.path)),
+			git: spawn.program('git'),
+			cargo: spawn.program('cargo', { pass_env: ['RUSTUP_*', 'CARGO_HOME'] })
+		};
 		// as the wider type, where every project may carry `packages`
 		const projects: ReadonlyArray<StackProject> = stack_projects;
+		const today = new Date().toISOString().slice(0, 10);
 
-		const files: Array<RepoFiles> = [];
-		for (const project of projects) {
-			for (const repo of project.repos) {
-				files.push(await read_repo(repos_dir, repo, project.name, cargo));
+		let snapshot: StackSnapshot;
+		let facets: StackFacets;
+		try {
+			const files: Array<StackRepoFiles> = [];
+			for (const project of projects) {
+				for (const repo of project.repos) {
+					files.push(await stack_repo_read(deps, repo, project.name));
+				}
 			}
-		}
-		const { edges, problems } = build_stack_edges(files, projects, repos_dir.path, STACK_OWNER);
-		if (problems.length > 0) {
-			throw new TaskError(`the snapshot would drop what it cannot place:\n${problems.join('\n')}`);
-		}
-		const repos: Array<StackRepo> = files.map((f) => ({
-			repo: f.repo,
-			project: f.project,
-			npm: f.package_json !== null,
-			cargo: f.cargo !== null,
-			check_script: f.check_script,
-			workflows: f.workflows
-		}));
-
-		// a committed file that no longer parses is one to rewrite
-		const committed_text = await fs.project.read_text_if_exists(SNAPSHOT_PATH);
-		const parsed =
-			committed_text === null ? null : s.parse(StackSnapshot, JSON.parse(committed_text));
-		const committed = parsed?.ok ? parsed.value : null;
-		const unchanged =
-			committed !== null &&
-			JSON.stringify({ repos: committed.repos, edges: committed.edges }) ===
-				JSON.stringify({ repos, edges });
-
-		if (task_args.check) {
-			if (!unchanged) {
+			const { edges, third_party, problems } = build_stack_edges(
+				files,
+				projects,
+				deps.repos_dir.path,
+				STACK_OWNER
+			);
+			if (problems.length > 0) {
 				throw new TaskError(
-					`${SNAPSHOT_PATH} no longer matches the repos; run the task to rewrite it`
+					`the snapshot would drop what it cannot place:\n${problems.join('\n')}`
 				);
 			}
-			log.info(`${SNAPSHOT_PATH} matches the repos (read ${committed.checked})`);
+			const repos: Array<StackRepo> = files.map((f) => ({
+				repo: f.repo,
+				project: f.project,
+				commit: f.commit,
+				npm: f.package_json !== null,
+				cargo: f.cargo !== null,
+				exports: f.exports,
+				check_script: f.check_script,
+				check_lines: f.check_lines,
+				third_party: third_party.get(f.repo) ?? [],
+				workflows: f.workflows
+			}));
+			snapshot = { checked: today, repos, edges };
+
+			const page = await stack_page_read(deps);
+			const built = build_stack_facets(
+				page.module,
+				projects.map((p) => p.name)
+			);
+			if (built.problems.length > 0) {
+				throw new TaskError(`the stack page does not line up:\n${built.problems.join('\n')}`);
+			}
+			facets = { checked: today, commit: page.commit, ...built.facets };
+		} catch (error) {
+			if (error instanceof StackReadError) throw new TaskError(error.message);
+			throw error;
+		}
+
+		const committed_snapshot = await read_committed(SNAPSHOT_PATH, StackSnapshot);
+		const committed_facets = await read_committed(FACETS_PATH, StackFacets);
+		const outputs = [
+			{
+				path: SNAPSHOT_PATH,
+				value: snapshot,
+				read: committed_snapshot?.checked,
+				unchanged:
+					committed_snapshot !== null &&
+					snapshot_content(committed_snapshot) === snapshot_content(snapshot)
+			},
+			{
+				path: FACETS_PATH,
+				value: facets,
+				read: committed_facets?.checked,
+				unchanged:
+					committed_facets !== null && facets_content(committed_facets) === facets_content(facets)
+			}
+		];
+
+		if (task_args.check) {
+			const moved = outputs.filter((output) => !output.unchanged);
+			if (moved.length > 0) {
+				throw new TaskError(
+					`${moved.map((output) => output.path).join(' and ')} no longer ` +
+						`${moved.length === 1 ? 'matches' : 'match'} the repos; run the task to rewrite`
+				);
+			}
+			for (const output of outputs) {
+				log.info(`${output.path} matches the repos (read ${output.read})`);
+			}
 			return;
 		}
-		const snapshot: StackSnapshot = {
-			checked: new Date().toISOString().slice(0, 10),
-			repos,
-			edges
-		};
-		await fs.project.write(SNAPSHOT_PATH, JSON.stringify(snapshot, null, '\t') + '\n');
-		log.info(
-			`${unchanged ? 'unchanged' : 'rewrote'} ${SNAPSHOT_PATH}: ` +
-				`${repos.length} repos, ${edges.length} edges`
-		);
+		for (const output of outputs) {
+			await fs.project.write(output.path, JSON.stringify(output.value, null, '\t') + '\n');
+			log.info(`${output.unchanged ? 'unchanged' : 'rewrote'} ${output.path}`);
+		}
+		log.info(`${snapshot.repos.length} repos, ${snapshot.edges.length} edges`);
 	}
 };

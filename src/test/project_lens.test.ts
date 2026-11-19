@@ -16,6 +16,7 @@ import {
 	project_lens,
 	project_lens_sections,
 	project_lens_size,
+	record_mentions_project,
 	record_strings,
 	text_mentions_project,
 	type ProjectLens
@@ -116,6 +117,7 @@ describe('text_mentions_project', () => {
 
 // every string of every record on the two data pages, with nothing left out by hand
 const data_strings = record_strings([
+	intro,
 	failures,
 	oracle_comparisons,
 	gates,
@@ -153,9 +155,24 @@ describe('project_lenses', () => {
 		assert.ok(found > 0, 'no string named any project, so nothing was checked');
 	});
 
+	// a probe's strings are commands, where `gro check` names no project
+	test('a probe counts by the repo it is of, and never by a word in its command', () => {
+		const project = (name: string): StackProject => stack_projects.find((p) => p.name === name)!;
+		const record = {
+			text: 'nothing named here',
+			runs: [{ probes: [{ kind: 'check_script', repo: 'mdz', has: 'gro check' }] }]
+		};
+		assert.deepEqual(record_strings(record), ['nothing named here']);
+		assert.ok(record_mentions_project(record, project('mdz')));
+		assert.ok(!record_mentions_project(record, project('gro')));
+		// a repo that is a project's second one, or is named apart from its project
+		const site = { probes: [{ kind: 'file', repo: 'docs.fuz.dev', path: 'x' }] };
+		assert.ok(record_mentions_project(site, project('fuz-stack')));
+	});
+
 	// prose that is outside every record must name no project, or a lens would miss it
 	test('the prose outside the records names no project', () => {
-		for (const text of record_strings([intro, passages, headword, method.text, efficiency.text])) {
+		for (const text of record_strings([passages, headword, method.text, efficiency.text])) {
 			for (const p of stack_projects) {
 				assert.ok(!text_mentions_project(text, p), `"${text}" names ${p.name}`);
 			}

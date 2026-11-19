@@ -1,0 +1,273 @@
+{
+	"checked": "2026-11-19",
+	"commit": "4374f1e036aae6a882e9d433f8c219c7015dc09b",
+	"layers": [
+		"apps and sites",
+		"fullstack",
+		"frontend",
+		"tooling",
+		"utilities",
+		"native and data"
+	],
+	"statuses": [
+		{
+			"id": "ready",
+			"label": "ready",
+			"description": "usable in production; pre-1.0, so follow the changesets"
+		},
+		{
+			"id": "early",
+			"label": "early",
+			"description": "pre-alpha and under active construction; expect gaps"
+		},
+		{
+			"id": "experimental",
+			"label": "experimental",
+			"description": "exploring a direction; may change shape or not survive"
+		},
+		{
+			"id": "planned",
+			"label": "planned",
+			"description": "designed but not yet started"
+		}
+	],
+	"languages": [
+		{
+			"id": "ts",
+			"label": "TypeScript"
+		},
+		{
+			"id": "svelte",
+			"label": "Svelte"
+		},
+		{
+			"id": "css",
+			"label": "CSS"
+		},
+		{
+			"id": "rust",
+			"label": "Rust"
+		},
+		{
+			"id": "wasm",
+			"label": "WASM"
+		}
+	],
+	"projects": [
+		{
+			"name": "fuz_template",
+			"layer": "apps and sites",
+			"status": "ready",
+			"languages": [
+				"ts",
+				"svelte",
+				"rust"
+			],
+			"site": "https://template.fuz.dev/"
+		},
+		{
+			"name": "zzz",
+			"layer": "apps and sites",
+			"status": "experimental",
+			"languages": [
+				"ts",
+				"svelte",
+				"rust"
+			],
+			"site": null
+		},
+		{
+			"name": "zervo",
+			"layer": "apps and sites",
+			"status": "experimental",
+			"languages": [
+				"rust"
+			],
+			"site": null
+		},
+		{
+			"name": "fuz_forge",
+			"layer": "apps and sites",
+			"status": "early",
+			"languages": [
+				"rust",
+				"svelte"
+			],
+			"site": null
+		},
+		{
+			"name": "fuz_app",
+			"layer": "fullstack",
+			"status": "early",
+			"languages": [
+				"ts"
+			],
+			"site": "https://app.fuz.dev/"
+		},
+		{
+			"name": "fuz",
+			"layer": "fullstack",
+			"status": "early",
+			"languages": [
+				"rust"
+			],
+			"site": null
+		},
+		{
+			"name": "fuz_css",
+			"layer": "frontend",
+			"status": "ready",
+			"languages": [
+				"css"
+			],
+			"site": "https://css.fuz.dev/"
+		},
+		{
+			"name": "fuz_ui",
+			"layer": "frontend",
+			"status": "ready",
+			"languages": [
+				"svelte"
+			],
+			"site": "https://ui.fuz.dev/"
+		},
+		{
+			"name": "fuz_code",
+			"layer": "frontend",
+			"status": "ready",
+			"languages": [
+				"ts"
+			],
+			"site": "https://code.fuz.dev/"
+		},
+		{
+			"name": "mdz",
+			"layer": "frontend",
+			"status": "ready",
+			"languages": [
+				"ts"
+			],
+			"site": "https://mdz.fuz.dev/"
+		},
+		{
+			"name": "fuz_blog",
+			"layer": "frontend",
+			"status": "ready",
+			"languages": [
+				"ts",
+				"svelte"
+			],
+			"site": "https://blog.fuz.dev/"
+		},
+		{
+			"name": "gro",
+			"layer": "tooling",
+			"status": "experimental",
+			"languages": [
+				"ts",
+				"rust"
+			],
+			"site": null
+		},
+		{
+			"name": "tsv",
+			"layer": "tooling",
+			"status": "ready",
+			"languages": [
+				"rust"
+			],
+			"site": "https://tsv.fuz.dev/"
+		},
+		{
+			"name": "tsv-format",
+			"layer": "tooling",
+			"status": "ready",
+			"languages": [
+				"wasm",
+				"ts"
+			],
+			"site": null
+		},
+		{
+			"name": "svelte-docinfo",
+			"layer": "tooling",
+			"status": "ready",
+			"languages": [
+				"ts"
+			],
+			"site": "https://svelte-docinfo.fuz.dev/"
+		},
+		{
+			"name": "fuz_repos",
+			"layer": "tooling",
+			"status": "ready",
+			"languages": [
+				"ts",
+				"rust"
+			],
+			"site": "https://repos.fuz.dev/"
+		},
+		{
+			"name": "fuz-stack",
+			"layer": "tooling",
+			"status": "ready",
+			"languages": [],
+			"site": "https://docs.fuz.dev/skills/fuz-stack"
+		},
+		{
+			"name": "corpora",
+			"layer": "tooling",
+			"status": "ready",
+			"languages": [],
+			"site": null
+		},
+		{
+			"name": "fuz_util",
+			"layer": "utilities",
+			"status": "ready",
+			"languages": [
+				"ts"
+			],
+			"site": "https://util.fuz.dev/"
+		},
+		{
+			"name": "fuz_schema",
+			"layer": "utilities",
+			"status": "ready",
+			"languages": [
+				"ts",
+				"rust"
+			],
+			"site": "https://schema.fuz.dev/"
+		},
+		{
+			"name": "blake3",
+			"layer": "utilities",
+			"status": "ready",
+			"languages": [
+				"rust",
+				"wasm"
+			],
+			"site": null
+		},
+		{
+			"name": "zap",
+			"layer": "native and data",
+			"status": "early",
+			"languages": [
+				"ts",
+				"rust"
+			],
+			"site": "https://zap.fuz.dev/"
+		},
+		{
+			"name": "pglet",
+			"layer": "native and data",
+			"status": "early",
+			"languages": [
+				"rust"
+			],
+			"site": null
+		}
+	]
+}

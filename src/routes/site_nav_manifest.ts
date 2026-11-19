@@ -73,25 +73,42 @@ export const nav_glossary_sections: Record<string, string> = {
 
 /** The stack's projects, each with its page's sections by anchor. */
 export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string, string> }> = [
-	{ name: 'fuz_template', sections: { uses: 'What it uses', commands: 'Its check script and CI' } },
+	{
+		name: 'fuz_template',
+		sections: {
+			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
+			commands: 'Its check script and CI',
+			gates: 'Gates'
+		}
+	},
 	{
 		name: 'zzz',
 		sections: {
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
+			opening: 'In the opening of the coherence section',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates'
 		}
 	},
 	{
 		name: 'zervo',
-		sections: { commands: 'Its check script and CI', holds: 'Holds that name it', gates: 'Gates' }
+		sections: {
+			third_party: 'What it declares from outside the stack',
+			commands: 'Its check script and CI',
+			holds: 'Holds that name it',
+			gates: 'Gates'
+		}
 	},
 	{
 		name: 'fuz_forge',
 		sections: {
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
+			opening: 'In the opening of the coherence section',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -105,9 +122,11 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
+			gates: 'Gates',
 			moved: 'Rules that moved down',
 			values: 'Values'
 		}
@@ -116,6 +135,7 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		name: 'fuz',
 		sections: {
 			used_by: 'What uses it',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
@@ -129,8 +149,10 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
-			holds: 'Holds that name it'
+			holds: 'Holds that name it',
+			gates: 'Gates'
 		}
 	},
 	{
@@ -138,8 +160,10 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
-			holds: 'Holds that name it'
+			holds: 'Holds that name it',
+			gates: 'Gates'
 		}
 	},
 	{
@@ -147,7 +171,9 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
+			gates: 'Gates',
 			values: 'Values'
 		}
 	},
@@ -156,17 +182,28 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
-			oracles: 'Comparisons that name it'
+			oracles: 'Comparisons that name it',
+			gates: 'Gates'
 		}
 	},
-	{ name: 'fuz_blog', sections: { uses: 'What it uses', commands: 'Its check script and CI' } },
+	{
+		name: 'fuz_blog',
+		sections: {
+			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
+			commands: 'Its check script and CI',
+			gates: 'Gates'
+		}
+	},
 	{
 		name: 'gro',
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
@@ -180,6 +217,7 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
@@ -195,15 +233,23 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	},
 	{
 		name: 'svelte-docinfo',
-		sections: { used_by: 'What uses it', uses: 'What it uses', commands: 'Its check script and CI' }
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
+			commands: 'Its check script and CI',
+			gates: 'Gates'
+		}
 	},
 	{
 		name: 'fuz_repos',
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
+			gates: 'Gates',
 			actions: 'Actions kept with a person'
 		}
 	},
@@ -212,6 +258,7 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			uses: 'What it uses',
 			commands: 'Its check script and CI',
+			opening: 'In the opening of the coherence section',
 			holds: 'Holds that name it',
 			gates: 'Gates',
 			actions: 'Actions kept with a person',
@@ -225,13 +272,20 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	},
 	{
 		name: 'fuz_util',
-		sections: { used_by: 'What uses it', uses: 'What it uses', commands: 'Its check script and CI' }
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
+			commands: 'Its check script and CI',
+			gates: 'Gates'
+		}
 	},
 	{
 		name: 'fuz_schema',
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
@@ -245,6 +299,7 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
@@ -258,6 +313,7 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
@@ -271,6 +327,7 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		sections: {
 			used_by: 'What uses it',
 			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
 			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',

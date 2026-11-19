@@ -34,7 +34,7 @@ export const site_sections = [
 	{
 		name: 'projects',
 		icon: '📦',
-		summary: "each project of the stack, seen through this site's data"
+		summary: "each project of the stack, as its own files and this site's data show it"
 	},
 	{
 		name: 'glossary',

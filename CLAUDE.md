@@ -18,7 +18,8 @@ For coding conventions, see Skill(fuz-stack).
   rendered from one data file: `/coherence` as a section of several pages,
   `/values` as one page
 - `/projects`, a page per project computed from those two data files and
-  from a committed snapshot of the stack repos' manifests and workflows
+  from a committed snapshot of the stack repos' own files, with pages that
+  look across the stack: dependencies, checks, and third-party code
 - `/glossary`, the words the site and the stack use in a sense of their own
 - A few browser tools under `/tools`
 
@@ -30,10 +31,12 @@ their claims were checked.
 What the stack is belongs to [fuz.dev/stack](https://www.fuz.dev/stack), and
 each package's API docs to its own site. This repo keeps no copy of either:
 no aggregated API docs and no description of a project (the landing and
-about pages show fuz_ui's package list). It does keep two things read from
-elsewhere, each held by a task where the siblings are checked out: the stack
-page's project names and repos, in `stack_projects.ts`, and what each repo's
-manifests and workflows declare, in `projects/stack_snapshot.json`.
+about pages show fuz_ui's package list). It does keep three things read from
+elsewhere, each written or held by a task where the siblings are checked
+out: the stack page's project names and repos, in `stack_projects.ts`; how
+the stack page files each project (layer, status, languages, site), in
+`projects/stack_facets.json`; and what each repo's own files declare, in
+`projects/stack_snapshot.json`.
 
 ## Gro commands
 
@@ -44,13 +47,35 @@ gro test       # run tests with vitest
 gro gen        # regenerate the skill routes from skills/, and the sidebar manifest
 gro build      # build for production (static adapter)
 gro deploy     # build, commit, and push to the deploy branch (the maintainer's)
-gro task src/routes/evidence_check.task.ts  # resolve the claims' links against sibling checkouts
-gro task src/routes/projects/stack_snapshot.task.ts  # reread the stack repos into the snapshot (--check to compare)
+gro task src/routes/evidence_check.task.ts  # resolve the claims' links and file probes against sibling checkouts
+gro task src/routes/projects/stack_snapshot.task.ts  # reread the stack repos into the committed files (--check to compare)
 ```
 
-Every gen reads only this repo, so `gro check` and CI check generated files
-for drift with nothing checked out beside it. The two tasks above are the
-commands that need the sibling repos, and neither runs in the gate.
+## Reading other repos
+
+Data derived from another repo of the stack follows these rules:
+
+- **A gen reads only this repo**, committed files included. So `gro check`
+  and CI check generated files for drift with nothing checked out beside it.
+- **A task may read any stack repo at `../name`**, and the stack page's repo.
+  It writes a committed, dated file that pages and gens then read, and takes
+  `--check` to compare without writing. It never runs in the gate.
+- **A task that writes a file reads a sibling at its main branch**
+  (`origin/main` as the checkout last fetched it), through git, so a sibling
+  may be mid-work and nothing uncommitted or unpushed is published as the
+  repo's. Where it must read the working tree it first refuses a tree that
+  differs from the main branch there. The evidence task writes nothing and
+  reads working trees, which its module doc says.
+- **A committed file records what was read and where**: the day, and the
+  commit of each repo, which a page uses for links that do not move. Neither
+  is part of what `--check` compares.
+- **No versions and no counts go in**, so a file changes when a relationship
+  does and not on every release. Data that changes on every commit
+  (measurements, test counts) does not belong in these files.
+- **A task fails and writes nothing when it cannot read or place
+  something.** What it drops silently is how a page ends up wrong.
+
+The two tasks above are the commands that need the sibling repos.
 
 ## Key dependencies
 
@@ -80,16 +105,17 @@ src/
 │   ├── style.css         # the styles the two data pages share
 │   ├── evidence.ts       # the evidence link checker
 │   ├── evidence_check.task.ts
+│   ├── probe.ts          # probes: what a file must show for a claim to stand
 │   ├── library.ts        # this repo's own library metadata
 │   ├── skills/           # the skills index, the generator, and its output (has its own CLAUDE.md)
 │   ├── stack_projects.ts # the projects the data pages may name, with their repos
 │   ├── coherence/        # the coherence section: its data file, page list, and pages
-│   ├── projects/         # the project pages: the lens, the snapshot and its task
+│   ├── projects/         # the project pages: the lens, the snapshot and its task, the stack-wide views
 │   ├── glossary/         # the glossary page and its data file
 │   ├── values/           # the values page, its data file and section names
 │   ├── tools/            # the tools index, its manifest, and each tool
 │   └── about/            # this repo's summary and ecosystem links
-└── test/                 # tests for the data files, the lens, the snapshot's rules, and the evidence checker
+└── test/                 # tests for the data files, the lens, the snapshot's rules, the probes, and the evidence checker
 ```
 
 ## Routes
@@ -112,6 +138,10 @@ src/
   depends on it, what it depends on, its check script and CI, and what the
   two data pages say of it (computed)
 - `/projects/dependencies` - every dependency between the stack's projects
+- `/projects/checks` - every repo's check script, how its `CLAUDE.md`
+  comments it, the classes of repos the gates page speaks of, its CI
+  workflows, and the actions they use
+- `/projects/third-party` - what each repo declares from outside the stack
 - `/glossary` - the site's and the stack's own words, each defined once
 - `/tools` and `/tools/hash` - the tools index and the BLAKE3 hashing tool
 - `/about` - this repo's summary and ecosystem links
@@ -130,13 +160,15 @@ page both render it, so adding, renaming, or reordering a section is an edit
 there. Under a section the sidebar lists what that section's own data names:
 the skills and their references from `skills/skills_manifest.ts`, the tools
 from `tools/tools_manifest.ts`, the coherence section's pages from
-`coherence/coherence_pages.ts`, the projects from
+`coherence/coherence_pages.ts`, the stack-wide project pages from
+`projects/project_views.ts` and the projects from
 `projects/project_page.ts`, and for `/values` and `/glossary` the page's
 sections.
 
 `PageSections.svelte` gives a page a column of its sections on wide screens;
 at or below 1000px the sidebar lists them instead. `/values`, `/glossary`,
-`/coherence/gaps`, each coherence family page and each project page use it.
+`/coherence/gaps`, each coherence family page, each project page and the
+stack-wide project pages with sections use it.
 
 What the sidebar lists under `/coherence` and `/projects` comes from
 `site_nav_manifest.ts`, generated from the data, so the layout every page
@@ -200,6 +232,28 @@ longer one.
   much it catches.
 - **The agent harness's deny rules are not public.** The page says so where
   it relies on them, and spells out no rule that fuz_repos's docs don't.
+- **A row of the gates or oracles table may carry probes** (`probe.ts`): a
+  string that a named file, check script or CI step of a repo must have, or
+  must not have, for the row to stand. An oracle row carries them per run,
+  so each says when the comparison runs. A probe of a check script or a
+  workflow is checked against the snapshot by `src/test/probe.test.ts`, in
+  the gate, and a probe of a file by the evidence task. Write one for a new
+  row, as short as will fail when the row stops being true, with no version
+  or count in it. A probe that passes says a command is still wired where
+  the row says, not that the check is sound. A probe reads only the text it
+  names: a `lacks` does not see the same thing reached through another
+  script or switched on by an environment variable, so prefer the string of
+  the call itself over a name that also appears in a comment.
+- **A gate row that speaks of a class of repos names it** (`where_class`),
+  and the page lists the class's members from the snapshot
+  (`projects/repo_classes.ts`). A class says only what the snapshot shows:
+  a repo that reaches the same check through a script its check script
+  calls is not a member, so the row names it in words. A class of CI steps
+  counts a command a change is held to: in a workflow that runs on a push or
+  a pull request, in a step that fails its job, and not a shell comment.
+- **The opening is mdz**, and a paragraph of it that cites something is an
+  evidence entry like any other. A paragraph that names a project is in that
+  project's lens.
 
 `/coherence/gaps` is a view of the same file: every `gap`, blank rung,
 out-of-reach rung and `wanted` line by failure, the kept actions with no part
@@ -221,48 +275,85 @@ the views settle.
 Every project in `stack_projects.ts` has a page, built by
 `projects/project_page.ts` from two sources, neither of which adds a claim.
 
-**The snapshot.** `projects/stack_snapshot.task.ts` reads each stack repo's
-root `package.json`, its `cargo metadata`, and its workflow files, and writes
-`projects/stack_snapshot.json`: an edge for each dependency of one repo on
-another project, at the strongest kind the repo declares, plus each repo's
-`check` script and the commands its workflows run. The rules that turn
-manifests into edges are in `stack_edges.ts`, pure and tested;
-`stack_snapshot.ts` is the schema, and `stack_data.ts` parses the committed
-file with it and is what the pages read. The task imports the schema and
-never the parsed file, so it can rewrite a file that no longer parses.
+**The snapshot.** `projects/stack_snapshot.task.ts` reads each stack repo at
+its main branch and writes `projects/stack_snapshot.json`. For each repo it
+holds:
 
-- It is committed and dated, and the gate never regenerates it. `--check`
-  compares it with the repos and fails on a difference. Rerun the task when
-  a stack repo changes a manifest or a workflow. It reads each checkout's
-  working tree, so run it with the siblings clean and on `main`.
+- **An edge for each dependency on another project**, at the strongest kind
+  the repo declares, from its root `package.json` and its `cargo metadata`.
+- **What it declares from outside the stack**, by name, outside the dev
+  tables.
+- **Its `check` script**, whether its `package.json` has an exports map, and
+  the lines of its `CLAUDE.md` that comment its check command
+  (`check_lines.ts`): a line in a code block that is `gro check` or
+  `npm run check` with a `#` comment, or whose comment says to run it before
+  committing.
+- **Its workflows**: what triggers each, and each job's steps in file order,
+  a step being a command or an action with how it is pinned, and whether it
+  may fail without failing its job
+  (`workflow_read.ts`, over `yaml_subset.ts`, which reads the YAML these
+  files use and refuses the rest).
+- **The commit it was read at.**
+
+The same task reads the stack page's data into `projects/stack_facets.json`:
+each project's layer, status, languages and site, with the page's own gloss
+of each status. A tagline or a layer's blurb stays on the stack page.
+
+`stack_read.ts` is the reader, and each rule that turns a file into data is
+a pure, tested module beside it (`stack_edges.ts`, `check_lines.ts`,
+`workflow_read.ts`, `stack_facets.ts`). `stack_snapshot.ts` and
+`stack_facets.ts` are the schemas, and `stack_data.ts` parses the committed
+files with them and is what the pages read. The task imports the schemas and
+never the parsed files, so it can rewrite a file that no longer parses.
+
+- Both files are committed and dated, and the gate never regenerates them.
+  `--check` compares them with the repos and fails on a difference. Rerun
+  the task when a stack repo changes a manifest, a workflow or the line of
+  its `CLAUDE.md` that comments its check command, or when the stack page
+  changes.
+- It reads through git, so a sibling may have uncommitted work. It refuses
+  only a repo whose `Cargo.toml` files differ from the main branch or whose
+  workspace takes in a crate the main branch does not have, since
+  `cargo metadata` reads the working tree, and a stack page whose data file
+  does, since that is imported as a module. It does not fetch: run it after
+  the siblings are pulled.
 - It fails and writes nothing when it cannot place a name it should know: an
   `@fuzdev` package that maps to no project, a crate path that leads off the
-  stack, a git source that names a stack crate, or a workflow whose `run`
-  value it cannot read. A registry crate counts as the stack's only when the
-  stack may publish one by that name.
+  stack, a git source that names a stack crate, a workflow it cannot read
+  whole, or a stack page whose projects are not this site's list. A registry
+  crate counts as the stack's only when the stack may publish one by that
+  name.
 - What a test or tooling crate depends on (`xtask`, `testing_*`, a crate the
   release audit marks `dev_only`) is a dev dependency, whatever its manifest
-  table says.
-- It records no versions, so it changes when a relationship does.
+  table says. A bench, debug or test-support crate under another name is not
+  recognized, so what it uses is listed as the workspace's.
+- It records no versions, an action's included, so it changes when a
+  relationship does.
 - A package built into an ignored directory is in no committed manifest, so
   `stack_projects.ts` names those under `packages`.
-- A page shows the `run` steps of a repo's workflows and its `check` script,
-  and does not say which command is the gate. That is a claim, and belongs
-  on a data page. The sentences a page shows about the snapshot's limits are
-  `snapshot_notes`, in `stack_snapshot.ts`.
+- A page quotes what the snapshot holds and does not say which command is
+  the gate. That is a claim, and belongs on a data page. The sentences a
+  page shows about the snapshot's limits are `snapshot_notes`, in
+  `stack_snapshot.ts`.
+
+**The stack-wide pages** are listed in `projects/project_views.ts`, each a
+view of the snapshot across every repo. `repo_classes.ts` computes the
+classes of repos the gates table speaks of.
 
 **The lens.** `src/routes/projects/project_lens.ts` computes, for each entry of
 `stack_projects.ts`, every record of the two data files that names the
 project or links it: one of its repos, or for the project this site is, a
 skill route. A record is searched whole, every string in it, and a test
-walks both data files to hold that. `/projects/{name}` renders the lens and
+walks both data files to hold that. A record's probes are the exception: a
+probe counts by the repo it is of, since its strings are commands, where
+`gro check` names no project. `/projects/{name}` renders the lens and
 links each record back to where it lives. The pages add no claims: a
 sentence about a project is written on a data page, and a project the data
 never names has a page that says so.
 
 A name is matched as a whole lowercase word, so `fuz` is not found in
 `fuz_schema`, `fuz-stack` or `Fuz`, and never inside a link's URL. A record
-about a class of repos ("the repos whose gate is gro's check") names no
+about a class of repos ("the repos whose check script runs gro's check") names no
 project and is in no lens.
 
 Where a new page goes: a view of one section's data is a page in that
@@ -284,14 +375,16 @@ resolved by the evidence task with the rest, and the page carries its own
 `gro task src/routes/evidence_check.task.ts` resolves every evidence link in
 the coherence, values and glossary data against this repo and its sibling
 checkouts: the file exists, and
-for Markdown so does the heading the link names. It also holds
+for Markdown so does the heading the link names. It checks the coherence
+data's probes of a file the same way. It also holds
 `stack_projects.ts`, and the repos the links name, to the stack page's list,
 read from the fuz.dev checkout. Run it after changing a data file, and
 when a cited repo renames a doc. `gro check` covers only the links to this
 site's own skill pages, since the siblings aren't in CI. The checker is `src/routes/evidence.ts`.
 
 A link that resolves says the document exists, not that the sentence beside
-it is true. When a cited repo's docs and its code disagree, the page follows
+it is true. A probe says more, and only for the part of a sentence a file
+can show. When a cited repo's docs and its code disagree, the page follows
 the code.
 
 ## Skills

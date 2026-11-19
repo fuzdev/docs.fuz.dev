@@ -22,6 +22,7 @@
 		nav_glossary_sections,
 		nav_projects
 	} from './site_nav_manifest.ts';
+	import { project_views } from './projects/project_views.ts';
 	import { site_sections, type SiteSectionName } from './site_sections.ts';
 	import { skills } from './skills/skills_manifest.ts';
 	import { tools } from './tools/tools_manifest.ts';
@@ -131,6 +132,26 @@
 					</ul>
 				{:else if section.name === 'projects' && href_contains_current_page(section_href, page.url)}
 					<ul class="unstyled sub">
+						{#each project_views as view (view.path)}
+							{@const view_href = resolve(view.path)}
+							<li>
+								<MenuLink class="menuitem" href={view_href}>{view.title}</MenuLink>
+								{#if page.url.pathname === view_href}
+									<ul class="unstyled sub narrow-only">
+										{#each Object.entries(view.sections) as [id, title] (id)}
+											<li>
+												<a
+													class={['menuitem', { selected: id === page.url.hash.slice(1) }]}
+													href="{view_href}#{id}"
+												>
+													{title}
+												</a>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</li>
+						{/each}
 						{#each nav_projects as project (project.name)}
 							{@const project_href = resolve('/projects/[name]', { name: project.name })}
 							<li>

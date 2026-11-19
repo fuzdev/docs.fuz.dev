@@ -5,12 +5,16 @@ import { TaskError } from '@fuzdev/gro/task_error.ts';
 import * as s from '@fuzdev/fuz_schema/schema.ts';
 
 import { coherence_entries } from './coherence/coherence.ts';
-import { stack_projects, values_entries } from './values/values.ts';
+import { STACK_OWNER, stack_projects } from './stack_projects.ts';
+import { values_entries } from './values/values.ts';
 import {
 	entries_to_links,
 	evidence_check,
 	evidence_verdict_fails,
-	stack_page_project_names
+	links_outside_repos,
+	stack_page_project_names,
+	stack_page_project_repos,
+	stack_page_repo_names
 } from './evidence.ts';
 
 /** @nodocs */
@@ -27,7 +31,7 @@ const STACK_PAGE_DATA = 'fuz.dev/src/routes/stack/stack.ts';
  * @nodocs
  */
 export const task: Task<Args> = {
-	summary: 'check that the coherence and values pages cite files and projects that exist',
+	summary: 'check that the coherence and values pages cite files that exist, in stack repos',
 	Args,
 	run: async ({ log }) => {
 		const repos_dir = await fs.open_dir(dirname(fs.project.path));
@@ -46,17 +50,46 @@ export const task: Task<Args> = {
 				`${unchecked.length} cannot be checked from disk, ${failed.length} fail`
 		);
 
-		// the values page may name only what the stack page announces
+		// both pages may cite only what the stack page announces: every link names one of
+		// its repos, and this site's list of projects is the stack page's
 		const stack_page = await repos_dir.read_text_if_exists(STACK_PAGE_DATA);
 		if (stack_page === null) throw new TaskError(`cannot read ${STACK_PAGE_DATA}`);
+		const announced_repos = stack_page_repo_names(stack_page);
+		if (announced_repos.size === 0) throw new TaskError(`no repos read from ${STACK_PAGE_DATA}`);
+		const outside = links_outside_repos(links, STACK_OWNER, announced_repos);
+		for (const l of outside) log.error(`not a stack repo: ${l.reference} (${l.record})`);
+		// this site's own list of projects is the stack page's: the same names in the same
+		// order, each with that project's repo first and no repo the page does not name
 		const announced = stack_page_project_names(stack_page);
-		const unannounced = stack_projects.filter((name) => !announced.has(name));
-		for (const name of unannounced) log.error(`not on the stack page: ${name}`);
+		const page_repos = stack_page_project_repos(stack_page);
+		const unannounced: Array<string> = [];
+		const listed: Array<string> = stack_projects.map((p) => p.name);
+		for (const name of announced) {
+			if (!listed.includes(name)) unannounced.push(`${name} is on the stack page and not listed`);
+		}
+		if (unannounced.length === 0 && listed.join() !== [...announced].join()) {
+			unannounced.push("the list is not in the stack page's order");
+		}
+		for (const project of stack_projects) {
+			if (!announced.has(project.name)) {
+				unannounced.push(`${project.name} is not on the stack page`);
+			} else if (page_repos.get(project.name) !== project.repos[0]) {
+				unannounced.push(
+					`${project.name}'s repo is ${page_repos.get(project.name)}, not ${project.repos[0]}`
+				);
+			}
+			for (const repo of project.repos) {
+				if (!announced_repos.has(repo))
+					unannounced.push(`${project.name}: ${repo} is no stack repo`);
+			}
+		}
+		for (const message of unannounced) log.error(message);
 
-		if (failed.length > 0 || unannounced.length > 0) {
+		if (failed.length > 0 || outside.length > 0 || unannounced.length > 0) {
 			throw new TaskError(
 				`${failed.length} evidence links do not resolve, ` +
-					`${unannounced.length} projects are not announced`
+					`${outside.length} name a repo off the stack page, ` +
+					`${unannounced.length} entries of the project list are off it`
 			);
 		}
 	}

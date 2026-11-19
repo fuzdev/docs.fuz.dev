@@ -32,6 +32,11 @@ export const site_sections = [
 		summary: "what the stack's design is measured against (a sketch)"
 	},
 	{
+		name: 'projects',
+		icon: '📦',
+		summary: "each project of the stack, seen through this site's data"
+	},
+	{
 		name: 'tools',
 		icon: '🪄',
 		summary: 'small tools that run in the browser'

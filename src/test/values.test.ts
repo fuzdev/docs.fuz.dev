@@ -1,23 +1,18 @@
 import { describe, test, assert } from 'vitest';
 
-import { entries_to_links, evidence_target_parse } from '#routes/evidence.ts';
 import {
 	contexts,
 	decisions,
 	efficiency,
 	method,
-	stack_projects,
 	stated_orders,
 	term_ids,
 	terms,
 	value_kind_ids,
 	values,
-	values_entries,
 	type TermId
 } from '#routes/values/values.ts';
 import { values_sections } from '#routes/values/values_sections.ts';
-
-const announced = new Set(stack_projects);
 
 // the page keys each list by these, so a repeat would fail the render and not a test
 test('each list of evidence has distinct entries', () => {
@@ -62,11 +57,11 @@ describe('values', () => {
 });
 
 describe('stated_orders', () => {
-	test('each names an announced project once, and ranks each term at most once', () => {
+	// the type holds each `project` to the stack's list
+	test('each names its project once, and ranks each term at most once', () => {
 		const projects = stated_orders.map((o) => o.project);
 		assert.strictEqual(new Set(projects).size, projects.length);
 		for (const o of stated_orders) {
-			assert.ok(announced.has(o.project), `${o.project} is not on the stack page`);
 			assert.ok(o.ranks.length > 0, o.project);
 			const items = [...o.ranks.flat(), ...(o.overarching ? [o.overarching] : [])];
 			const ranked: Array<TermId> = [];
@@ -96,25 +91,11 @@ describe('contexts', () => {
 });
 
 describe('decisions', () => {
-	test('each names an announced project and two different terms', () => {
+	test('each names two different terms', () => {
 		for (const d of decisions) {
 			const owner = `${d.project}: ${d.won} over ${d.lost}`;
-			assert.ok(announced.has(d.project), `${d.project} is not on the stack page`);
 			assert.notStrictEqual(d.won, d.lost, owner);
 			assert.ok(d.chose.trim() && d.cost.trim(), owner);
 		}
 	});
-});
-
-// a repo link names a repo, and a repo that is cited is a project the page may name
-test('every repo link is to an announced project or one of its sites', () => {
-	const sites = new Set(['tsv.fuz.dev', 'docs.fuz.dev', 'fuz.dev']);
-	for (const link of entries_to_links(values_entries())) {
-		const target = evidence_target_parse(link.reference);
-		if (target.kind !== 'repo_file') continue;
-		assert.ok(
-			announced.has(target.repo) || sites.has(target.repo),
-			`${link.record}: ${target.repo} is not on the stack page`
-		);
-	}
 });

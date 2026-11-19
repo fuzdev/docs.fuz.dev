@@ -7,11 +7,12 @@
 [docs.fuz.dev](https://docs.fuz.dev/)
 
 This repo is the source of two agent skills and of the site that renders
-them. The site also has two pages of checkable claims about how the stack is
-built, [coherence](https://docs.fuz.dev/coherence) and
-[values](https://docs.fuz.dev/values), and a few browser tools. It is written
-by agents and inconsistently reviewed; where it and the code disagree, the
-code is right.
+them. The site also has checkable claims about how the stack is built, under
+[coherence](https://docs.fuz.dev/coherence) and
+[values](https://docs.fuz.dev/values), a page per
+[project](https://docs.fuz.dev/projects) computed from those claims, and a
+few browser tools. It is written by agents and inconsistently reviewed; where
+it and the code disagree, the code is right.
 
 For what the stack is, see [fuz.dev/stack](https://www.fuz.dev/stack).
 

@@ -3,19 +3,33 @@ import { describe, test, assert } from 'vitest';
 import {
 	claims_checked,
 	failure_holds,
+	failure_reached_holds,
 	failures,
 	gate_gaps,
 	gates,
 	hold_id,
 	hold_status_ids,
+	families,
+	family_failures,
+	family_ids,
+	intro,
 	kept_actions,
 	mechanism_ids,
+	moved_rules,
 	oracle_comparisons,
 	oracle_kind_ids,
+	passages,
+	rung_ids,
 	run_when_ids,
+	written_by,
 	type InventoryId
 } from '#routes/coherence/coherence.ts';
-import { coherence_sections } from '#routes/coherence/coherence_sections.ts';
+import {
+	coherence_family_paths,
+	coherence_index_path,
+	coherence_inventory_ids,
+	coherence_inventory_pages
+} from '#routes/coherence/coherence_pages.ts';
 
 const assert_sorted = (indexes: Array<number>, message: string) => {
 	assert.deepEqual(
@@ -25,29 +39,49 @@ const assert_sorted = (indexes: Array<number>, message: string) => {
 	);
 };
 
+const assert_unique_keys = (keys: Array<string>, what: string) => {
+	assert.strictEqual(new Set(keys).size, keys.length, `${what} repeats`);
+};
+
 describe('failures', () => {
 	test('ids are usable as anchors', () => {
 		for (const f of failures) assert.match(f.id, /^[a-z]+(-[a-z]+)*$/);
 	});
 
-	test('every anchor on the page is distinct: sections, failures and holds', () => {
-		const anchors = [
-			...Object.keys(coherence_sections),
-			...failures.flatMap((f) => [f.id, ...failure_holds(f).map(({ rung }) => hold_id(f, rung))])
-		];
+	// across the whole section, so an anchor never depends on which page it is on
+	test('every failure and hold anchor is distinct', () => {
+		const anchors = failures.flatMap((f) => [
+			f.id,
+			...failure_holds(f).map(({ rung }) => hold_id(f, rung))
+		]);
 		assert.strictEqual(new Set(anchors).size, anchors.length);
+	});
+
+	test("each family's rows sit together, in the families' order, and no family is empty", () => {
+		assert_sorted(
+			failures.map((f) => family_ids.indexOf(f.family)),
+			'failures'
+		);
+		for (const id of family_ids) {
+			assert.ok(family_failures(id).length > 0, `${id}: no failures`);
+			assert.ok(families[id].label.trim() && families[id].summary.trim(), id);
+		}
 	});
 
 	test('every text field is filled', () => {
 		for (const f of failures) {
 			assert.ok(f.name.trim(), `${f.id}: name`);
-			assert.ok(f.failure.trim(), `${f.id}: failure`);
+			assert.ok(f.summary.trim(), `${f.id}: summary`);
 			assert.ok(failure_holds(f).length > 0, `${f.id}: no holds`);
 			for (const { rung, hold: h } of failure_holds(f)) {
 				const owner = hold_id(f, rung);
 				assert.ok(h.label.trim(), `${owner}: label`);
+				if (h.status === 'unreachable') {
+					assert.ok(h.why.trim(), `${owner}: why`);
+					continue;
+				}
 				assert.ok(h.does.trim(), `${owner}: does`);
-				for (const field of ['fails', 'cost', 'wanted'] as const) {
+				for (const field of ['gap', 'fails', 'cost', 'wanted'] as const) {
 					const value = h[field];
 					assert.ok(value === undefined || value.trim(), `${owner}: empty ${field}`);
 				}
@@ -64,37 +98,127 @@ describe('failures', () => {
 		);
 	});
 
+	// the mark and the text cannot disagree: a hold in places says what it leaves out,
+	// and a hold with something left out is not marked as throughout
+	test('a hold has a gap exactly when it is in places', () => {
+		for (const f of failures) {
+			for (const { rung, hold: h } of failure_reached_holds(f)) {
+				assert.strictEqual(
+					h.gap !== undefined,
+					h.status === 'in_places',
+					`${hold_id(f, rung)}: ${h.status} with${h.gap === undefined ? 'out' : ''} a gap`
+				);
+			}
+		}
+	});
+
 	// each entry's single link is checked with the rest of the evidence in `evidence.test.ts`
 	test('a hold that does something has evidence', () => {
 		for (const f of failures) {
-			for (const { rung, hold: h } of failure_holds(f)) {
-				if (h.status === 'unreachable') continue;
+			for (const { rung, hold: h } of failure_reached_holds(f)) {
 				assert.ok(h.evidence.length > 0, `${hold_id(f, rung)}: no evidence`);
 			}
 		}
 	});
 
-	test('a rung that cannot hold a failure claims nothing else', () => {
+	test('a hold lists each inventory once, in page order', () => {
+		const order: Array<string> = coherence_inventory_ids;
 		for (const f of failures) {
-			for (const { rung, hold: h } of failure_holds(f)) {
-				if (h.status !== 'unreachable') continue;
+			for (const { rung, hold: h } of failure_reached_holds(f)) {
+				if (!h.inventories) continue;
 				const owner = hold_id(f, rung);
-				assert.strictEqual(h.evidence.length, 0, owner);
-				assert.strictEqual(h.fails, undefined, owner);
-				assert.strictEqual(h.wanted, undefined, owner);
-				assert.strictEqual(h.inventory, undefined, owner);
+				assert.ok(h.inventories.length > 0, `${owner}: an empty list`);
+				const indexes = h.inventories.map((id) => order.indexOf(id));
+				assert.strictEqual(new Set(indexes).size, indexes.length, `${owner}: a repeat`);
+				assert_sorted(indexes, owner);
 			}
 		}
 	});
 
 	test('every inventory is reached from a hold', () => {
 		const reached = new Set(
-			failures.flatMap((f) => failure_holds(f).map(({ hold }) => hold.inventory))
+			failures.flatMap((f) =>
+				failure_reached_holds(f).flatMap(({ hold }) => hold.inventories ?? [])
+			)
 		);
 		// a record, so a new inventory fails to compile until it is listed here
-		const inventories: Record<InventoryId, true> = { oracles: true, actions: true, gates: true };
+		const inventories: Record<InventoryId, true> = {
+			moved: true,
+			oracles: true,
+			actions: true,
+			gates: true
+		};
 		for (const id of Object.keys(inventories)) {
 			assert.ok(reached.has(id as InventoryId), `no hold points at the ${id} table`);
+		}
+	});
+
+	// the grid's passage names the two holds that apply to every row, by their row's name
+	test('the grid passage names failures that exist', () => {
+		const quoted = Array.from(passages.grid.matchAll(/"([^"]+)"/g), (m) => m[1]!);
+		assert.ok(quoted.length > 0);
+		const names = new Set(failures.map((f) => f.name));
+		for (const name of quoted) assert.ok(names.has(name), `no failure is named "${name}"`);
+	});
+});
+
+describe('pages', () => {
+	test('every page of the section has its own path, under the index', () => {
+		const paths = [
+			...Object.values(coherence_family_paths),
+			...coherence_inventory_ids.map((id) => coherence_inventory_pages[id].path)
+		];
+		assert.strictEqual(new Set(paths).size, paths.length);
+		for (const path of paths) assert.ok(path.startsWith(`${coherence_index_path}/`), path);
+	});
+
+	// the passage above a table is looked up by the table's id
+	test('every table has a title and a passage', () => {
+		for (const id of coherence_inventory_ids) {
+			assert.ok(coherence_inventory_pages[id].title.trim(), id);
+			assert.ok(passages[id].trim(), id);
+		}
+	});
+});
+
+describe('prose', () => {
+	test('the opening and every passage are filled, and the opening repeats nothing', () => {
+		assert.ok(intro.length > 0);
+		assert.strictEqual(new Set(intro).size, intro.length);
+		for (const paragraph of intro) assert.ok(paragraph.trim());
+		for (const [id, passage] of Object.entries(passages)) assert.ok(passage.trim(), id);
+		assert.ok(written_by.trim());
+	});
+
+	// a link here would be one the evidence check never sees
+	test('the prose carries no links', () => {
+		for (const text of [...intro, ...Object.values(passages)]) {
+			assert.ok(!text.includes(']('), text);
+		}
+	});
+});
+
+describe('moved_rules', () => {
+	test('each row is filled and distinct', () => {
+		assert_unique_keys(
+			moved_rules.map((m) => m.was),
+			'a moved rule'
+		);
+		for (const m of moved_rules) {
+			assert.ok(m.was.trim() && m.became.trim(), m.was);
+		}
+	});
+
+	test('each rule moved to a tool or a shape, listed in ladder order', () => {
+		const below_written = rung_ids.slice(rung_ids.indexOf('written') + 1);
+		for (const m of moved_rules) {
+			assert.ok(m.to.length > 0, m.was);
+			for (const rung of m.to) {
+				assert.ok(below_written.includes(rung), `${m.was}: ${rung} is not below a written rule`);
+			}
+			const indexes = m.to.map((rung) => rung_ids.indexOf(rung));
+			assert.strictEqual(new Set(indexes).size, indexes.length, m.was);
+			assert_sorted(indexes, m.was);
 		}
 	});
 });
@@ -115,14 +239,14 @@ describe('oracle_comparisons', () => {
 		}
 	});
 
-	test("rows are written strongest first, by each row's strongest run", () => {
+	test("rows are written soonest first, by each row's soonest run", () => {
 		assert_sorted(
 			oracle_comparisons.map((c) => run_when_ids.indexOf(c.runs[0]!.when)),
 			'oracle_comparisons'
 		);
 	});
 
-	test('each row runs at least once, strongest first, each weight once, parts named when there are several', () => {
+	test('each row runs at least once, soonest first, each weight once, parts named when there are several', () => {
 		for (const c of oracle_comparisons) {
 			assert.ok(c.runs.length > 0, c.project);
 			const indexes = c.runs.map((r) => run_when_ids.indexOf(r.when));
@@ -142,7 +266,7 @@ describe('oracle_comparisons', () => {
 });
 
 describe('kept_actions', () => {
-	test('each row is filled, with its mechanisms strongest first', () => {
+	test('each row is filled, with its mechanisms hardest to get past first', () => {
 		for (const a of kept_actions) {
 			assert.ok(a.action.trim() && a.how.trim(), a.action);
 			assert.ok(a.held_by.length > 0, a.action);
@@ -167,7 +291,7 @@ describe('gates', () => {
 		}
 	});
 
-	test('rows are written strongest first', () => {
+	test('rows are written soonest first', () => {
 		assert_sorted(
 			gates.map((g) => run_when_ids.indexOf(g.runs)),
 			'gates'
@@ -185,23 +309,19 @@ describe('gates', () => {
 
 // the page keys each list by these, so a repeat would fail the render and not a test
 describe('keys', () => {
-	const assert_unique = (keys: Array<string>, what: string) => {
-		assert.strictEqual(new Set(keys).size, keys.length, `${what} repeats`);
-	};
-
 	test('each list the page renders has distinct keys', () => {
-		assert_unique(
+		assert_unique_keys(
 			gates.map((g) => g.gate),
 			'a gate'
 		);
-		assert_unique(
+		assert_unique_keys(
 			kept_actions.map((a) => a.action),
 			'an action'
 		);
-		assert_unique(gate_gaps, 'a gate gap');
+		assert_unique_keys(gate_gaps, 'a gate gap');
 		for (const f of failures) {
-			for (const { rung, hold } of failure_holds(f)) {
-				assert_unique(hold.evidence, `${hold_id(f, rung)}: an evidence entry`);
+			for (const { rung, hold } of failure_reached_holds(f)) {
+				assert_unique_keys(hold.evidence, `${hold_id(f, rung)}: an evidence entry`);
 			}
 		}
 	});

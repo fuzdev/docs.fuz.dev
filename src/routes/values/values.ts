@@ -7,7 +7,7 @@
  * nowhere else. Every sentence is a claim about the stack that a reader can check,
  * and every project named is one the Fuz stack page announces: an unannounced
  * project may inform a value and is never cited. `src/routes/evidence_check.task.ts`
- * resolves the links and holds `stack_projects` to that page.
+ * resolves the links and holds `src/routes/stack_projects.ts` to that page.
  *
  * @module
  */
@@ -15,6 +15,7 @@
 import type { PaletteVariant } from '@fuzdev/fuz_css/variable_data.ts';
 
 import type { EvidenceEntry } from '#routes/evidence.ts';
+import type { StackProjectName } from '#routes/stack_projects.ts';
 
 /** A value a design is measured against. Performance is one value with several axes. */
 export type ValueId = 'correctness' | 'security' | 'performance' | 'controllability' | 'simplicity';
@@ -69,7 +70,7 @@ export interface OrderItem {
 
 /** The order a project states its priorities in. */
 export interface StatedOrder {
-	project: string;
+	project: StackProjectName;
 	/** Highest first. A rank with several items is a stated tie. */
 	ranks: Array<Array<OrderItem>>;
 	/** What the project says applies to every choice and ranks nowhere. */
@@ -98,7 +99,7 @@ export interface Context {
 
 /** A recorded decision where one term beat another. */
 export interface Decision {
-	project: string;
+	project: StackProjectName;
 	won: TermId;
 	lost: TermId;
 	chose: string;
@@ -112,36 +113,6 @@ export const claims_checked = '2026-11-18';
 
 /** Whether the maintainer has checked this page's claims. */
 export const reviewed: boolean = false;
-
-/**
- * The projects this page may name, which are the ones the Fuz stack page announces.
- * `evidence_check.task.ts` holds this list to that page's.
- */
-export const stack_projects: Array<string> = [
-	'fuz_template',
-	'zzz',
-	'zervo',
-	'fuz_forge',
-	'fuz_app',
-	'fuz',
-	'fuz_css',
-	'fuz_ui',
-	'fuz_code',
-	'mdz',
-	'fuz_blog',
-	'gro',
-	'tsv',
-	'tsv-format',
-	'svelte-docinfo',
-	'fuz_repos',
-	'fuz-stack',
-	'corpora',
-	'fuz_util',
-	'fuz_schema',
-	'blake3',
-	'zap',
-	'pglet'
-];
 
 /** In the order the page shows them. */
 export const value_kinds: Record<ValueKindId, ValueKind> = {

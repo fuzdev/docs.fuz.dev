@@ -1,14 +1,15 @@
 /**
- * The data behind the `/coherence` page: the ways agent-written code goes wrong,
+ * The data behind the `/coherence` section: the ways agent-written work goes wrong,
  * what holds each failure at each rung of the ladder, and the inventories some holds
- * point at (oracle comparisons, actions kept with a person, gates).
+ * point at (rules that moved down the ladder, oracle comparisons, actions kept with a
+ * person, gates).
  *
- * The page renders these records as they are, so a claim is corrected here and
- * nowhere else. Every sentence is a claim about the stack that a reader can check:
- * keep each one true of the repos as they stand, and give each hold a public
- * artifact as evidence, linked to the section that shows it.
- * `src/routes/evidence_check.task.ts` resolves the links against this repo and its sibling
- * checkouts.
+ * The section's pages render these records as they are, prose included, so a claim is
+ * corrected here and nowhere else. Every sentence is a claim about the stack that a
+ * reader can check: keep each one true of the repos as they stand, and give each hold
+ * a public artifact as evidence, linked to the section that shows it.
+ * `src/routes/evidence_check.task.ts` resolves the links against this repo and its
+ * sibling checkouts, and holds the repos they name to the Fuz stack page's.
  *
  * @module
  */
@@ -18,10 +19,16 @@ import type { EvidenceEntry } from '#routes/evidence.ts';
 /** What does the work of holding a failure, from a person's judgment to the system's shape. */
 export type RungId = 'person' | 'session' | 'written' | 'tool' | 'shape';
 
-/** How far a rung holds a failure. A rung with nothing to say has no hold at all. */
-export type HoldStatusId = 'held' | 'partial' | 'unreachable';
+/**
+ * How much of the stack has a hold. The rung is how strong the hold is, so this
+ * grades coverage only: a rule every session loads is `throughout` and still a rule.
+ */
+export type CoverageId = 'throughout' | 'in_places';
 
-/** When a check runs, strongest first, which is how much weight it can bear. */
+/** A hold's coverage, or that its rung cannot hold the failure at all. */
+export type HoldStatusId = CoverageId | 'unreachable';
+
+/** When a check runs, soonest first: how long a break can sit before the check reports it. */
 export type RunWhenId = 'every_change' | 'ci' | 'release' | 'on_demand';
 
 /** What a project compares itself against. */
@@ -30,29 +37,44 @@ export type OracleKindId = 'reference' | 'suite' | 'twin' | 'build' | 'law' | 'p
 /** What stops an agent from taking an action that is kept with a person. */
 export type MechanismId = 'tool' | 'deny' | 'default' | 'rule';
 
-/** The inventories a hold can point at. Each is a table on the page. */
-export type InventoryId = 'oracles' | 'actions' | 'gates';
+/** A group of failures that go wrong the same way. Each has a page of its failures' holds. */
+export type FamilyId = 'design' | 'checks' | 'claims' | 'sessions';
+
+/** The inventories a hold can point at. Each is a table with a page of its own. */
+export type InventoryId = 'moved' | 'oracles' | 'actions' | 'gates';
 
 export interface Rung {
 	label: string;
-	/** What does the work on this rung, as one short sentence. */
-	lives: string;
+	/** How this rung holds a failure, as one short sentence. */
+	how: string;
 }
 
-/** An entry in one of the page's legends. */
+export interface Family {
+	label: string;
+	/** What its failures have in common, as one sentence. */
+	summary: string;
+}
+
+/** An entry in one of the section's legends. */
 export interface LegendEntry {
 	label: string;
 	meaning: string;
 }
 
 /** What one rung does about one failure. */
-export interface Hold {
-	status: HoldStatusId;
+export interface ReachedHold {
+	status: CoverageId;
 	/** A few words, for the grid cell. */
 	label: string;
-	/** What is done, or for `unreachable` why nothing can be. */
+	/** What is done. What is not done goes in `gap`. */
 	does: string;
-	/** How the hold goes wrong, which is the reason the next rung exists. */
+	/**
+	 * What the hold leaves uncovered: the projects without it, or the part of the
+	 * failure it does not reach. An `in_places` hold has one and a `throughout` hold
+	 * has none, so the mark and the text cannot disagree.
+	 */
+	gap?: string;
+	/** How the hold goes wrong where it is in place. */
 	fails?: string;
 	/** Only a cost that says something about this stack. */
 	cost?: string;
@@ -63,21 +85,47 @@ export interface Hold {
 	 * A link to this site is a root-relative path.
 	 */
 	evidence: Array<string>;
-	/** The table that lists this hold's instances. */
-	inventory?: InventoryId;
+	/** The tables that list this hold's instances, in page order. */
+	inventories?: Array<InventoryId>;
 }
 
-/** One way agent-written code goes wrong, and what holds it at each rung. */
+/** A rung that cannot hold a failure, which claims nothing but the reason. */
+export interface UnreachableHold {
+	status: 'unreachable';
+	/** A few words, for the grid cell. */
+	label: string;
+	/** Why nothing at this rung can hold the failure. */
+	why: string;
+}
+
+export type Hold = ReachedHold | UnreachableHold;
+
+/** One way agent-written work goes wrong, and what holds it at each rung. */
 export interface Failure {
-	/** Also the row's anchor on the page. A hold's anchor is `hold_id`'s. */
+	/** Also the failure's anchor on its family's page. A hold's anchor is `hold_id`'s. */
 	id: string;
+	family: FamilyId;
 	name: string;
 	/** What goes wrong, as one sentence. */
-	failure: string;
+	summary: string;
 	/** Whether the maintainer has checked this row's claims. */
 	reviewed: boolean;
-	/** By the rung that holds. A rung with nothing to say about the failure is absent. */
+	/**
+	 * By the rung that holds. A rung is absent when nothing there is aimed at this
+	 * failure, which the grid shows as a blank cell.
+	 */
 	holds: Partial<Record<RungId, Hold>>;
+}
+
+/** One rule that once depended on being remembered, and what it became. */
+export interface MovedRule {
+	/** The rule as it was. Also the row's key. */
+	was: string;
+	became: string;
+	/** The rungs that hold it now, in ladder order. */
+	to: Array<RungId>;
+	/** mdz with one link. */
+	source: string;
 }
 
 /** One part of a comparison and when it runs. */
@@ -93,7 +141,7 @@ export interface OracleComparison {
 	against: string;
 	kind: OracleKindId;
 	how: string;
-	/** Strongest first. */
+	/** Soonest first. */
 	runs: Array<OracleRun>;
 	/** mdz with one link, to the document that describes the comparison. */
 	source: string;
@@ -102,7 +150,7 @@ export interface OracleComparison {
 /** One action the stack keeps with a person, and what stops an agent from taking it. */
 export interface KeptAction {
 	action: string;
-	/** Strongest first. */
+	/** Every mechanism that holds some part of the action, strongest first. `how` says which part. */
 	held_by: Array<MechanismId>;
 	how: string;
 	/** mdz with one link. */
@@ -120,15 +168,63 @@ export interface Gate {
 }
 
 /** The day these claims were last checked against the repos, as an ISO date. */
-export const claims_checked = '2026-11-18';
+export const claims_checked = '2026-11-19';
+
+/** The model that wrote this file and the page that renders it. */
+export const written_by = 'Claude Fable 5.2';
+
+/** The section's opening, a paragraph each, shown on its index. */
+export const intro: Array<string> = [
+	"Agents write much of the Fuz stack's code, and their commits land before the maintainer reads them. At that speed one person's reading cannot be what keeps the software right. This page lists the ways agent-written work goes wrong here, and what holds each one.",
+	'What is at stake is coherence: software that still reads as one design, with one way to do each thing, one name for each concept, documents that are still true, and checks that mean what they say. The rows fall into families. The first is that loss itself, a design that drifts. The other three are how it starts: checks that mean less than they say, claims that nothing confirmed, and sessions that repeat a mistake, collide or overstep.',
+	"A hold is whatever stops a failure or catches it. Holds sit on the rungs of a ladder, from a person's judgment down to the shape of the system. Each rung down depends less on anyone remembering than the one before it. A rule moves down when a lower form of it is simpler to keep than the rule alone: a check that holds it, or a structure that makes it unnecessary."
+];
+
+/** The prose above the grid and above each table. */
+export const passages = {
+	grid: 'Each row is a failure, each column a rung, and each cell what holds that failure at that rung. The column is how strong a hold is and the mark is only how much of the stack has it, so a full mark on a written rule is still a rule that someone has to follow. A blank cell means nothing at that rung is aimed at the failure. Two holds apply to every row and are listed once: review after landing, under "Green but wrong", and the gate, under "A known mistake comes back".',
+	moved:
+		'Each row is a rule that once depended on being remembered, the lower form it was given, and the rungs that hold it now. Some of these rules are gone, replaced by a structure. Others remain, with a check holding them.',
+	oracles:
+		'Each project below checks its output against an oracle, something to agree with. A row names what the project compares itself against, how, and when the comparison runs. The rows are sorted by how soon each comparison reports: one that runs on every change speaks before the change lands, and one that runs before a release speaks long after the change that broke it.',
+	actions:
+		'These are the actions the stack keeps with the maintainer. Each row lists every mechanism that holds some part of the action, hardest to get past first, and says which part.',
+	gates:
+		'A gate is a check that gives a verdict on a change. These are the kinds the stack runs, sorted by how soon each reports, as the oracles are.',
+	gate_gaps: 'Where CI runs less than the local gate, or does not run:'
+};
+
+/** In the order the grid groups its rows. */
+export const families: Record<FamilyId, Family> = {
+	design: {
+		label: 'The design drifts',
+		summary:
+			'The code stops being one design that a person can reason about: features that do not fit, copies that disagree, faults that are hidden.'
+	},
+	checks: {
+		label: 'The checks weaken',
+		summary: 'A check shows green and means less than it says.'
+	},
+	claims: {
+		label: 'The claims go unverified',
+		summary: 'A statement is acted on that nothing has confirmed.'
+	},
+	sessions: {
+		label: 'The sessions overstep',
+		summary:
+			"Sessions share no memory and work unwatched, so one repeats a mistake, collides with another, publishes what was private, or takes an action that was a person's to take."
+	}
+};
+
+export const family_ids = Object.keys(families) as Array<FamilyId>;
 
 /** The ladder, top to bottom. Each rung depends less on anyone remembering than the one before. */
 export const rungs: Record<RungId, Rung> = {
-	person: { label: 'Person', lives: 'A person decides, each time.' },
-	session: { label: 'Session', lives: 'An agent does it again in each session.' },
-	written: { label: 'Written', lives: 'A rule in a file that sessions load.' },
-	tool: { label: 'Tool', lives: 'A tool gives the verdict.' },
-	shape: { label: 'Shape', lives: 'The shape of the system rules it out.' }
+	person: { label: 'Person', how: 'A person decides, each time.' },
+	session: { label: 'Session', how: 'An agent carries out a procedure, again in each session.' },
+	written: { label: 'Written', how: 'A rule in a file that sessions load.' },
+	tool: { label: 'Tool', how: 'A check runs and gives a verdict.' },
+	shape: { label: 'Shape', how: 'The system is built so the failure cannot be expressed.' }
 };
 
 /** The rungs in ladder order. */
@@ -136,8 +232,11 @@ export const rung_ids = Object.keys(rungs) as Array<RungId>;
 
 /** In the order the legend shows them. */
 export const hold_statuses: Record<HoldStatusId, LegendEntry> = {
-	held: { label: 'Held', meaning: 'Done routinely across the stack.' },
-	partial: { label: 'Partial', meaning: 'Done in some projects, or only in part.' },
+	throughout: { label: 'Throughout', meaning: 'In place across the stack.' },
+	in_places: {
+		label: 'In places',
+		meaning: 'In some projects, or for part of the failure. The entry says what is left out.'
+	},
 	unreachable: { label: 'Out of reach', meaning: 'This rung cannot hold the failure.' }
 };
 
@@ -149,13 +248,16 @@ export const wanted_legend: LegendEntry = {
 	meaning: 'More is intended here and not built.'
 };
 
-/** Strongest first. */
+/** Soonest first. */
 export const run_whens: Record<RunWhenId, LegendEntry> = {
 	every_change: {
 		label: 'Every change',
 		meaning: 'In the gate a session runs before landing, and again in CI.'
 	},
-	ci: { label: 'CI', meaning: 'In CI on every push, and not in the local gate.' },
+	ci: {
+		label: 'CI',
+		meaning: 'In CI on a push to the main branch or a pull request, and not in the local gate.'
+	},
 	release: { label: 'Release', meaning: 'Before a release, and not on each change.' },
 	on_demand: { label: 'On demand', meaning: 'When someone chooses to run it.' }
 };
@@ -180,7 +282,7 @@ export const oracle_kinds: Record<OracleKindId, LegendEntry> = {
 
 export const oracle_kind_ids = Object.keys(oracle_kinds) as Array<OracleKindId>;
 
-/** Strongest first. */
+/** Hardest to get past first. */
 export const mechanisms: Record<MechanismId, LegendEntry> = {
 	tool: { label: 'Tool refuses', meaning: 'The tool an agent uses will not do it.' },
 	deny: {
@@ -206,19 +308,32 @@ export const failure_holds = (failure: Failure): Array<{ rung: RungId; hold: Hol
 		return hold ? [{ rung, hold }] : [];
 	});
 
-/** In the order the page shows them. */
+/** A family's failures, in grid order. */
+export const family_failures = (family: FamilyId): Array<Failure> =>
+	failures.filter((f) => f.family === family);
+
+/** A failure's holds that do something, which leaves out a rung that cannot hold it. */
+export const failure_reached_holds = (
+	failure: Failure
+): Array<{ rung: RungId; hold: ReachedHold }> =>
+	failure_holds(failure).flatMap(({ rung, hold }) =>
+		hold.status === 'unreachable' ? [] : [{ rung, hold }]
+	);
+
+/** In the order the grid shows them, each family's rows together. */
 export const failures: Array<Failure> = [
 	{
 		id: 'average',
+		family: 'design',
 		name: "Design drifts to the model's average",
-		failure:
+		summary:
 			'Features that do not fit get built, and designs default to whatever the model has seen most often.',
 		reviewed: false,
 		holds: {
 			person: {
-				status: 'held',
+				status: 'throughout',
 				label: 'One owner per project',
-				does: "One person sets each project's scope, design and non-goals, and agents write most of the code.",
+				does: "One person sets each project's scope, design and non-goals.",
 				fails:
 					'When a non-goal is not written down, and the agent fills the gap with its own defaults.',
 				cost: 'The project depends on one person, and a successor gets the code and its public docs but not the planning notes kept outside the repos.',
@@ -229,7 +344,7 @@ export const failures: Array<Failure> = [
 				]
 			},
 			written: {
-				status: 'held',
+				status: 'throughout',
 				label: 'Conventions in loaded files',
 				does: "The stack's conventions live in skill and project files that sessions load, each section leading with the rules that most often go wrong.",
 				fails:
@@ -240,219 +355,38 @@ export const failures: Array<Failure> = [
 				]
 			},
 			tool: {
-				status: 'partial',
+				status: 'in_places',
 				label: 'Lints for the mechanical rules',
-				does: 'Lints and audits enforce the conventions that have a mechanical form: import paths, unique export names, denied Rust lints and the crate graph. Nothing checks naming, styling or scope.',
+				does: 'Lints and audits enforce the conventions that have a mechanical form: import paths, unique export names where a project turns that check on, denied Rust lints and the crate graph.',
+				gap: 'Nothing checks the naming forms, the styling ladder or whether a feature belongs. Only their mechanical edges are checked, such as the case lints of Rust and the class diagnostics of fuz_css.',
 				fails: 'When a green lint run is read as the conventions being followed.',
 				evidence: [
 					'The fuz-stack skill on the [flat namespace](/skills/fuz-stack#flat-namespace), which a build-time check enforces',
 					'The [release audit](/skills/fuz-stack/references/rust-spine#check-release), which holds the crate graph to its layering rules',
-					'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints), denied as errors in the gate'
-				]
+					'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints), denied as errors in the gate',
+					"fuz_css's [class diagnostics](https://github.com/fuzdev/fuz_css/blob/main/src/lib/diagnostics.ts)"
+				],
+				inventories: ['gates']
 			},
 			shape: {
 				status: 'unreachable',
 				label: 'Fit is a judgment',
-				does: 'Whether a feature belongs is a judgment about the whole design, and no structure makes that call.',
-				evidence: []
-			}
-		}
-	},
-	{
-		id: 'recurs',
-		name: 'A known mistake comes back',
-		failure: 'The same class of error repeats across sessions that share no memory.',
-		reviewed: false,
-		holds: {
-			written: {
-				status: 'held',
-				label: 'The correction is written down',
-				does: 'When an agent gets something wrong, the correction goes into a file that later sessions load.',
-				fails:
-					'When a written warning is expected to prevent a mistake that only a check can prevent.',
-				evidence: [
-					"The tsv fixture workflow's [list of common mistakes](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#common-mistakes), each with its symptom and fix",
-					'The [grimoire skill](/skills/grimoire), on a mistake becoming guidance'
-				]
-			},
-			tool: {
-				status: 'partial',
-				label: 'The gate',
-				does: "Types, lints, tests, format checks and drift checks on generated code run in each repo's gate, and in most repos CI runs them again on every push.",
-				fails:
-					'When green is read as correct. Agents push to the main branch, so CI reports after a commit has landed and the local run is the only check before it.',
-				evidence: [
-					"gro's [check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts), the gate for the TypeScript repos",
-					'The Rust [gate](/skills/fuz-stack/references/rust-patterns#the-gate)',
-					"tsv's [raw-find scan audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#raw-find-scan-audit-scanaudit), a named class of bug turned into a gated check"
-				],
-				inventory: 'gates'
-			},
-			shape: {
-				status: 'partial',
-				label: 'Impossible states do not compile',
-				does: 'In Rust, closed sets are enums and input structs reject unknown fields. In TypeScript, schema objects reject unknown keys. The flags for what a server mounts have no default, so a new one fails compilation until every config states it.',
-				evidence: [
-					'The Rust rules on [type modeling](/skills/fuz-stack/references/rust-patterns#type-modeling)',
-					'The twin reference on [enforcement](/skills/fuz-stack/references/twin-impl#enforcement), where the flags for what a server mounts have no default',
-					'The [schema rules](/skills/fuz-stack/references/fuz-schema#rules), where an object rejects unknown keys'
-				]
-			}
-		}
-	},
-	{
-		id: 'green',
-		name: 'Green but wrong',
-		failure:
-			'Code passes its gates and is still incorrect, or a test passes whether or not the code is right.',
-		reviewed: false,
-		holds: {
-			person: {
-				status: 'partial',
-				label: 'Review after landing',
-				does: 'The maintainer reviews commits after they land on the main branch, and versions, publishing and deploys stay with the maintainer.',
-				fails: 'When a defect sits on the main branch until that review reaches it.',
-				wanted:
-					'A view of the commits pushed across every repo, so the review has one place to happen.',
-				evidence: [
-					'The [grimoire skill](/skills/grimoire#work-loop), on review after a commit lands',
-					"fuz_forge's [list of what is not built](https://github.com/fuzdev/fuz_forge/blob/main/docs/forge.md#not-built), which includes the cross-repo review surface"
-				]
-			},
-			session: {
-				status: 'partial',
-				label: 'Writer and reviewer loop',
-				does: 'In long-running work, one writer changes the code and a read-only reviewer reports findings, and they alternate until a round finds nothing worth fixing.',
-				fails:
-					"When the reviewer's own severity grades are accepted, and a loop closes with wrong answers filed as minor.",
-				cost: 'The reviewer is another agent, so a round catches only what an agent can see.',
-				evidence: [
-					'The [grimoire skill](/skills/grimoire#arcs), which describes the loop and its stopping rule'
-				]
-			},
-			tool: {
-				status: 'partial',
-				label: 'Oracles, mutants and control cases',
-				does: 'Where a reference exists, a harness checks output against it. A few projects also break the code on purpose to show that a test catches it, and the careful harnesses first prove they can report a failure.',
-				fails:
-					'When both sides agree on the same bug, when the comparison never looks at the property that is wrong, or when a harness has no control case and reports success for reasons unrelated to the code.',
-				cost: 'A twin roughly doubles the implementation, and an instrument is software with its own bugs.',
-				wanted: 'Routine mutation and branch-coverage runs for tsv.',
-				evidence: [
-					"The fuz installer's [mutation gate](https://github.com/fuzdev/fuz/blob/main/scripts/install-test/README.md#mutation-gate), which breaks one behavior at a time and checks that a test catches it",
-					"fuz_schema's [mutants](https://github.com/fuzdev/fuz_schema/blob/main/docs/testing.md#mutants), where a survivor needs a written reason",
-					"The tsv divergence detector's [overmatching audit](https://github.com/fuzdev/tsv/blob/main/docs/divergence_detector.md#overmatching-audit), which requires a negative case for each pattern"
-				],
-				inventory: 'oracles'
-			}
-		}
-	},
-	{
-		id: 'claim',
-		name: 'A wrong claim gets acted on',
-		failure:
-			'A confident wrong statement reads like a right one, and work gets built on a guess that a short run would have corrected.',
-		reviewed: false,
-		holds: {
-			person: {
-				status: 'partial',
-				label: 'Approval before code, in tsv',
-				does: "In tsv's interactive sessions a person approves each failing fixture and the planned fix before any code is written.",
-				evidence: [
-					"The tsv fixture workflow's [approval gate](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#steps-3-4-see-it-fail--approval-gate)"
-				]
-			},
-			session: {
-				status: 'partial',
-				label: 'Check the claim against the code',
-				does: 'An agent checks a review finding, a survey row or its own summary against the code before acting on it, and runs the reference tool before building on a guess.',
-				fails:
-					'When someone accepts a claim that nothing uses a function from a search inside one package, without walking every consumer.',
-				evidence: [
-					"The tsv fixture workflow's [parser verification](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#22-parser-verification), which runs the canonical parser before any implementation"
-				]
-			},
-			written: {
-				status: 'held',
-				label: 'Leads, not facts',
-				does: 'The written rules call survey rows, review findings and memory leads to verify, and call the code the ground truth where it disagrees with a rule.',
-				evidence: [
-					'The [grimoire skill](/skills/grimoire#health), under "Leads, not facts"',
-					'The [fuz-stack skill](/skills/fuz-stack), whose opening says the code is ground truth'
-				]
-			},
-			tool: {
-				status: 'partial',
-				label: 'Figures computed from reports',
-				does: 'The tsv benchmarks page computes every figure it publishes from committed reports that record their commit and machine, and a test fails when the prose stops matching the data. Elsewhere figures are written by hand.',
-				fails:
-					'When the benchmark behind a figure predates the current build: refreshing the reports is manual, and nothing checks their age.',
-				evidence: [
-					'The [tsv benchmarks](https://tsv.fuz.dev/docs/benchmarks), whose prose figures are computed from the reports',
-					"The tsv site's [benchmarks notes](https://github.com/fuzdev/tsv.fuz.dev/blob/main/CLAUDE.md#benchmarks), on the test that gates the prose"
-				]
-			}
-		}
-	},
-	{
-		id: 'stale',
-		name: 'A stale statement is trusted',
-		failure: 'A statement that was true when written is still quoted long after.',
-		reviewed: false,
-		holds: {
-			session: {
-				status: 'partial',
-				label: 'Distill, then delete',
-				does: 'Agents condense raw notes into durable documents and delete finished items.',
-				fails: 'When documents only grow.',
-				cost: 'Deciding what to delete takes judgment, and deleting the wrong thing loses a reason.',
-				evidence: [
-					'The [grimoire skill](/skills/grimoire#health), on distilling and rewriting notes'
-				]
-			},
-			written: {
-				status: 'partial',
-				label: 'Mark built from designed',
-				does: 'Design docs in several projects mark what is built and what is only designed, and the written rules treat a wrong doc comment as worse than a missing one. No public rule asks for the status marks.',
-				evidence: [
-					'A [gro design doc](https://github.com/fuzdev/gro/blob/main/src/docs/backstop.md) that opens with its status',
-					"fuz_forge's [list of what is not built](https://github.com/fuzdev/fuz_forge/blob/main/docs/forge.md#not-built)",
-					'The rule that [a wrong doc comment is worse than a missing one](/skills/fuz-stack/references/tsdoc-comments#drift)'
-				]
-			},
-			tool: {
-				status: 'partial',
-				label: 'Link and drift checks',
-				does: 'The Rust workspaces fail on a broken doc link, tsv fails on any dead Markdown link or anchor in its repo, and each TypeScript gate fails when a generated file has drifted. Nothing checks links in the Markdown of the TypeScript repos.',
-				fails: 'When the links resolve and the sentences around them are no longer true.',
-				evidence: [
-					"tsv's [doc-link audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#doc-link-audit-docsaudit)",
-					"gro's docs on [checking generated files](https://github.com/fuzdev/gro/blob/main/src/docs/gen.md#checking-generated-files)",
-					'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints), which deny broken doc links'
-				]
-			},
-			shape: {
-				status: 'partial',
-				label: 'Docs generated from source',
-				does: 'API docs are generated from the source and the skill pages on this site from the skill files, so neither is written twice. Hand-written prose has no such source.',
-				evidence: [
-					'The [documentation system](/skills/fuz-stack/references/documentation-system) reference, on the pipeline from source to API pages',
-					"This site's [skill docs generation](https://github.com/fuzdev/docs.fuz.dev/blob/main/src/routes/skills/CLAUDE.md#gen-file-pattern)"
-				]
+				why: 'Whether a feature belongs is a judgment about the whole design, and no structure makes that call.'
 			}
 		}
 	},
 	{
 		id: 'copies',
+		family: 'design',
 		name: 'Two copies drift apart',
-		failure:
+		summary:
 			'Duplicated code diverges, a name is translated at a boundary, or a type says one thing while the validator checks another.',
 		reviewed: false,
 		holds: {
 			written: {
-				status: 'held',
+				status: 'throughout',
 				label: 'One name, one copy, no shims',
-				does: 'The written rules give one identifier to the same thing in TypeScript, Rust and SQL, allow no compatibility layers or re-exports, and move shared code into one place once its reuse is known.',
+				does: 'The written rules give one identifier to the same thing in TypeScript, Rust and SQL, allow no compatibility layers or re-exports, and move shared code into one place: on first use when its reuse is known, and otherwise on the third copy.',
 				fails:
 					"When an outside consumer exists and the migration is no longer the maintainer's to finish.",
 				cost: "The naming goes against TypeScript's usual convention, and a breaking change has to be carried through every consumer at once.",
@@ -463,9 +397,10 @@ export const failures: Array<Failure> = [
 				]
 			},
 			tool: {
-				status: 'partial',
+				status: 'in_places',
 				label: 'Drift checks and twin suites',
-				does: 'Each TypeScript gate fails on a drifted generated file, and shared suites hold the wire-visible names and shapes of the TypeScript and Rust twins equal. The Rust legs of the cross-backend suites run on demand, while the shared case tables of fuz_forge and fuz_schema run on both sides on every change. Nothing checks internal names.',
+				does: 'Each TypeScript gate fails on a drifted generated file, and shared suites hold the wire-visible names and shapes of the TypeScript and Rust twins equal. The shared case tables of fuz_forge and fuz_schema run on both sides on every change.',
+				gap: 'The Rust legs of the cross-backend suites run on demand, and nothing checks internal names.',
 				fails:
 					'When a path is tested on one backend only, and the twins agree on the happy path and drift at the edges.',
 				wanted: 'The Rust legs of the cross-backend suites in CI.',
@@ -473,14 +408,15 @@ export const failures: Array<Failure> = [
 					'The twin reference on [enforcement](/skills/fuz-stack/references/twin-impl#enforcement)',
 					"fuz_app's [CI workflow](https://github.com/fuzdev/fuz_app/blob/main/.github/workflows/check.yml), which runs the TypeScript legs and names the ones it skips",
 					"tsv's [wire-type drift check](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#wire-type-drift-check-checkast-types)"
-				]
+				],
+				inventories: ['oracles', 'gates']
 			},
 			shape: {
-				status: 'partial',
+				status: 'in_places',
 				label: 'One schema, one library',
-				does: 'Within TypeScript one schema gives each data shape its type, defaults and validation, and each shared concern has one library. The Rust twins and the wire types of tsv are written by hand beside what they mirror.',
+				does: 'Within TypeScript one schema gives each data shape its type, defaults and validation, and each shared concern has one library.',
+				gap: 'The Rust twins and the wire types of tsv are written by hand beside what they mirror.',
 				fails: 'When a type is written by hand beside the schema it should come from.',
-				cost: 'A schema change cascades through everything derived from it.',
 				evidence: [
 					'The [schema rules](/skills/fuz-stack/references/fuz-schema#rules)',
 					"[fuz_schema](https://github.com/fuzdev/fuz_schema), the stack's one schema library",
@@ -490,13 +426,153 @@ export const failures: Array<Failure> = [
 		}
 	},
 	{
-		id: 'gate',
-		name: 'A gate stops gating',
-		failure: 'A check skips, caps its run or falls back, and still shows green.',
+		id: 'absorbed',
+		family: 'design',
+		name: 'A fault is absorbed and the program runs on',
+		summary:
+			'A misconfiguration, a changed schema or a missing capability is absorbed at runtime, and the program keeps running wrong.',
 		reviewed: false,
 		holds: {
 			written: {
-				status: 'held',
+				status: 'throughout',
+				label: 'Fail loud, not just closed',
+				does: 'The written rules have a server refuse to boot on a misconfiguration with a security consequence, rule out an optional capability that quietly falls back to a platform default, and make a test stub throw unless a test says otherwise.',
+				fails: 'When a new fallback reads as resilience and nobody asks what it hides.',
+				evidence: [
+					'The spine [rules](/skills/fuz-stack/references/rust-spine#rules), under "Fail loud, not just closed"',
+					'The dependency-injection [traps](/skills/fuz-stack/references/dependency-injection#traps), on an optional capability with a platform fallback',
+					'The same reference on [testing](/skills/fuz-stack/references/dependency-injection#testing), where a stub throws by default'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Schema drift guard',
+				does: "A test asserts each table's named column list against the live schema, in both directions, so a column added or dropped without its list fails.",
+				gap: 'It covers the database schema only.',
+				evidence: [
+					'The database reference on [the drift guard](/skills/fuz-stack/references/db-patterns#the-drift-guard)'
+				],
+				inventories: ['moved']
+			},
+			shape: {
+				status: 'in_places',
+				label: 'No quiet path to take',
+				does: 'Where a read names its columns, a dropped column is an error at first read, where a wildcard would hydrate it as undefined. Rate limiters built through the one mode cannot disagree about whether they enforce, and the kernel box of gro has no flag to opt out.',
+				gap: 'The first two hold only where code follows the rule that asks for them, and code outside all three can still catch an error and carry on.',
+				evidence: [
+					'The database reference on [named-column projections](/skills/fuz-stack/references/db-patterns#named-column-projections), where a dropped column fails loud',
+					'The spine [rules](/skills/fuz-stack/references/rust-spine#rules), on building every limiter through one mode',
+					'The Rust rules on the [kernel box](/skills/fuz-stack/references/rust-patterns#kernel-box), which fails closed with no opt-out'
+				],
+				inventories: ['moved']
+			}
+		}
+	},
+	{
+		id: 'green',
+		family: 'checks',
+		name: 'Green but wrong',
+		summary:
+			'Code passes its gates and is still incorrect, or a test passes whether or not the code is right.',
+		reviewed: false,
+		holds: {
+			person: {
+				status: 'in_places',
+				label: 'Review after landing',
+				does: 'The maintainer reviews commits after they land on the main branch.',
+				gap: 'One person reads what many sessions push, and nothing yet lists the commits pushed across the repos in one place.',
+				fails: 'When a defect sits on the main branch until that review reaches it.',
+				wanted:
+					'A view of the commits pushed across every repo, so the review has one place to happen.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#work-loop), on review after a commit lands',
+					"fuz_forge's [list of what is not built](https://github.com/fuzdev/fuz_forge/blob/main/docs/forge.md#not-built), which includes the cross-repo review surface"
+				]
+			},
+			session: {
+				status: 'in_places',
+				label: 'Writer and reviewer loop',
+				does: 'In long-running work, one writer changes the code and a read-only reviewer reports findings, and they alternate until a round finds nothing worth fixing.',
+				gap: 'The loop is for long-running work and not for every change, and its reviewer is another agent.',
+				fails:
+					"When the reviewer's own severity grades are accepted, and a loop closes with wrong answers filed as minor.",
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#arcs), which describes the loop and its stopping rule'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Oracles, mutants and control cases',
+				does: 'Where a reference exists, a harness checks output against it. The install script of fuz and the fuz_schema library also have their code broken on purpose to show that a test catches it, and the divergence detector of tsv needs a negative case for each pattern, to prove it can report a failure.',
+				gap: 'Most code has no reference to compare against, and only those two have a mutation run over their tests.',
+				fails:
+					'When both sides agree on the same bug, when the comparison never looks at the property that is wrong, or when a harness has no control case and reports success for reasons unrelated to the code.',
+				cost: 'A twin roughly doubles what is written by hand.',
+				wanted: 'Routine mutation and branch-coverage runs for tsv.',
+				evidence: [
+					"The fuz installer's [mutation gate](https://github.com/fuzdev/fuz/blob/main/scripts/install-test/README.md#mutation-gate), which breaks one behavior at a time and checks that a test catches it",
+					"fuz_schema's [mutants](https://github.com/fuzdev/fuz_schema/blob/main/docs/testing.md#mutants), where a survivor needs a written reason",
+					"The tsv divergence detector's [overmatching audit](https://github.com/fuzdev/tsv/blob/main/docs/divergence_detector.md#overmatching-audit), which requires a negative case for each pattern"
+				],
+				inventories: ['oracles', 'gates']
+			}
+		}
+	},
+	{
+		id: 'silenced',
+		family: 'checks',
+		name: 'A check is silenced instead of satisfied',
+		summary:
+			'A failing fixture, lint or case is made to pass by editing the expectation, suppressing the lint or skipping the case.',
+		reviewed: false,
+		holds: {
+			session: {
+				status: 'in_places',
+				label: 'The expected diff is read as code',
+				does: 'After an update task regenerates the expected files of a fixture test, the session reads their diff as it would read code, since the diff is the assertion.',
+				gap: 'Only a fixture test has such a diff to read.',
+				evidence: [
+					'The testing reference on [fixture tests](/skills/fuz-stack/references/testing-patterns#fixture-tests), where the diff of the expected files is reviewed as code'
+				]
+			},
+			written: {
+				status: 'in_places',
+				label: 'Fix the code, not the expectation',
+				does: 'The written rules say an expected file is generated and never edited by hand, a Rust lint is suppressed only with a stated reason, and a difference between twins is recorded and never skipped by hand. tsv adds that a correct fixture is never changed to make a test pass.',
+				gap: 'No rule covers a suppression in TypeScript or a skipped test.',
+				fails:
+					'When the expectation really is wrong, and telling that apart from a convenient edit is left to the session.',
+				evidence: [
+					"The fuz-stack skill's [rules by topic](/skills/fuz-stack#the-rules-by-topic), where expected files are generated and never hand-edited",
+					"tsv's [golden rules](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#golden-rules) for fixtures",
+					'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints), on suppressing a lint with a reason'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Suppressions that expire',
+				does: 'A Rust lint suppressed with an expectation warns once the lint stops firing, and the gate treats the warning as an error. A recorded difference between twins fails once the difference is gone. The pinned counts of tsv fail when a count moves, and its fixtures are compared against a live, pinned Prettier, so a fixture edited by hand fails.',
+				gap: 'Where no outside reference exists, an expected file regenerated from wrong output passes, and so does a suppression with a plausible reason. The record of twin differences is checked only when the cross-backend suites run, which for the Rust side is on demand.',
+				fails:
+					'When the reason on a suppression is accepted without being checked against the code.',
+				evidence: [
+					'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints), where a suppression warns once its lint stops firing',
+					'The twin reference on [enforcement](/skills/fuz-stack/references/twin-impl#enforcement), where a recorded difference fails once it stops showing',
+					"tsv's [pinned gate counts](https://github.com/fuzdev/tsv/blob/main/docs/gate_counts.md#pinned-gate-counts)"
+				],
+				inventories: ['oracles', 'gates']
+			}
+		}
+	},
+	{
+		id: 'gate',
+		family: 'checks',
+		name: 'A gate stops gating',
+		summary: 'A check skips, caps its run or falls back, and still shows green.',
+		reviewed: false,
+		holds: {
+			written: {
+				status: 'throughout',
 				label: 'Read the exit code',
 				does: "The written rules make the gate's exit code the pass condition, never its filtered output.",
 				fails:
@@ -507,82 +583,40 @@ export const failures: Array<Failure> = [
 				]
 			},
 			tool: {
-				status: 'partial',
-				label: 'Suites fail on a skip',
-				does: "The suites of zap and fuz fail when a test program is missing, pglet's CI fails when a gate reports nothing, and the pinned counts of tsv fail when a count moves. Elsewhere a skip may only warn.",
+				status: 'in_places',
+				label: 'Suites that fail on a skip',
+				does: "The suites of zap fail when a program a test needs is missing, unless an explicit allowance names it. fuz fails when a database suite is left off its CI list, pglet's CI fails when a gate reports nothing, and the pinned counts of tsv fail when a count moves.",
+				gap: 'Elsewhere a skip may only warn, as when the install suite of fuz finds a program it needs missing.',
 				fails: 'When a skip stays green with a warning that nobody reads.',
-				cost: 'A loud failure interrupts work that a quiet fallback would have let continue.',
 				evidence: [
-					"tsv's [pinned gate counts](https://github.com/fuzdev/tsv/blob/main/docs/gate_counts.md#pinned-gate-counts), which fail when the set of graded files changes",
+					"tsv's [pinned gate counts](https://github.com/fuzdev/tsv/blob/main/docs/gate_counts.md#pinned-gate-counts), which fail when a count moves",
 					"pglet's [CI workflow](https://github.com/fuzdev/pglet/blob/main/.github/workflows/check.yml), which refuses to be green because a prerequisite was missing",
-					'The Rust [testing rules](/skills/fuz-stack/references/rust-patterns#testing), on suites that never pass by skipping'
-				]
+					'The Rust [testing rules](/skills/fuz-stack/references/rust-patterns#testing), on suites that never pass by skipping and on the test that holds a CI list to the tree',
+					"fuz's [install suite](https://github.com/fuzdev/fuz/blob/main/scripts/install-test/README.md#run), which skips when a program is absent"
+				],
+				inventories: ['gates']
 			},
 			shape: {
-				status: 'partial',
-				label: 'One gate definition, in some repos',
-				does: 'The CI of tsv, of pglet and of the repos with no Rust runs the check command a session runs, so the two lists cannot drift there. The other Rust workspaces list their steps again in CI. Nothing structural stops a commit whose local gate was red.',
+				status: 'in_places',
+				label: 'One gate definition',
+				does: 'The CI of tsv and of the repos with no Rust runs the check command a session runs, so the two lists cannot drift there.',
+				gap: 'Most other Rust workspaces list their steps again in CI, and nothing structural stops a commit whose local gate was red.',
 				evidence: [
-					"tsv's [CI workflow](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml), which runs the same check command as a session does"
+					"tsv's [CI workflow](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml), which runs the same check command as a session does",
+					"mdz's [CI workflow](https://github.com/fuzdev/mdz/blob/main/.github/workflows/check.yml), one of the repos with no Rust"
 				]
-			}
-		}
-	},
-	{
-		id: 'speedup',
-		name: 'A predicted speedup that is not one',
-		failure: 'An optimization is predicted to help, lands, and does not.',
-		reviewed: false,
-		holds: {
-			session: {
-				status: 'partial',
-				label: 'Race the candidates',
-				does: 'In fuz_schema and tsv, agents build candidate changes, grade them against a base on real workloads, and record what was declined and why.',
-				fails: 'When a micro-benchmark or a model of the cost stands in for the measured workload.',
-				cost: 'Wall-clock numbers need a quiet machine.',
-				evidence: [
-					"fuz_schema's [record of trades](https://github.com/fuzdev/fuz_schema/blob/main/docs/declined.md) that were built, measured and declined",
-					"fuz_schema's [grading](https://github.com/fuzdev/fuz_schema/blob/main/docs/grading.md) of a candidate against a base",
-					"tsv's [measurement process](https://github.com/fuzdev/tsv/blob/main/docs/performance.md#measurement-process)"
-				]
-			},
-			written: {
-				status: 'held',
-				label: 'Measure before claiming',
-				does: 'The written rules say a performance claim comes from a harness, states its noise floor, and is graded against its base.',
-				evidence: [
-					'The fuz-stack [performance reference](/skills/fuz-stack/references/rust-perf#measure)',
-					"fuz_schema's [grading rules](https://github.com/fuzdev/fuz_schema/blob/main/docs/grading.md#rules)"
-				]
-			},
-			tool: {
-				status: 'partial',
-				label: 'Size limits in CI',
-				does: 'CI holds the WebAssembly builds of tsv, pglet and fuz_schema, and the native addon of tsv, under committed size limits. In gro and tsv, instruction counts are graded against a base on demand and held to no committed limit.',
-				fails:
-					'When the gated axis holds and the regression is on another: an instruction count is blind to code size.',
-				evidence: [
-					"tsv's [artifact validation](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#validateartifacts), with its size bands",
-					"pglet's notes on [size and startup](https://github.com/fuzdev/pglet/blob/main/README.md#size-and-startup)",
-					"fuz_schema's [CI workflow](https://github.com/fuzdev/fuz_schema/blob/main/.github/workflows/check.yml), which holds the WebAssembly build under a ceiling"
-				]
-			},
-			shape: {
-				status: 'unreachable',
-				label: 'Speed is a measurement',
-				does: 'Whether a change is faster is known only by measuring it, so no structure can rule a slow one out.',
-				evidence: []
 			}
 		}
 	},
 	{
 		id: 'slow',
+		family: 'checks',
 		name: 'A slow check gets skipped',
-		failure: 'A check is slow enough that sessions stop running it.',
+		summary: 'A check is slow enough that sessions stop running it.',
 		reviewed: false,
 		holds: {
 			written: {
-				status: 'held',
+				status: 'throughout',
 				label: 'The full gate before landing',
 				does: 'The written rules name the full gate as what runs before work counts as done, and warn that the faster checks skip test targets.',
 				fails: 'When a fast targeted check stands in for the full gate before landing.',
@@ -592,20 +626,22 @@ export const failures: Array<Failure> = [
 				]
 			},
 			tool: {
-				status: 'partial',
+				status: 'in_places',
 				label: 'CI reruns the gate',
-				does: 'CI runs the full gate on every push whatever the session ran, in every public code repo but a few.',
+				does: 'CI runs the gate on a push to the main branch, whatever the session ran.',
+				gap: 'A few repos have no CI, or one that runs less than the local gate; the list under the gates table names them.',
 				fails: 'When the answer arrives after the commit has landed.',
 				evidence: [
 					"tsv's [CI workflow](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml)",
 					"gro's [CI workflow](https://github.com/fuzdev/gro/blob/main/.github/workflows/check.yml)"
 				],
-				inventory: 'gates'
+				inventories: ['gates']
 			},
 			shape: {
-				status: 'partial',
+				status: 'in_places',
 				label: 'Fast tools',
-				does: 'The formatter and parser of tsv, and pglet as a test database, are built to answer quickly, and pglet states a startup target. Rust compile loops stay slow, and the heaviest gates, such as the corpus and conformance runs of tsv, run before a release and not on each push.',
+				does: 'The formatter and parser of tsv, and pglet as a test database, are built to answer quickly, and pglet states a startup target.',
+				gap: 'Rust compile loops stay slow, and the heaviest gates, such as the corpus and conformance runs of tsv, run before a release and not on each push.',
 				evidence: [
 					'The [tsv README](https://github.com/fuzdev/tsv/blob/main/README.md), which ranks speed second among its priorities',
 					"pglet's notes on [size and startup](https://github.com/fuzdev/pglet/blob/main/README.md#size-and-startup)",
@@ -615,14 +651,304 @@ export const failures: Array<Failure> = [
 		}
 	},
 	{
-		id: 'irreversible',
-		name: 'An unattended session does something irreversible',
-		failure:
-			'A session publishes, changes a version, adds a dependency or deploys with nobody watching.',
+		id: 'claim',
+		family: 'claims',
+		name: 'A wrong claim gets acted on',
+		summary:
+			'A confident wrong statement reads like a right one, and work gets built on a guess that a short run would have corrected.',
 		reviewed: false,
 		holds: {
 			person: {
-				status: 'held',
+				status: 'in_places',
+				label: 'Approval before code, in tsv',
+				does: "In tsv's fixture workflow a person approves each failing fixture and the planned fix before any code is written.",
+				gap: "One project's workflow, for one kind of change.",
+				evidence: [
+					"The tsv fixture workflow's [approval gate](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#steps-3-4-see-it-fail--approval-gate)"
+				]
+			},
+			session: {
+				status: 'in_places',
+				label: 'Check the claim against the code',
+				does: 'An agent derives a claim again from the code before acting on it, and in tsv runs the canonical parser before building on a guess about syntax.',
+				gap: 'A session leaves no record of having checked, so the hold is as good as the session.',
+				fails:
+					'When a claim that nothing uses a function is accepted from a search of one package, without tracing every consumer.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#health), which asks for a claim to be derived again before it is acted on',
+					"The tsv fixture workflow's [parser verification](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#22-parser-verification), which runs the canonical parser before any implementation"
+				]
+			},
+			written: {
+				status: 'throughout',
+				label: 'Leads, not facts',
+				does: "The written rules treat a review finding, a ledger entry, a memory and an agent's own summary as leads to verify, and call the code the ground truth where it disagrees with a rule.",
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#health), under "Leads, not facts"',
+					'The [fuz-stack skill](/skills/fuz-stack), whose opening says the code is ground truth'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Figures computed from reports',
+				does: 'The benchmark figures that tsv and fuz_schema publish are computed from committed reports that record their commit and machine, and a test fails when the prose stops matching the data. fuz_schema also tests the comparisons and recipes in its README, and tsv holds its catalog of differences to its fixtures.',
+				gap: 'These are single documents, each with a test of its own. Most sentences in the docs have no check.',
+				fails:
+					'When the benchmark behind a figure predates the current build: refreshing the reports is manual, and nothing checks their age.',
+				evidence: [
+					'The [tsv benchmarks](https://tsv.fuz.dev/docs/benchmarks), whose prose figures are computed from the reports',
+					"The tsv site's [benchmarks notes](https://github.com/fuzdev/tsv.fuz.dev/blob/main/CLAUDE.md#benchmarks), on the test that gates the prose",
+					"fuz_schema's [measurements](https://github.com/fuzdev/fuz_schema/blob/main/README.md#measurements), each held to the published results by a test"
+				]
+			}
+		}
+	},
+	{
+		id: 'stale',
+		family: 'claims',
+		name: 'A stale statement is trusted',
+		summary: 'A statement that was true when written is still quoted long after.',
+		reviewed: false,
+		holds: {
+			session: {
+				status: 'in_places',
+				label: 'Distill, then delete',
+				does: 'Agents condense raw notes into durable documents and delete what is resolved or superseded.',
+				gap: 'A pass covers what it was pointed at, and everything else waits for the next one.',
+				fails:
+					'When documents only grow, and a reader can no longer tell the current statement from the one it replaced.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#health), on distilling and rewriting notes'
+				]
+			},
+			written: {
+				status: 'in_places',
+				label: 'Mark built from designed',
+				does: 'Design docs in gro and fuz_forge mark what is built and what is only designed, and the written rules treat a wrong doc comment as worse than a missing one.',
+				gap: 'No public rule asks for the status marks.',
+				evidence: [
+					'A [gro design doc](https://github.com/fuzdev/gro/blob/main/src/docs/backstop.md) that opens with its status',
+					"fuz_forge's [list of what is not built](https://github.com/fuzdev/fuz_forge/blob/main/docs/forge.md#not-built)",
+					'The rule that [a wrong doc comment is worse than a missing one](/skills/fuz-stack/references/tsdoc-comments#drift)'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Link and drift checks',
+				does: 'The Rust workspaces but zervo fail on a broken doc link, tsv fails on any dead relative link or anchor in the Markdown of its repo, and each TypeScript gate fails when a generated file has drifted. A task on this site resolves the links on this page against the repos they cite, when someone runs it.',
+				gap: "Outside tsv, no gate checks the links in a repo's own Markdown files, such as its README and docs. Only Markdown that a site renders is crawled, by that site's build.",
+				fails: 'When the links resolve and the sentences around them are no longer true.',
+				evidence: [
+					"tsv's [conformance audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#conformance-audit-conformanceaudit), whose second check is dead links in every Markdown file",
+					"gro's docs on [checking generated files](https://github.com/fuzdev/gro/blob/main/src/docs/gen.md#checking-generated-files)",
+					'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints), which deny broken doc links',
+					"This site's [evidence check](https://github.com/fuzdev/docs.fuz.dev/blob/main/CLAUDE.md#evidence-check)"
+				],
+				inventories: ['gates']
+			},
+			shape: {
+				status: 'in_places',
+				label: 'Docs generated from source',
+				does: 'API docs are generated from the source and the skill pages on this site from the skill files, so neither is written twice.',
+				gap: 'Hand-written prose has no such source.',
+				evidence: [
+					'The [documentation system](/skills/fuz-stack/references/documentation-system) reference, on the pipeline from source to API pages',
+					"This site's [skill docs generation](https://github.com/fuzdev/docs.fuz.dev/blob/main/src/routes/skills/CLAUDE.md#gen-file-pattern)"
+				]
+			}
+		}
+	},
+	{
+		id: 'speedup',
+		family: 'claims',
+		name: 'A predicted speedup that is not one',
+		summary: 'An optimization is predicted to help, lands, and does not.',
+		reviewed: false,
+		holds: {
+			session: {
+				status: 'in_places',
+				label: 'Race the candidates',
+				does: 'In fuz_schema, tsv and gro, a candidate change is graded against its base on real workloads before it lands, and fuz_schema and pglet keep a record of what was measured and declined.',
+				gap: 'The other projects do neither.',
+				fails: 'When a micro-benchmark or a model of the cost stands in for the measured workload.',
+				evidence: [
+					"fuz_schema's [record of trades](https://github.com/fuzdev/fuz_schema/blob/main/docs/declined.md) that were built, measured and declined",
+					"fuz_schema's [grading](https://github.com/fuzdev/fuz_schema/blob/main/docs/grading.md) of a candidate against a base",
+					"tsv's [measurement process](https://github.com/fuzdev/tsv/blob/main/docs/performance.md#measurement-process)",
+					"gro's [perf rule](https://github.com/fuzdev/gro/blob/main/CLAUDE.md#rust-workspace-experimental), a run against the merge base before a commit",
+					"pglet's [record of tradeoffs](https://github.com/fuzdev/pglet/blob/main/TRADEOFFS.md)"
+				]
+			},
+			written: {
+				status: 'throughout',
+				label: 'Measure before claiming',
+				does: 'The written rules say a performance claim comes from a harness, states its noise floor, and is graded against its base.',
+				evidence: [
+					'The fuz-stack [performance reference](/skills/fuz-stack/references/rust-perf#measure)',
+					"fuz_schema's [grading rules](https://github.com/fuzdev/fuz_schema/blob/main/docs/grading.md#rules)"
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Committed size limits',
+				does: 'Committed limits hold the WebAssembly builds of tsv, pglet, fuz_schema and blake3, the native addon of tsv, and the binary and startup snapshot of gro.',
+				gap: 'Size is the only axis a gate limits on each change. Speed is graded against a base on demand: tsv fails a row that moves past a committed percentage, and gro asks for a written reason.',
+				fails:
+					'When the gated axis holds and the regression is on another: an instruction count is blind to code size.',
+				evidence: [
+					"tsv's [artifact validation](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#validateartifacts), with its size bands",
+					"tsv's [addon validation](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#validatenapi), the same for its native binaries",
+					"pglet's notes on [size and startup](https://github.com/fuzdev/pglet/blob/main/README.md#size-and-startup)",
+					"fuz_schema's [CI workflow](https://github.com/fuzdev/fuz_schema/blob/main/.github/workflows/check.yml), which holds the WebAssembly build under a ceiling",
+					"gro's [baseline suite](https://github.com/fuzdev/gro/blob/main/crates/gro_bench/suites/baseline/suite.json), which carries the budgets for its binary and snapshot"
+				],
+				inventories: ['gates']
+			},
+			shape: {
+				status: 'unreachable',
+				label: 'Speed is a measurement',
+				why: 'Whether a change is faster is known only by measuring it, so no structure can rule a slow one out.'
+			}
+		}
+	},
+	{
+		id: 'recurs',
+		family: 'sessions',
+		name: 'A known mistake comes back',
+		summary: 'The same class of error repeats across sessions that share no memory.',
+		reviewed: false,
+		holds: {
+			written: {
+				status: 'throughout',
+				label: 'The correction is written down',
+				does: 'When an agent gets something wrong, the correction goes into a file that later sessions load.',
+				fails:
+					'When a written warning is expected to prevent a mistake that only a check can prevent.',
+				evidence: [
+					"The tsv fixture workflow's [list of common mistakes](https://github.com/fuzdev/tsv/blob/main/docs/fixture_workflow.md#common-mistakes), each with its symptom and fix",
+					'The [grimoire skill](/skills/grimoire), on a mistake becoming guidance'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'The gate',
+				does: 'Each repo has a gate that a session runs before landing: types, lints, tests and format checks, and in the TypeScript repos drift in generated files. CI runs it again on a push to the main branch.',
+				gap: 'A few repos have no CI, or one that runs less than the local gate; the list under the gates table names them. A mistake reaches the gate only once someone has given it a mechanical form.',
+				fails:
+					'When green is read as correct. Agents push to the main branch, so CI reports after a commit has landed and the local run is the only check before it.',
+				evidence: [
+					"gro's [check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts), the gate for the TypeScript repos",
+					'The Rust [gate](/skills/fuz-stack/references/rust-patterns#the-gate)',
+					"tsv's [raw-find scan audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#raw-find-scan-audit-scanaudit), a named class of bug turned into a gated check"
+				],
+				inventories: ['moved', 'gates']
+			},
+			shape: {
+				status: 'in_places',
+				label: 'Impossible states do not compile',
+				does: 'In Rust, closed sets are enums and input structs reject unknown fields. In TypeScript, schema objects reject unknown keys. The flags for what a server mounts have no default, so a new one fails compilation until every config states it.',
+				gap: 'It reaches only a mistake that can be stated as a type or a schema, which most cannot.',
+				evidence: [
+					'The Rust rules on [type modeling](/skills/fuz-stack/references/rust-patterns#type-modeling)',
+					'The twin reference on [enforcement](/skills/fuz-stack/references/twin-impl#enforcement), where the flags for what a server mounts have no default',
+					'The [schema rules](/skills/fuz-stack/references/fuz-schema#rules), where an object rejects unknown keys'
+				],
+				inventories: ['moved']
+			}
+		}
+	},
+	{
+		id: 'collide',
+		family: 'sessions',
+		name: 'Two sessions collide',
+		summary: 'Two sessions work in one checkout, or one pushes onto a base the other never tested.',
+		reviewed: false,
+		holds: {
+			written: {
+				status: 'in_places',
+				label: 'One writer per checkout',
+				does: 'The written rules give a long-running effort one checkout with at most one live session, keep one writer alive at a time within it, and make a worktree the way to work in parallel.',
+				gap: 'The rule is written for long-running efforts, not for every session.',
+				fails:
+					'When isolation is left to convention: the rule itself says there are no locks, and the operator owns it.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#arcs), on one checkout, one live session and one writer at a time'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Busy detection and rebase on push',
+				does: 'The repos tool reads the live agent sessions and holds every sync and push on a checkout one is working in, and holds everything when it cannot tell. A push onto a branch another session moved replays the commits onto it first and says that their checks ran on the old base, and a dirty checkout holds that push.',
+				gap: 'It holds syncs and pushes, not edits: two sessions can still write the same files. It cannot see a session that writes no session file, and it works on Linux alone.',
+				fails: 'When rebased commits go out without their checks being run again on the new base.',
+				evidence: [
+					"The repos tool's [busy detection](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#busy-detection), with what it reads and what it cannot see",
+					"The same docs on [an agent's push](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#agents-push-through-repos-push), which may rebase and says so"
+				]
+			},
+			shape: {
+				status: 'in_places',
+				label: 'A worktree per effort',
+				does: 'A worktree gives a session a checkout of its own, so its edits cannot land in the files of another.',
+				gap: 'A worktree is opt-in, and the default is the main checkout.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#arcs), where a worktree is opt-in isolation'
+				]
+			}
+		}
+	},
+	{
+		id: 'leak',
+		family: 'sessions',
+		name: 'Private content reaches a public repo',
+		summary:
+			'A planning note or a private path lands in a public repo, and a push publishes it at once.',
+		reviewed: false,
+		holds: {
+			written: {
+				status: 'throughout',
+				label: 'The planning layer stays out',
+				does: 'The written rules keep planning docs outside the repos, keep the contents of a planning layer out of anything public, and keep a doc comment from pointing outside its own repo.',
+				fails:
+					'When an agent adds a helpful cross-reference, completes a path it has seen, or runs a docs sweep that reaches too far.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#key-concepts), on the membrane and the accidents it guards against',
+					"The fuz-stack skill's [shared rules](/skills/fuz-stack#shared-rules), where a planning doc lives outside the repo",
+					'The path rules for [other repos](/skills/fuz-stack/references/path-references#other-repos), where a doc comment never points outside its repo'
+				]
+			},
+			tool: {
+				status: 'in_places',
+				label: 'Checks at the edges',
+				does: "gro's check fails in CI on a TODO Markdown file at a repo's root, and the repos tool reads each private repo anonymously on a fetch and reports one it can read as leaked.",
+				gap: 'No check in the public repos reads a commit for a private path or a secret before it is pushed.',
+				evidence: [
+					"gro's [check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts), which refuses a TODO doc at the root in CI",
+					"The repos tool's docs on [fetching](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#fetching), with its visibility check"
+				],
+				inventories: ['gates']
+			},
+			shape: {
+				status: 'in_places',
+				label: 'An inert planning layer',
+				does: 'The written pattern keeps planning in a separate repo of Markdown with no runtime and nothing listening, so a planning note is never a file in a public tree.',
+				gap: 'It keeps the notes out of a public tree, and does not keep a reference to them out.',
+				evidence: [
+					'The [grimoire skill](/skills/grimoire#key-concepts), on keeping the planning layer inert'
+				]
+			}
+		}
+	},
+	{
+		id: 'irreversible',
+		family: 'sessions',
+		name: 'An unattended session does something irreversible',
+		summary:
+			'A session publishes, deploys, rewrites a branch, changes a version or adds a dependency with nobody watching.',
+		reviewed: false,
+		holds: {
+			person: {
+				status: 'throughout',
 				label: 'The maintainer releases',
 				does: 'Versions, publishing, new dependencies, new packages and deploys stay with the maintainer.',
 				cost: 'Work waits on a person at exactly the outward-facing steps.',
@@ -632,9 +958,9 @@ export const failures: Array<Failure> = [
 				]
 			},
 			written: {
-				status: 'held',
+				status: 'throughout',
 				label: 'Rules for versions and dependencies',
-				does: 'A written rule is all that stops a version change, a new dependency or a new package. No check detects any of the three.',
+				does: 'The written rules keep a version change, a new dependency and a new package with the maintainer.',
 				fails: 'When the rule is the only limit and a session does not load it.',
 				evidence: [
 					"The fuz-stack skill's [shared rules](/skills/fuz-stack#shared-rules)",
@@ -642,31 +968,88 @@ export const failures: Array<Failure> = [
 				]
 			},
 			tool: {
-				status: 'partial',
-				label: 'A push gateway and deny rules',
-				does: "Agents push through a tool that only fast-forwards the checked-out branch and never sends a tag, a force or a new remote branch. The agent harness denies raw pushes, as the tool's docs recommend, and the publish and deploy commands, in settings that are not public.",
-				fails: 'When a differently spelled command gets past a deny rule that matches by prefix.',
+				status: 'in_places',
+				label: 'Deny rules and dry runs',
+				does: "The agent harness denies raw pushes, as the push tool's docs recommend, and the publish and deploy commands, in settings that are not public. A new command in a shipped Rust tool whose effect is hard to undo is a dry run until it is given an explicit flag, a real run of zap executes only a plan it has already previewed, and the release scripts of tsv, pglet and blake3 are dry runs by default.",
+				gap: "No gate detects a version change, and a new dependency or package passes nearly every gate: fuz_schema has a test that allows it no runtime dependency, and tsv makes a new crate declare whether it publishes. The deny rules match a command by its prefix, so one spelled another way gets past them. gro's publish and deploy tasks, which the TypeScript libraries release with, run for real unless told otherwise, and so do the release task of fuz_forge, the publish command of fuz and the addon publish script of tsv.",
+				fails: 'When a session passes the explicit flag itself.',
 				evidence: [
 					"The repos tool's docs on [what agents push through](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#agents-push-through-repos-push), including the deny rules and their gap",
-					'The same docs on [the push gateway](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#repos-push-the-gateway)'
-				],
-				inventory: 'actions'
-			},
-			shape: {
-				status: 'partial',
-				label: 'Dry run by default',
-				does: 'A new command in a shipped Rust tool whose effect is hard to undo is a dry run until it is given an explicit flag, and the release scripts of tsv and pglet follow the same rule. The publish task of gro, which the TypeScript libraries release with, publishes when run.',
-				evidence: [
 					'The [Rust rules](/skills/fuz-stack#rust-crates), where a hard-to-undo command is a dry run until told otherwise',
 					"zap's rule that [a real run executes only a plan it has already previewed](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)",
 					"gro's [publish task](https://github.com/fuzdev/gro/blob/main/src/lib/publish.task.ts), whose `dry` argument defaults to off"
-				]
+				],
+				inventories: ['actions']
+			},
+			shape: {
+				status: 'in_places',
+				label: 'A push tool that cannot',
+				does: 'Agents push through a tool that only fast-forwards the remote branch, replaying a diverged local branch onto it first. It has no way to send a tag or a force.',
+				gap: 'Only pushing goes through such a tool. Publishing and deploying have none, and git itself is still on the machine, behind a deny rule.',
+				evidence: [
+					"The repos tool's docs on [the push gateway](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#repos-push-the-gateway)"
+				],
+				inventories: ['actions']
 			}
 		}
 	}
 ];
 
-/** Strongest first, by each row's strongest `runs`. */
+/** In the order the page shows them. */
+export const moved_rules: Array<MovedRule> = [
+	{
+		was: 'Scan source for a delimiter with the cursor that skips comments and strings',
+		became:
+			'An audit in the gate that fails on any raw scan outside a reviewed list, each entry of which must still match a live site',
+		to: ['tool'],
+		source:
+			"tsv's [raw-find scan audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#raw-find-scan-audit-scanaudit)"
+	},
+	{
+		was: 'Add a crate to the CI list by hand when it gains a database suite',
+		became: 'A test that holds the CI lists to the tree, since a missing entry left the job green',
+		to: ['tool'],
+		source: 'The Rust [testing rules](/skills/fuz-stack/references/rust-patterns#testing)'
+	},
+	{
+		was: "Copy the workspace's whole lint table into a crate that must differ on one lint",
+		became: 'The release audit fails a copied table that has dropped a lint or changed a level',
+		to: ['tool'],
+		source: 'The Rust [lint rules](/skills/fuz-stack/references/rust-patterns#lints)'
+	},
+	{
+		was: 'Look up the home directory one way',
+		became:
+			'One hardened function, and in fuz and fuz_forge a lint that refuses the standard one. A direct read of the variable is still only a rule',
+		to: ['tool'],
+		source:
+			'The Rust rules on [system safety](/skills/fuz-stack/references/rust-patterns#system-safety)'
+	},
+	{
+		was: "Keep each table's column list in step with its schema",
+		became: 'A test that holds each list to the live schema, in both directions',
+		to: ['tool'],
+		source:
+			'The database reference on [the drift guard](/skills/fuz-stack/references/db-patterns#the-drift-guard)'
+	},
+	{
+		was: 'Keep test-only code out of a release build',
+		became:
+			'The test-only code is a crate of its own, and the release audit refuses it in a shipped binary',
+		to: ['tool', 'shape'],
+		source:
+			'The Rust rule to [isolate by crate, not by feature](/skills/fuz-stack/references/rust-dependencies#isolate-by-crate-not-by-feature)'
+	},
+	{
+		was: 'State a new mount flag in every test server config',
+		became: 'Mount flags with no default, so the typecheck names any that a config leaves out',
+		to: ['shape'],
+		source:
+			"fuz_app's [changelog entry](https://github.com/fuzdev/fuz_app/blob/main/CHANGELOG.md#01480) removing the defaults"
+	}
+];
+
+/** Soonest first, by each row's soonest `runs`. */
 export const oracle_comparisons: Array<OracleComparison> = [
 	{
 		project: 'tsv formatter',
@@ -753,19 +1136,6 @@ export const oracle_comparisons: Array<OracleComparison> = [
 			'[import differential](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#import-corpus-differential-importscorpus)'
 	},
 	{
-		project: 'tsv Svelte compiler',
-		against: "Svelte's compiler",
-		kind: 'reference',
-		how: "Fixtures hold Svelte's compiled output and are diffed after a canonical reprint, and the recordings are checked against live Svelte",
-		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'recordings' },
-			{ when: 'on_demand', what: 'corpus' }
-		],
-		source:
-			'[compile fixtures](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#compile-fixture-validation-compilefixturesvalidate)'
-	},
-	{
 		project: 'fuz_forge server, TypeScript',
 		against: 'Its Rust server',
 		kind: 'twin',
@@ -821,6 +1191,42 @@ export const oracle_comparisons: Array<OracleComparison> = [
 			'[Rust workspace](https://github.com/fuzdev/gro/blob/main/CLAUDE.md#rust-workspace-experimental)'
 	},
 	{
+		project: 'tsv formatter',
+		against: 'Itself, on mutated input',
+		kind: 'law',
+		how: 'Seeded mutations of the fixtures go through parse, format and reparse, and a panic, a second pass that formats differently, or a lost node fails',
+		runs: [{ when: 'every_change' }],
+		source:
+			'[fuzzer](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#seeded-mutational-fuzzer-fuzzaudit)'
+	},
+	{
+		project: 'tsv location wire',
+		against: 'The reconstruction its npm package ships',
+		kind: 'twin',
+		how: 'The two implementations of one definition of line and column must agree on every fixture',
+		runs: [{ when: 'every_change' }],
+		source:
+			'[loc cross-grade](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#loc-cross-grade-checkloc)'
+	},
+	{
+		project: 'tsv ignore matcher',
+		against: 'git check-ignore',
+		kind: 'reference',
+		how: 'Nested ignore files are built in a throwaway repo, and the matcher must agree with git on every candidate path',
+		runs: [{ when: 'every_change' }],
+		source:
+			'[git oracle test](https://github.com/fuzdev/tsv/blob/main/crates/tsv_ignore/tests/git_oracle.rs)'
+	},
+	{
+		project: "gro's module resolver",
+		against: "Node's resolution",
+		kind: 'reference',
+		how: 'Node resolves each case to a committed expectation, and the Rust resolver must match it unless the case declares a departure',
+		runs: [{ when: 'every_change' }],
+		source:
+			'[departures from Node](https://github.com/fuzdev/gro/blob/main/src/docs/resolver.md#departures-from-node)'
+	},
+	{
 		project: 'tsv WebAssembly build',
 		against: 'tsv native build',
 		kind: 'build',
@@ -846,6 +1252,15 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		runs: [{ when: 'ci' }],
 		source:
 			'[installer gate](https://github.com/fuzdev/fuz/blob/main/scripts/fuzi-gate/README.md#what-it-asserts-per-fixture-both-libcs)'
+	},
+	{
+		project: "gro's release binary",
+		against: 'The same commit built at another path',
+		kind: 'build',
+		how: 'Two release builds of one commit must be the same, byte for byte',
+		runs: [{ when: 'ci' }],
+		source:
+			'[Rust workspace](https://github.com/fuzdev/gro/blob/main/CLAUDE.md#rust-workspace-experimental)'
 	},
 	{
 		project: 'tsv parser',
@@ -884,15 +1299,6 @@ export const oracle_comparisons: Array<OracleComparison> = [
 			{ when: 'on_demand', what: 'by hand' }
 		],
 		source: '[test vectors](https://github.com/fuzdev/blake3/blob/main/CLAUDE.md#test-vectors)'
-	},
-	{
-		project: 'tsv typechecker',
-		against: "TypeScript 7's recorded error baselines",
-		kind: 'suite',
-		how: 'Error codes, spans and order are compared',
-		runs: [{ when: 'on_demand' }],
-		source:
-			'[gating status](https://github.com/fuzdev/tsv/blob/main/docs/typechecker.md#gating-status)'
 	},
 	{
 		project: 'fuz_app backend, TypeScript',
@@ -934,71 +1340,71 @@ export const kept_actions: Array<KeptAction> = [
 	},
 	{
 		action: 'Push a tag, which starts a release in CI for tsv and gro',
-		held_by: ['tool', 'deny'],
-		how: 'The push tool never sends a tag, and raw pushes are denied',
+		held_by: ['tool', 'deny', 'default'],
+		how: 'The push tool never sends a tag, and raw pushes are denied. The release script of tsv pushes its own tag, and changes nothing without an explicit flag',
 		source:
 			'[push gateway](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#repos-push-the-gateway)'
 	},
 	{
 		action: 'Create a remote branch',
 		held_by: ['tool', 'deny'],
-		how: "The push tool refuses to create one from an agent's shell",
+		how: "The push tool refuses to create one from an agent's shell, and raw pushes are denied",
 		source:
 			'[new branches](https://github.com/fuzdev/fuz_repos/blob/main/docs/repos.md#--new-branch)'
 	},
 	{
 		action: 'Publish a package',
 		held_by: ['deny', 'default', 'rule'],
-		how: 'The harness denies the publish commands, in settings that are not public, and the release scripts of tsv and pglet change nothing without an explicit flag. The publish task of gro has no such default',
+		how: 'The harness denies the publish commands, in settings that are not public. The release scripts of tsv, pglet and blake3 change nothing without an explicit flag, which a session could pass. The publish task of gro and the release task of fuz_forge have no such default',
 		source: '[release task](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#release)'
 	},
 	{
 		action: 'Deploy a site or a server',
 		held_by: ['deny', 'default', 'rule'],
-		how: 'The harness denies the site deploy command, in settings that are not public. A server deploy changes nothing without an explicit flag and runs only a plan the tool has already previewed, which an agent can do itself, so the written rule is what holds it',
+		how: 'The harness denies the site deploy command, in settings that are not public, and the deploy task of gro has no dry default. A server deploy through zap changes nothing without an explicit flag and runs only a plan it has already previewed, which a session can do itself, so there the written rule is what holds',
 		source:
 			'[reviewed plans](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)'
 	},
 	{
 		action: 'Delete files or data',
-		held_by: ['rule'],
-		how: "Only a written rule in general. The stack's own Rust tools make a hard-to-undo command a dry run until it is given an explicit flag",
+		held_by: ['default'],
+		how: "No public rule keeps deletion with the maintainer. In the stack's own Rust tools a new command that is hard to undo is a dry run until it is given an explicit flag",
 		source: '[Rust rules](/skills/fuz-stack#rust-crates)'
 	},
 	{
 		action: 'Change a version or a changelog',
 		held_by: ['rule'],
-		how: 'Only a written rule: no check detects the change',
+		how: 'Only a written rule: no gate detects the change',
 		source: '[shared rules](/skills/fuz-stack#shared-rules)'
 	},
 	{
 		action: 'Add or upgrade a dependency',
 		held_by: ['rule'],
-		how: 'Only a written rule, with an allowlist to choose from',
+		how: 'Only a written rule, with an allowlist to choose from. fuz_schema alone has a test that fails on a runtime dependency',
 		source: '[shared rules](/skills/fuz-stack#shared-rules)'
 	},
 	{
 		action: 'Create a package or a crate',
 		held_by: ['rule'],
-		how: 'Only a written rule: the release audit checks the crate graph, not new members',
+		how: 'Only a written rule: the release audit checks the crate graph, not new members, and tsv asks only that a new crate declare whether it publishes',
 		source: '[shared rules](/skills/fuz-stack#shared-rules)'
 	}
 ];
 
-/** Strongest `runs` first. */
+/** Soonest `runs` first. */
 export const gates: Array<Gate> = [
 	{
 		gate: 'Types, tests, lints and format',
 		catches: 'Type errors, regressions, lint errors and style drift',
 		runs: 'every_change',
-		where: 'The TypeScript and Svelte repos',
+		where: "The repos whose gate is gro's check, with lints where the repo has a lint config",
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{
 		gate: 'Drift in generated files',
 		catches: 'A generated file that no longer matches its source',
 		runs: 'every_change',
-		where: 'The TypeScript and Svelte repos',
+		where: "The repos whose gate is gro's check",
 		source:
 			'[checking generated files](https://github.com/fuzdev/gro/blob/main/src/docs/gen.md#checking-generated-files)'
 	},
@@ -1006,14 +1412,15 @@ export const gates: Array<Gate> = [
 		gate: 'Format, lints as errors, tests and doc links',
 		catches: 'Lint and test failures and broken doc links',
 		runs: 'every_change',
-		where: 'The Rust workspaces',
+		where: 'The Rust workspaces, less the CI gaps listed below',
 		source: '[Rust gate](/skills/fuz-stack/references/rust-patterns#the-gate)'
 	},
 	{
 		gate: 'Release audit',
-		catches: 'Forbidden crates and test-only features in a release build',
+		catches:
+			'A forbidden crate or a test-only feature in a release build, a broken layering rule, and a copied lint table that has drifted',
 		runs: 'every_change',
-		where: 'fuz, fuz_forge, zap and pglet',
+		where: 'fuz, fuz_forge and zap. pglet runs an audit of its own, for its test-only crate alone',
 		source: '[release audit](/skills/fuz-stack/references/rust-spine#check-release)'
 	},
 	{
@@ -1025,25 +1432,56 @@ export const gates: Array<Gate> = [
 			'[pinned counts](https://github.com/fuzdev/tsv/blob/main/docs/gate_counts.md#pinned-gate-counts)'
 	},
 	{
+		gate: 'Required programs and suites',
+		catches:
+			'A suite that passes by skipping: a program a test needs is missing, or a database suite is left off the CI list',
+		runs: 'every_change',
+		where: 'zap for programs, fuz for the CI list',
+		source: '[testing rules](/skills/fuz-stack/references/rust-patterns#testing)'
+	},
+	{
+		gate: 'Links and anchors in Markdown',
+		catches: 'A dead relative link or anchor in any Markdown file of the repo',
+		runs: 'every_change',
+		where: 'tsv',
+		source:
+			'[conformance audit](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#conformance-audit-conformanceaudit)'
+	},
+	{
+		gate: 'Size limits in the gate set',
+		catches: 'A WebAssembly build that has grown',
+		runs: 'every_change',
+		where: 'pglet',
+		source: '[gate runner](https://github.com/fuzdev/pglet/blob/main/CLAUDE.md#the-gate-runner)'
+	},
+	{
+		gate: 'A budget for the startup snapshot',
+		catches: 'A startup snapshot that has grown past its committed budget',
+		runs: 'every_change',
+		where: 'gro',
+		source:
+			'[baseline suite](https://github.com/fuzdev/gro/blob/main/crates/gro_bench/suites/baseline/suite.json)'
+	},
+	{
 		gate: 'Drift in the package exports map',
 		catches:
 			'An exports map that no longer matches the source, which the local gate rewrites instead of failing on',
 		runs: 'ci',
-		where: 'The TypeScript and Svelte repos',
+		where: "The repos whose CI runs gro's check",
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{
-		gate: 'Build, a clean tree after the run, and no planning notes in the repo',
-		catches: 'A broken build, uncommitted output and planning docs at the repo root',
+		gate: 'Build, a clean tree after the run, and no TODO docs at the root',
+		catches: 'A broken build, uncommitted output and a TODO Markdown file at the repo root',
 		runs: 'ci',
-		where: 'The TypeScript and Svelte repos',
+		where: "The repos whose CI runs gro's check with its build flag, which is most of them",
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{
-		gate: 'Committed size limits',
-		catches: 'A binary or WebAssembly build that has grown',
+		gate: 'Size limits in CI',
+		catches: 'A WebAssembly build or a native addon that has grown',
 		runs: 'ci',
-		where: 'tsv, pglet and fuz_schema',
+		where: 'tsv and fuz_schema',
 		source:
 			'[artifact validation](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#validateartifacts)'
 	},
@@ -1051,9 +1489,17 @@ export const gates: Array<Gate> = [
 		gate: 'Mutation gate',
 		catches: 'A test that passes whether or not the code is right',
 		runs: 'ci',
-		where: "fuz's installer",
+		where: "fuz's install script",
 		source:
 			'[mutation gate](https://github.com/fuzdev/fuz/blob/main/scripts/install-test/README.md#mutation-gate)'
+	},
+	{
+		gate: 'A snapshot that reproduces from its pins',
+		catches:
+			'A corpus that no longer matches its pinned upstreams, byte for byte, or whose license no longer reads as declared',
+		runs: 'ci',
+		where: 'corpora',
+		source: '[CI workflow](https://github.com/fuzdev/corpora/blob/main/.github/workflows/check.yml)'
 	},
 	{
 		gate: 'Conformance against committed ledgers',
@@ -1063,8 +1509,24 @@ export const gates: Array<Gate> = [
 		source: '[audits](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#overview)'
 	},
 	{
-		gate: 'Instruction counts against a base',
-		catches: 'A performance regression, as a review rule and not a limit',
+		gate: 'Mutation run',
+		catches: 'A test that passes whether or not the code is right',
+		runs: 'on_demand',
+		where: 'fuz_schema',
+		source: '[mutants](https://github.com/fuzdev/fuz_schema/blob/main/docs/testing.md#mutants)'
+	},
+	{
+		gate: 'Evidence links on this site',
+		catches: 'A link on this page or the values page whose file or heading is gone',
+		runs: 'on_demand',
+		where: 'This site',
+		source:
+			'[evidence check](https://github.com/fuzdev/docs.fuz.dev/blob/main/CLAUDE.md#evidence-check)'
+	},
+	{
+		gate: 'Wall time and instruction counts against a base',
+		catches:
+			'A performance regression: tsv fails a row past a committed percentage, and gro asks for a written reason',
 		runs: 'on_demand',
 		where: 'gro and tsv',
 		source: '[measure](/skills/fuz-stack/references/rust-perf#measure)'
@@ -1073,18 +1535,23 @@ export const gates: Array<Gate> = [
 
 /** mdz, one link each: where a repo's CI runs less than its local gate, or does not run. */
 export const gate_gaps: Array<string> = [
-	'The Rust gate of zzz runs only locally, and [its CI is Node-only](https://github.com/fuzdev/zzz/blob/main/CLAUDE.md#development-workflow)',
+	'The Rust gate of zzz and its cross-backend tests run only locally, and [its CI is Node-only](https://github.com/fuzdev/zzz/blob/main/CLAUDE.md#development-workflow)',
 	"[zervo's CI](https://github.com/fuzdev/zervo/blob/main/.github/workflows/check.yml) builds and tests nothing, because its browser engine is too heavy to build on each push",
-	'[blake3](https://github.com/fuzdev/blake3) has no CI, so its size limits and test vectors run only by hand and before a release'
+	'[blake3](https://github.com/fuzdev/blake3) has no CI, so its size limits and test vectors run only by hand and before a release',
+	'[tsv-format](https://github.com/fuzdev/vscode-extension-tsv-format) has no CI, so its typecheck, build and tests run only locally',
+	"[tsv's CI](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml) skips the two legs of its gate that read sibling checkouts, the wider Prettier round trip and corpus discovery",
+	"pglet's CI leaves out the WebAssembly and concurrency suites of [its gate set](https://github.com/fuzdev/pglet/blob/main/CLAUDE.md#the-gate-runner)",
+	"[zap's CI](https://github.com/fuzdev/zap/blob/main/.github/workflows/check.yml) has no build of gro's runtime, so the tests that evaluate config through it are skipped there, by an explicit allowance"
 ];
 
-/** Every mdz string in this page's data that carries a link, with its record, in page order. */
+/** Every mdz string in this data that carries a link, with its record. */
 export const coherence_entries = (): Array<EvidenceEntry> => [
 	...failures.flatMap((failure) =>
-		failure_holds(failure).flatMap(({ rung, hold }) =>
+		failure_reached_holds(failure).flatMap(({ rung, hold }) =>
 			hold.evidence.map((content) => ({ record: hold_id(failure, rung), content }))
 		)
 	),
+	...moved_rules.map((m) => ({ record: `moved: ${m.was}`, content: m.source })),
 	...oracle_comparisons.map((c) => ({
 		record: `oracle: ${c.project} against ${c.against}`,
 		content: c.source

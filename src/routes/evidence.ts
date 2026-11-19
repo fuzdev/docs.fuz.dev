@@ -7,7 +7,9 @@
  * stale. This is the instrument for that, run where the sibling checkouts are.
  *
  * What it cannot see: it reads each checkout's working tree, so a file that is not yet
- * committed or pushed passes, and it cannot tell a private repo from a public one.
+ * committed or pushed passes, and it cannot tell a private repo from a public one. It
+ * holds the repos the links name to the Fuz stack page's, and never reads a project's
+ * name out of prose.
  *
  * @module
  */
@@ -224,6 +226,43 @@ export const entries_to_links = (entries: Array<EvidenceEntry>): Array<EvidenceL
  */
 export const stack_page_project_names = (source: string): Set<string> =>
 	new Set(Array.from(source.matchAll(/\bname: '([^']+)',\s+tagline:/g), (m) => m[1]!));
+
+/**
+ * Each project the Fuz stack page announces with its repo, read from its data file's
+ * source: a project's `repo` is the one written after its `name` and before the next.
+ */
+export const stack_page_project_repos = (source: string): Map<string, string> => {
+	const projects = Array.from(source.matchAll(/\bname: '([^']+)',\s+tagline:/g));
+	const result: Map<string, string> = new Map();
+	for (const [index, match] of projects.entries()) {
+		const chunk = source.slice(match.index, projects[index + 1]?.index);
+		const repo = /\brepo: github\('([^']+)'\)/.exec(chunk)?.[1];
+		if (repo !== undefined) result.set(match[1]!, repo);
+	}
+	return result;
+};
+
+/**
+ * The repos the Fuz stack page announces, read from its data file's source: each
+ * project's `repo`, and the repo of a project's site, which is named for the site's
+ * host. A site without a repo of its own adds a name no link uses.
+ */
+export const stack_page_repo_names = (source: string): Set<string> =>
+	new Set([
+		...Array.from(source.matchAll(/\brepo: github\('([^']+)'\)/g), (m) => m[1]!),
+		...Array.from(source.matchAll(/\bsite: 'https:\/\/([^/']+)/g), (m) => m[1]!)
+	]);
+
+/** The links to a file in a repo that is not `owner`'s or that `announced` leaves out. */
+export const links_outside_repos = (
+	links: Array<EvidenceLink>,
+	owner: string,
+	announced: ReadonlySet<string>
+): Array<EvidenceLink> =>
+	links.filter((link) => {
+		const target = evidence_target_parse(link.reference);
+		return target.kind === 'repo_file' && (target.owner !== owner || !announced.has(target.repo));
+	});
 
 // whether a checkout's git config names `owner/repo` on GitHub as a remote
 const remote_matches = (git_config: string, owner: string, repo: string): boolean => {

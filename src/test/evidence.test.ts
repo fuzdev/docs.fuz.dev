@@ -10,13 +10,17 @@ import {
 	evidence_verdict_fails,
 	github_heading_slugs,
 	mdz_heading_ids,
+	links_outside_repos,
 	mdz_references,
 	route_to_page_file,
 	route_to_skill_doc,
 	stack_page_project_names,
+	stack_page_project_repos,
+	stack_page_repo_names,
 	type EvidenceCheckOptions,
 	type EvidenceLink
 } from '#routes/evidence.ts';
+import { STACK_OWNER, stack_repos } from '#routes/stack_projects.ts';
 import { values_entries } from '#routes/values/values.ts';
 
 // a `repos_dir` over an in-memory tree of `repo/path` to file text
@@ -341,6 +345,84 @@ describe('stack_page_project_names', () => {
 	});
 });
 
+describe('stack_page_repo_names', () => {
+	test("reads each project's repo, and its site's host as the site's repo", () => {
+		const source = `[
+	{
+		name: 'tooling',
+		pieces: [
+			{
+				name: 'tsv',
+				tagline: 'a project',
+				site: 'https://tsv.fuz.dev/',
+				repo: github('tsv')
+			},
+			{ name: 'tsv-format', tagline: 'another', repo: github('vscode-extension-tsv-format') }
+		]
+	}
+]`;
+		assert.deepEqual(
+			[...stack_page_repo_names(source)].toSorted(),
+			['tsv', 'tsv.fuz.dev', 'vscode-extension-tsv-format'].toSorted()
+		);
+	});
+
+	test('reads nothing from a source in another shape', () => {
+		assert.strictEqual(stack_page_repo_names("repo: 'https://github.com/fuzdev/tsv'").size, 0);
+	});
+});
+
+describe('stack_page_project_repos', () => {
+	test('pairs each project with the repo written before the next project', () => {
+		const source = `[
+	{
+		name: 'tooling',
+		blurb: 'A group.',
+		pieces: [
+			{ name: 'tsv', tagline: 'a project', site: 'https://tsv.fuz.dev/', repo: github('tsv') },
+			{ name: 'planned', tagline: 'no repo yet' },
+			{ name: 'tsv-format', tagline: 'another', repo: github('vscode-extension-tsv-format') }
+		]
+	}
+]`;
+		assert.deepEqual(
+			[...stack_page_project_repos(source)],
+			[
+				['tsv', 'tsv'],
+				['tsv-format', 'vscode-extension-tsv-format']
+			]
+		);
+	});
+});
+
+describe('links_outside_repos', () => {
+	const announced = new Set(['tsv']);
+
+	test('keeps a link to a repo the set leaves out, or to another owner', () => {
+		const outside = link('https://github.com/fuzdev/elsewhere/blob/main/README.md');
+		const other_owner = link('https://github.com/someone/tsv/blob/main/README.md');
+		assert.deepEqual(
+			links_outside_repos(
+				[link('https://github.com/fuzdev/tsv/blob/main/README.md'), outside, other_owner],
+				'fuzdev',
+				announced
+			),
+			[outside, other_owner]
+		);
+	});
+
+	test('passes a route on this site and a link to another site', () => {
+		assert.deepEqual(
+			links_outside_repos(
+				[link('/skills/fuz-stack'), link('https://tsv.fuz.dev/docs')],
+				'fuzdev',
+				announced
+			),
+			[]
+		);
+	});
+});
+
 describe("the pages' data", () => {
 	const entries = [...coherence_entries(), ...values_entries()];
 	const links = entries_to_links(entries);
@@ -361,6 +443,12 @@ describe("the pages' data", () => {
 		const written = entries.reduce((n, e) => n + (e.content.match(/\]\(/g)?.length ?? 0), 0);
 		assert.ok(written > 0);
 		assert.strictEqual(links.length, written);
+	});
+
+	// held here too, where the stack page is not: this site's list is the stack page's
+	// by the evidence task, and every link is to one of that list's repos
+	test('every repo link is to a repo of a stack project', () => {
+		assert.deepEqual(links_outside_repos(links, STACK_OWNER, stack_repos), []);
 	});
 
 	// the sibling repos are not in CI, so only this site's own routes are checked here;

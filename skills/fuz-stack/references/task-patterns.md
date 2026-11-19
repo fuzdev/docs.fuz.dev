@@ -31,7 +31,7 @@ export const task: Task<Args> = {
 
 - **Import from the module**: `@fuzdev/gro/task.ts` has `Task`, `TaskContext`,
   and `InvokeTask`; `@fuzdev/gro/task_error.ts` has `TaskError` and
-  `SilentError`. The bare `@fuzdev/gro` entry re-exports a few of them and
+  `ReportedError`. The bare `@fuzdev/gro` entry re-exports a few of them and
   older files use it.
 - **A `@nodocs` doc comment on `Args` and `task`.** Every task module exports
   those two names, so in a library's `src/lib` they would collide under the
@@ -115,7 +115,7 @@ anything else a builtin.
 - **Invoke, don't import and call.** `other_task.run(ctx)` skips the logging,
   the forwarded args, and the error handling.
 - **A failed invoked task has already logged its error.** It rejects with a
-  `SilentError` carrying the original as `cause`, so the invoker reports only
+  `ReportedError` carrying the original as `cause`, so the invoker reports only
   that it failed.
 - **An invoked task shares its invoker's `timings` and module graph**, so a
   `config` passed to it doesn't change what the graph watches; `log` is a
@@ -159,11 +159,11 @@ depth. The first word after each `--` names the tool:
 
 ## Errors
 
-| Throw         | Stack | Message logged | Use when                              |
-| ------------- | ----- | -------------- | ------------------------------------- |
-| an `Error`    | yes   | yes            | something unexpected                  |
-| `TaskError`   | no    | yes            | a known failure the message explains  |
-| `SilentError` | no    | no             | already logged; just exit non-zero    |
+| Throw           | Stack | Message logged | Use when                              |
+| --------------- | ----- | -------------- | ------------------------------------- |
+| an `Error`      | yes   | yes            | something unexpected                  |
+| `TaskError`     | no    | yes            | a known failure the message explains  |
+| `ReportedError` | no    | no             | already reported; just exit non-zero  |
 
 The CLI exits `1`, or the `exit_code` of a `TaskError` thrown by the task it
 invoked (`new TaskError(message, {exit_code})`, 1 to 255).

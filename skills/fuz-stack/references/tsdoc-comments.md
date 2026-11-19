@@ -131,10 +131,12 @@ anything else stays code (see ./mdz.md).
 - **Backtick an HTTP route**: `POST /login`. A bare `/login` after a
   space is an internal link, and a link to a page that doesn't exist fails
   the prerender.
-- **Links work in descriptions, `@param`, `@returns`, `@example`, and
-  `@see`.** `@throws`, `@mutates`, `@deprecated`, `@internal`, and `@since`
-  render as plain text, backticks included. Backtick there anyway, for the
-  reader of the source.
+- **Links work in descriptions, `@param`, `@returns`, `@example`, `@see`,
+  and the descriptions of `@throws` and `@mutates`.** A `@throws` type links
+  when it names a declaration, a braced one (`@throws {Failure<Reason>}`)
+  name by name. `@deprecated`, `@internal`, and `@since` render as plain
+  text, backticks included. Backtick there anyway, for the reader of the
+  source.
 - **Never point outside the repo.** Published API docs stand alone, so a
   `../other-repo` path is dead (see ./path-references.md). Credit outside
   work in prose or with a URL.

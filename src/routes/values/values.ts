@@ -50,8 +50,11 @@ export interface Value {
 	means: string;
 	/** The question to ask of a design. */
 	question: string;
-	/** mdz with one link: a decision already made that passes the question. */
-	passes: string;
+	/**
+	 * mdz, each entry linking one public artifact: a decision already made that
+	 * passes the question. A value that shows up in more than one place has one each.
+	 */
+	passes: Array<string>;
 	/** Where the stack falls short of it today. */
 	shortfall: string;
 }
@@ -105,7 +108,7 @@ export interface Decision {
 }
 
 /** The day these claims were last checked against the repos, as an ISO date. */
-export const claims_checked = '2026-11-17';
+export const claims_checked = '2026-11-18';
 
 /** Whether the maintainer has checked this page's claims. */
 export const reviewed: boolean = false;
@@ -203,8 +206,9 @@ export const values: Array<Value> = [
 		terms: ['correctness'],
 		means: 'The software does what it says and nothing else, held to a reference where one exists.',
 		question: 'What does this accept or produce that it should not?',
-		passes:
-			"fuz_schema's [priorities](https://github.com/fuzdev/fuz_schema/blob/main/README.md#priorities), where a fix of over-acceptance goes ahead of speed and size",
+		passes: [
+			"fuz_schema's [priorities](https://github.com/fuzdev/fuz_schema/blob/main/README.md#priorities), where a fix of over-acceptance goes ahead of speed and size"
+		],
 		shortfall:
 			'Most projects have no outside reference to be held to, and where one exists the comparison often runs before a release and not on every change.'
 	},
@@ -215,8 +219,9 @@ export const values: Array<Value> = [
 		means:
 			'Code acts only on what it was handed, and a misconfiguration with a security consequence fails loudly.',
 		question: 'What can this reach that it was not given?',
-		passes:
-			"gro's [authority model](https://github.com/fuzdev/gro/blob/main/src/docs/authority.md#imports-or-globals), where the network is an import and no global carries authority",
+		passes: [
+			"gro's [authority model](https://github.com/fuzdev/gro/blob/main/src/docs/authority.md#imports-or-globals), where the network is an import and no global carries authority"
+		],
 		shortfall:
 			"gro's runtime says its security is not finished, and fuz_forge says its security is not ready to be trusted."
 	},
@@ -227,20 +232,26 @@ export const values: Array<Value> = [
 		means:
 			'Speed is pushed as far as it goes, size and memory are budgets that bind when crossed, and the time or memory an input can force is a limit, not an average.',
 		question: 'Was it measured, on what, and against what?',
-		passes:
-			'The fuz-stack [performance reference](/skills/fuz-stack/references/rust-perf#measure), where a claim comes from a harness and states its noise floor',
-		shortfall: 'Energy and browsers are never measured, and memory has almost no gate.'
+		passes: [
+			'The fuz-stack [performance reference](/skills/fuz-stack/references/rust-perf#measure), where a claim comes from a harness and states its noise floor'
+		],
+		shortfall:
+			"Energy and browser performance are never measured, and memory is gated in one place, the heap fuz_schema's schemas retain."
 	},
 	{
 		id: 'controllability',
 		name: 'Controllability',
 		terms: ['controllability'],
-		means: 'What the software will do is visible, reviewable and bounded before it does it.',
-		question: 'Can a person see what this will do before it does it, and stop it?',
-		passes:
-			"zap's rule that [a real run executes only a plan it has already previewed](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)",
+		means:
+			"What the software can reach and what it will do are visible, reviewable and bounded before it acts, and doing more is a person's decision.",
+		question: 'Where does a person read what this can do, and who decides when it does more?',
+		passes: [
+			'In the source: the fuz-stack [dependency injection](/skills/fuz-stack/references/dependency-injection#the-convention) convention, where a side effect is a parameter and a root decides what is passed',
+			"At the boundary: gro's [host modules](https://github.com/fuzdev/gro/blob/main/src/docs/host_modules.md#where-to-import-them), where a root imports authority, narrows it and hands it down",
+			"At run time: zap's rule that [a real run executes only a plan it has already previewed](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)"
+		],
 		shortfall:
-			"gro's policy file, the reviewable record of what a project may reach, is designed and not built."
+			"That library code takes its effects as parameters is a written rule, tested only over a named list of gro's own modules, and gro's policy file, the reviewable record of what a project may reach, is designed and not built."
 	},
 	{
 		id: 'simplicity',
@@ -249,8 +260,9 @@ export const values: Array<Value> = [
 		means:
 			'Small enough to audit and to hold in one head: few dependencies, few concepts, one way to do a thing.',
 		question: 'What did this design refuse?',
-		passes:
-			"gro's [design](https://github.com/fuzdev/gro/blob/main/src/docs/runtime.md#design), where staying simple and small is what keeps the surface small enough to audit",
+		passes: [
+			"gro's [design](https://github.com/fuzdev/gro/blob/main/src/docs/runtime.md#design), where staying simple and small is what keeps the surface small enough to audit"
+		],
 		shortfall:
 			'Twin implementations, hand-written parsers and an owned runtime are complexity the stack chose to take on.'
 	}
@@ -264,10 +276,7 @@ export const stated_orders: Array<StatedOrder> = [
 			[{ term: 'security', label: 'security' }],
 			[{ term: null, label: 'web standards' }],
 			[{ term: 'controllability', label: 'developer control and ergonomics' }],
-			[
-				{ term: 'startup', label: 'startup first' },
-				{ term: 'speed', label: 'speed' }
-			],
+			[{ term: 'speed', label: 'speed, startup first' }],
 			[
 				{ term: 'size', label: 'binary size' },
 				{ term: 'memory', label: 'memory' }
@@ -286,7 +295,7 @@ export const stated_orders: Array<StatedOrder> = [
 				{ term: 'size', label: 'binary size' },
 				{ term: 'memory', label: 'memory usage' }
 			],
-			[{ term: null, label: 'extensibility' }]
+			[{ term: null, label: 'extensibility, modularity, reusability' }]
 		],
 		overarching: { term: 'simplicity', label: 'staying simple' },
 		source: 'The [tsv README](https://github.com/fuzdev/tsv/blob/main/README.md#tsv)'
@@ -381,8 +390,9 @@ export const contexts: Array<Context> = [
 		id: 'fixture',
 		name: 'A database for tests',
 		order: [['size', 'startup'], ['speed']],
-		why: 'A fixture is started often and shipped small, so both come before throughput.',
-		source: "[pglet's tradeoffs](https://github.com/fuzdev/pglet/blob/main/TRADEOFFS.md#tradeoffs)"
+		why: "pglet aims to beat PGlite on startup and size, and its throughput only has to stay within a factor of SQLite's.",
+		source:
+			"[pglet's plan](https://github.com/fuzdev/pglet/blob/main/PLAN.md#1-size-and-startup--benchmarking--size-lock-in)"
 	}
 ];
 
@@ -402,7 +412,7 @@ export const decisions: Array<Decision> = [
 		won: 'correctness',
 		lost: 'speed',
 		chose: 'A correctness gain is taken when it costs a few percent of lexing time',
-		cost: 'Speed stops being the tiebreak unless an input would turn pathological',
+		cost: 'A few percent of lexing time, weighed against the gain only when an input would turn pathological',
 		source:
 			'[guidelines](https://github.com/fuzdev/fuz_code/blob/main/CLAUDE.md#development-guidelines)'
 	},
@@ -419,16 +429,27 @@ export const decisions: Array<Decision> = [
 		project: 'fuz_forge',
 		won: 'correctness',
 		lost: 'simplicity',
-		chose: 'A second server kept as a reference twin, held to the first by shared tests',
+		chose:
+			'A TypeScript server kept as the reference twin of the Rust one, held to it by shared tests',
 		cost: 'Two implementations to keep in step',
 		source: '[overview](https://github.com/fuzdev/fuz_forge/blob/main/CLAUDE.md#overview)'
+	},
+	{
+		project: 'fuz_app',
+		won: 'security',
+		lost: 'speed',
+		chose:
+			'A login for an unknown account still verifies a dummy password hash, so its timing matches a wrong password',
+		cost: 'A password hash verified on every login for an unknown account',
+		source:
+			'[security](https://github.com/fuzdev/fuz_app/blob/main/docs/security.md#account-enumeration-prevention)'
 	},
 	{
 		project: 'zap',
 		won: 'security',
 		lost: 'speed',
 		chose: 'Security controls are read from the live machine on every run, with no cache',
-		cost: 'Every plan pays for the reads',
+		cost: 'Every plan reads them again instead of trusting a stored verdict',
 		source:
 			'[security](https://github.com/fuzdev/zap/blob/main/docs/security.md#security-controls-are-read-live-every-time)'
 	},
@@ -446,7 +467,7 @@ export const decisions: Array<Decision> = [
 		won: 'speed',
 		lost: 'security',
 		chose: 'One realm, mutable intrinsics and the JIT on by default',
-		cost: 'Some hardening, which a user can ask for back',
+		cost: 'Some hardening, which an opt-in tier listed as future work would give back',
 		source: '[runtime design](https://github.com/fuzdev/gro/blob/main/src/docs/runtime.md#design)'
 	},
 	{
@@ -459,12 +480,12 @@ export const decisions: Array<Decision> = [
 			'[performance](https://github.com/fuzdev/tsv/blob/main/docs/performance.md#profile-guided-builds)'
 	},
 	{
-		project: 'tsv',
+		project: 'blake3',
 		won: 'size',
 		lost: 'speed',
-		chose: 'A minimal build for WASM, where size matters more',
-		cost: 'The speed a fuller build would keep',
-		source: '[design](https://github.com/fuzdev/tsv/blob/main/README.md#design)'
+		chose: 'A second build without SIMD, about 30% smaller, for where bundle size matters more',
+		cost: 'In that build, the two to three times SIMD gains on large inputs',
+		source: '[install](https://github.com/fuzdev/blake3/blob/main/README.md#install)'
 	},
 	{
 		project: 'fuz_schema',
@@ -500,7 +521,7 @@ export const values_entries = (): Array<EvidenceEntry> => [
 	{ record: 'headword', content: headword.source },
 	...method.evidence.map((content) => ({ record: 'method', content })),
 	...efficiency.evidence.map((content) => ({ record: 'efficiency', content })),
-	...values.map((v) => ({ record: `value: ${v.id}`, content: v.passes })),
+	...values.flatMap((v) => v.passes.map((content) => ({ record: `value: ${v.id}`, content }))),
 	...stated_orders.map((o) => ({ record: `order: ${o.project}`, content: o.source })),
 	...contexts.map((c) => ({ record: `context: ${c.id}`, content: c.source })),
 	...decisions.map((d) => ({

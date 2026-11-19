@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Mdz from '@fuzdev/mdz/Mdz.svelte';
 	import { site_context } from '@fuzdev/fuz_ui/site.svelte.ts';
 
@@ -38,6 +39,12 @@
 		);
 
 	const reviewed_count = failures.filter((f) => f.reviewed).length;
+	// a row says so itself only while the rows differ, as the header covers the rest
+	const review_mixed = reviewed_count > 0 && reviewed_count < failures.length;
+
+	const rule_only_count = kept_actions.filter(
+		(kept) => kept.held_by.length === 1 && kept.held_by[0] === 'rule'
+	).length;
 	const review_state =
 		reviewed_count === 0
 			? 'has not yet reviewed its rows'
@@ -110,6 +117,10 @@
 			A failure can be held anywhere from a person's judgment to the shape of the system. Each rung
 			down the ladder depends less on anyone remembering than the one before it, and usually takes
 			more work to build. A rule moves along when its next form is simpler than the rule.
+		</p>
+		<p class="width_atmost_md">
+			The written rung cites the <a href={resolve('/skills')}>skills</a> this site renders, and the
+			<a href={resolve('/values')}>values</a> page says what the holds protect.
 		</p>
 		<p class="width_atmost_md">
 			<small>
@@ -201,11 +212,13 @@
 				<h3>{failure.name}</h3>
 				<p class="width_atmost_md">
 					{failure.failure}
-					<small class="text_70">
-						{failure.reviewed
-							? 'Reviewed by the maintainer.'
-							: 'Not yet reviewed by the maintainer.'}
-					</small>
+					{#if review_mixed}
+						<small class="text_70">
+							{failure.reviewed
+								? 'Reviewed by the maintainer.'
+								: 'Not yet reviewed by the maintainer.'}
+						</small>
+					{/if}
 				</p>
 				{#each failure_holds(failure) as { rung, hold } (rung)}
 					<article id={hold_id(failure, rung)} class="py_md">
@@ -318,7 +331,8 @@
 		{@render section_heading('actions')}
 		<p class="width_atmost_md">
 			These are the actions the stack keeps with the maintainer, each with what stops an agent from
-			taking it, strongest first. The last rows are held by a written rule and nothing else.
+			taking it, strongest first. A written rule and nothing else holds {rule_only_count} of the
+			{kept_actions.length}.
 		</p>
 		{@render listed_by('actions')}
 		<ul class="unstyled row_wrap gap_md mb_lg">
@@ -362,9 +376,8 @@
 	<section>
 		{@render section_heading('gates')}
 		<p class="width_atmost_md">
-			A gate is a check run on a change. Most have to pass before the change counts as done, and the
-			last is a review rule. These are the kinds the stack runs, sorted by the same weights as the
-			oracles.
+			A gate is a check run on a change. These are the kinds the stack runs, sorted by the same
+			weights as the oracles.
 		</p>
 		{@render listed_by('gates')}
 		<div class="overflow-x:auto">

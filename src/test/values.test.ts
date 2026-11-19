@@ -51,9 +51,12 @@ describe('values', () => {
 
 	test('every field is filled', () => {
 		for (const v of values) {
-			for (const field of ['name', 'means', 'question', 'passes', 'shortfall'] as const) {
+			for (const field of ['name', 'means', 'question', 'shortfall'] as const) {
 				assert.ok(v[field].trim(), `${v.id}: ${field}`);
 			}
+			assert.ok(v.passes.length > 0, `${v.id}: passes`);
+			assert.strictEqual(new Set(v.passes).size, v.passes.length, `${v.id}: a pass twice`);
+			for (const passes of v.passes) assert.ok(passes.trim(), `${v.id}: passes`);
 		}
 	});
 });

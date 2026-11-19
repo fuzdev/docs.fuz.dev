@@ -120,7 +120,7 @@ export interface Gate {
 }
 
 /** The day these claims were last checked against the repos, as an ISO date. */
-export const claims_checked = '2026-11-17';
+export const claims_checked = '2026-11-18';
 
 /** The ladder, top to bottom. Each rung depends less on anyone remembering than the one before. */
 export const rungs: Record<RungId, Rung> = {
@@ -465,7 +465,7 @@ export const failures: Array<Failure> = [
 			tool: {
 				status: 'partial',
 				label: 'Drift checks and twin suites',
-				does: 'Each TypeScript gate fails on a drifted generated file, and shared suites hold the wire-visible names and shapes of the TypeScript and Rust twins equal. The Rust legs of those suites run on demand, and nothing checks internal names.',
+				does: 'Each TypeScript gate fails on a drifted generated file, and shared suites hold the wire-visible names and shapes of the TypeScript and Rust twins equal. The Rust legs of the cross-backend suites run on demand, while the shared case tables of fuz_forge and fuz_schema run on both sides on every change. Nothing checks internal names.',
 				fails:
 					'When a path is tested on one backend only, and the twins agree on the happy path and drift at the edges.',
 				wanted: 'The Rust legs of the cross-backend suites in CI.',
@@ -509,7 +509,7 @@ export const failures: Array<Failure> = [
 			tool: {
 				status: 'partial',
 				label: 'Suites fail on a skip',
-				does: 'The suites of zap, fuz and pglet fail when a test program or a prerequisite is missing, and the pinned counts of tsv fail when a count moves. Elsewhere a skip may only warn.',
+				does: "The suites of zap and fuz fail when a test program is missing, pglet's CI fails when a gate reports nothing, and the pinned counts of tsv fail when a count moves. Elsewhere a skip may only warn.",
 				fails: 'When a skip stays green with a warning that nobody reads.',
 				cost: 'A loud failure interrupts work that a quiet fallback would have let continue.',
 				evidence: [
@@ -520,8 +520,8 @@ export const failures: Array<Failure> = [
 			},
 			shape: {
 				status: 'partial',
-				label: 'One gate definition, in tsv',
-				does: "tsv's CI runs the same check command a session runs, so the two lists cannot drift. Elsewhere CI lists its steps again. Nothing structural stops a commit whose local gate was red.",
+				label: 'One gate definition, in some repos',
+				does: 'The CI of tsv, of pglet and of the repos with no Rust runs the check command a session runs, so the two lists cannot drift there. The other Rust workspaces list their steps again in CI. Nothing structural stops a commit whose local gate was red.',
 				evidence: [
 					"tsv's [CI workflow](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml), which runs the same check command as a session does"
 				]
@@ -655,10 +655,11 @@ export const failures: Array<Failure> = [
 			shape: {
 				status: 'partial',
 				label: 'Dry run by default',
-				does: 'A new command in a shipped Rust tool whose effect is hard to undo is a dry run until it is given an explicit flag, and the release scripts follow the same rule.',
+				does: 'A new command in a shipped Rust tool whose effect is hard to undo is a dry run until it is given an explicit flag, and the release scripts of tsv and pglet follow the same rule. The publish task of gro, which the TypeScript libraries release with, publishes when run.',
 				evidence: [
 					'The [Rust rules](/skills/fuz-stack#rust-crates), where a hard-to-undo command is a dry run until told otherwise',
-					"zap's rule that [a real run executes only a plan it has already previewed](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)"
+					"zap's rule that [a real run executes only a plan it has already previewed](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)",
+					"gro's [publish task](https://github.com/fuzdev/gro/blob/main/src/lib/publish.task.ts), whose `dry` argument defaults to off"
 				]
 			}
 		}
@@ -673,10 +674,10 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: "Fixtures hold Prettier's output with each difference documented, the recordings are checked against a live, pinned Prettier, and a corpus diff fails on lost content or a new uncataloged difference",
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'recordings and corpus diff' }
+			{ when: 'every_change', what: 'fixtures, against a live Prettier' },
+			{ when: 'release', what: 'corpus diff' }
 		],
-		source: '[gate map](https://github.com/fuzdev/tsv/blob/main/benches/js/CLAUDE.md#gate-map)'
+		source: '[CI workflow](https://github.com/fuzdev/tsv/blob/main/.github/workflows/check.yml)'
 	},
 	{
 		project: 'tsv formatter',
@@ -720,11 +721,10 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		kind: 'reference',
 		how: "Fixtures hold the canonical parser's syntax tree, the recordings are checked against the live parser, and a deep diff over real codebases classifies every difference against a catalog",
 		runs: [
-			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'recordings and corpus diff' }
+			{ when: 'every_change', what: 'fixtures, against the live parsers' },
+			{ when: 'release', what: 'corpus diff' }
 		],
-		source:
-			'[parse comparison](https://github.com/fuzdev/tsv/blob/main/benches/js/CLAUDE.md#parse-comparison)'
+		source: '[fixture tests](https://github.com/fuzdev/tsv/blob/main/tests/fixtures_tests.rs)'
 	},
 	{
 		project: 'tsv type stripping',
@@ -743,10 +743,11 @@ export const oracle_comparisons: Array<OracleComparison> = [
 		project: 'tsv import scanner',
 		against: "The canonical parsers' trees, and oxc-parser's module record",
 		kind: 'reference',
-		how: "Fixtures are checked against records read off the canonical parsers' trees, and the records must agree with oxc-parser's over a corpus",
+		how: "Fixtures hold records read off the canonical parsers' trees, the recordings are checked against those parsers by hand, and the records must agree with oxc-parser's over a corpus",
 		runs: [
 			{ when: 'every_change', what: 'fixtures' },
-			{ when: 'release', what: 'corpus' }
+			{ when: 'release', what: 'corpus' },
+			{ when: 'on_demand', what: 'recordings against the parsers' }
 		],
 		source:
 			'[import differential](https://github.com/fuzdev/tsv/blob/main/docs/audits.md#import-corpus-differential-importscorpus)'
@@ -948,13 +949,13 @@ export const kept_actions: Array<KeptAction> = [
 	{
 		action: 'Publish a package',
 		held_by: ['deny', 'default', 'rule'],
-		how: 'The harness denies the publish commands, in settings that are not public, and the release scripts change nothing without an explicit flag',
+		how: 'The harness denies the publish commands, in settings that are not public, and the release scripts of tsv and pglet change nothing without an explicit flag. The publish task of gro has no such default',
 		source: '[release task](https://github.com/fuzdev/tsv/blob/main/docs/tasks.md#release)'
 	},
 	{
 		action: 'Deploy a site or a server',
 		held_by: ['deny', 'default', 'rule'],
-		how: 'The harness denies the site deploy command, in settings that are not public. A server deploy changes nothing without an explicit flag and runs only a plan the tool has already previewed, which an agent can do itself',
+		how: 'The harness denies the site deploy command, in settings that are not public. A server deploy changes nothing without an explicit flag and runs only a plan the tool has already previewed, which an agent can do itself, so the written rule is what holds it',
 		source:
 			'[reviewed plans](https://github.com/fuzdev/zap/blob/main/docs/concepts.md#a-wetrun-executes-only-the-plan-you-reviewed)'
 	},
@@ -1074,8 +1075,7 @@ export const gates: Array<Gate> = [
 export const gate_gaps: Array<string> = [
 	'The Rust gate of zzz runs only locally, and [its CI is Node-only](https://github.com/fuzdev/zzz/blob/main/CLAUDE.md#development-workflow)',
 	"[zervo's CI](https://github.com/fuzdev/zervo/blob/main/.github/workflows/check.yml) builds and tests nothing, because its browser engine is too heavy to build on each push",
-	'[blake3](https://github.com/fuzdev/blake3) has no CI, so its size limits and test vectors run only by hand and before a release',
-	"[This site's CI](https://github.com/fuzdev/docs.fuz.dev/blob/main/.github/workflows/check.yml) skips the check for drifted generated files"
+	'[blake3](https://github.com/fuzdev/blake3) has no CI, so its size limits and test vectors run only by hand and before a release'
 ];
 
 /** Every mdz string in this page's data that carries a link, with its record, in page order. */

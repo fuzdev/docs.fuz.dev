@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Mdz from '@fuzdev/mdz/Mdz.svelte';
 	import { site_context } from '@fuzdev/fuz_ui/site.svelte.ts';
 
@@ -68,7 +69,8 @@
 		<p class="width_atmost_md">
 			<strong>This page is a sketch.</strong> It draws the same data several ways, to choose which
 			views are worth keeping. It names only projects on the
-			<a href="https://www.fuz.dev/stack">Fuz stack page</a>.
+			<a href="https://www.fuz.dev/stack">Fuz stack page</a>. What holds the values in place when
+			agents write the code is on the <a href={resolve('/coherence')}>coherence</a> page.
 		</p>
 		<p class="width_atmost_md">
 			<small>
@@ -117,7 +119,13 @@
 					<dt>Asks</dt>
 					<dd>{value.question}</dd>
 					<dt>Passes</dt>
-					<dd>{@render source(value.passes)}</dd>
+					<dd>
+						<ul class="unstyled">
+							{#each value.passes as passes (passes)}
+								<li>{@render source(passes)}</li>
+							{/each}
+						</ul>
+					</dd>
 					<dt>Falls short</dt>
 					<dd>{value.shortfall}</dd>
 				</dl>
@@ -218,8 +226,8 @@
 		{@render section_heading('decisions')}
 		<p class="width_atmost_md">
 			These are recorded decisions where one value was chosen over another. A row is what won and a
-			column is what it won over. Where both cells of a pair are filled, the answer depended on the
-			context.
+			column is what it won over. Where both cells of a pair are filled, the rows below say what the
+			answer turned on: the context, which cost was meant, or a default.
 		</p>
 		<div class="overflow-x:auto">
 			<table>

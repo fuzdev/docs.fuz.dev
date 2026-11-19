@@ -1,6 +1,6 @@
 /**
  * The pages of the `/coherence` section: its index, a page per family of
- * failures, and a page per inventory. The sidebar, the index and every link
+ * failures, a page per inventory, and the page of gaps. The sidebar, the index and every link
  * between the pages read these, and each path is literal so `resolve` checks
  * it against the routes that exist.
  *
@@ -29,3 +29,9 @@ export const coherence_inventory_pages = {
 } as const satisfies Record<InventoryId, { path: string; title: string }>;
 
 export const coherence_inventory_ids = Object.keys(coherence_inventory_pages) as Array<InventoryId>;
+
+/** The page that gathers what the holds leave out. */
+export const coherence_gaps_page = {
+	path: '/coherence/gaps',
+	title: 'What the holds leave out'
+} as const;

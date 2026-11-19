@@ -5,6 +5,7 @@ import { TaskError } from '@fuzdev/gro/task_error.ts';
 import * as s from '@fuzdev/fuz_schema/schema.ts';
 
 import { coherence_entries } from './coherence/coherence.ts';
+import { glossary_entries } from './glossary/glossary.ts';
 import { STACK_OWNER, stack_projects } from './stack_projects.ts';
 import { values_entries } from './values/values.ts';
 import {
@@ -35,7 +36,11 @@ export const task: Task<Args> = {
 	Args,
 	run: async ({ log }) => {
 		const repos_dir = await fs.open_dir(dirname(fs.project.path));
-		const links = entries_to_links([...coherence_entries(), ...values_entries()]);
+		const links = entries_to_links([
+			...coherence_entries(),
+			...values_entries(),
+			...glossary_entries()
+		]);
 		const results = await evidence_check(links, {
 			repos_dir,
 			site_repo: basename(fs.project.path)

@@ -16,8 +16,6 @@ import {
 	project_lens,
 	project_lens_sections,
 	project_lens_size,
-	project_lenses,
-	project_lenses_with_records,
 	record_strings,
 	text_mentions_project,
 	type ProjectLens
@@ -132,17 +130,14 @@ const data_strings = record_strings([
 	efficiency.evidence
 ]);
 
+const project_lenses = stack_projects.map(project_lens);
+
 const lens_strings = (lens: ProjectLens): Set<string> => {
 	const { project: _, ...records } = lens;
 	return new Set(record_strings(records));
 };
 
 describe('project_lenses', () => {
-	test('there is one per stack project, and some have records', () => {
-		assert.strictEqual(project_lenses.length, stack_projects.length);
-		assert.ok(project_lenses_with_records.length > 0);
-	});
-
 	// the claim the pages make: a record that names a project is in that project's lens
 	test('every string in the data that names a project is in its lens', () => {
 		assert.ok(data_strings.length > 0);
@@ -167,7 +162,7 @@ describe('project_lenses', () => {
 		}
 	});
 
-	test('a project with nothing in its lens has no page, and one with something has sections', () => {
+	test('a lens has sections exactly when it has records', () => {
 		for (const lens of project_lenses) {
 			const sections = Object.keys(project_lens_sections(lens));
 			assert.strictEqual(sections.length > 0, project_lens_size(lens) > 0, lens.project.name);

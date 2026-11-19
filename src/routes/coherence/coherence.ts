@@ -183,6 +183,9 @@ export const intro: Array<string> = [
 /** The prose above the grid and above each table. */
 export const passages = {
 	grid: 'Each row is a failure, each column a rung, and each cell what holds that failure at that rung. The column is how strong a hold is and the mark is only how much of the stack has it, so a full mark on a written rule is still a rule that someone has to follow. A blank cell means nothing at that rung is aimed at the failure. Two holds apply to every row and are listed once: review after landing, under "Green but wrong", and the gate, under "A known mistake comes back".',
+	gaps: 'Every hold that is in places says what it leaves out. Gathered here by failure, those lines are what each hold does not reach. Where the gap is in a check or a structure, whatever sits on the rungs above it is what holds, where anything does. A rung with nothing aimed at the failure, a rung that cannot hold it, and what is wanted and not built are listed with them. Review after landing and the gate apply to every row, so a blank rung means only that nothing more specific is aimed at the failure.',
+	gaps_actions:
+		'Of the actions kept with a person, these are the ones where no part is refused by a tool or denied by a permission rule. An action left off this list may still have a part that nothing refuses, which its row says.',
 	moved:
 		'Each row is a rule that once depended on being remembered, the lower form it was given, and the rungs that hold it now. Some of these rules are gone, replaced by a structure. Others remain, with a check holding them.',
 	oracles:
@@ -311,6 +314,10 @@ export const failure_holds = (failure: Failure): Array<{ rung: RungId; hold: Hol
 /** A family's failures, in grid order. */
 export const family_failures = (family: FamilyId): Array<Failure> =>
 	failures.filter((f) => f.family === family);
+
+/** The rungs with no hold for a failure, which are the grid's blank cells in its row. */
+export const failure_blank_rungs = (failure: Failure): Array<RungId> =>
+	rung_ids.filter((rung) => failure.holds[rung] === undefined);
 
 /** A failure's holds that do something, which leaves out a rung that cannot hold it. */
 export const failure_reached_holds = (
@@ -1517,7 +1524,7 @@ export const gates: Array<Gate> = [
 	},
 	{
 		gate: 'Evidence links on this site',
-		catches: 'A link on this page or the values page whose file or heading is gone',
+		catches: "A link in this site's data whose file or heading is gone",
 		runs: 'on_demand',
 		where: 'This site',
 		source:

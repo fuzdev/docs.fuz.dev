@@ -16,35 +16,111 @@
 	} from '#routes/coherence/coherence_pages.ts';
 	import HoldMark from '#routes/coherence/HoldMark.svelte';
 	import PageSections from '#routes/PageSections.svelte';
-	import { project_lens_sections, project_lenses } from '#routes/projects/project_lens.ts';
+	import DepEdges from '#routes/projects/DepEdges.svelte';
+	import { project_pages } from '#routes/projects/project_page.ts';
+	import { project_lens_size } from '#routes/projects/project_lens.ts';
+	import { stack_snapshot } from '#routes/projects/stack_data.ts';
+	import { snapshot_notes } from '#routes/projects/stack_snapshot.ts';
 	import { terms } from '#routes/values/values.ts';
 
 	const { data }: { data: { name: string } } = $props();
 
-	// `load` has already refused a name with no page
-	const lens = $derived(project_lenses.find((l) => l.project.name === data.name));
-	const sections = $derived(lens ? project_lens_sections(lens) : {});
+	// `load` has already refused a name off the stack's list
+	const project_page = $derived(project_pages.find((p) => p.project.name === data.name));
+	const lens = $derived(project_page?.lens);
+	const sections = $derived(project_page?.sections ?? {});
 </script>
 
 <svelte:head>
 	<title>{data.name} - projects - docs.fuz.dev</title>
 </svelte:head>
 
-{#if lens}
-	{@const project = lens.project}
+{#if project_page && lens}
+	{@const project = project_page.project}
 	<PageSections {sections}>
 		<header>
 			<h1>{project.name}</h1>
 			<p class="width_atmost_md">
-				What this site's data says of
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-				<a href="https://github.com/fuzdev/{project.repos[0]}">{project.name}</a>: every record on
-				the <a href={resolve('/coherence')}>coherence</a> and
-				<a href={resolve('/values')}>values</a> pages that names it or links it. This page is
-				computed from those records and adds nothing to them. For what the project is, see the
-				<a href="https://www.fuz.dev/stack">Fuz stack page</a>.
+				<a href="https://github.com/fuzdev/{project.repos[0]}">{project.name}</a> as this site sees
+				it: what its repo's own files declare, and every record on the
+				<a href={resolve('/coherence')}>coherence</a> and <a href={resolve('/values')}>values</a>
+				pages that names it or links it. This page is computed and adds nothing of its own. For what
+				the project is, see the <a href="https://www.fuz.dev/stack">Fuz stack page</a>.
 			</p>
+			{#if project_lens_size(lens) === 0}
+				<p class="width_atmost_md">
+					<small>The coherence and values pages do not yet name this project.</small>
+				</p>
+			{/if}
 		</header>
+
+		{#if project_page.used_by.length > 0}
+			<section>
+				<h2 id="used_by">{sections.used_by}</h2>
+				<p class="width_atmost_md">{snapshot_notes.consumers} {snapshot_notes.stack_only}</p>
+				<DepEdges edges={project_page.used_by} side="from" />
+			</section>
+		{/if}
+
+		{#if project_page.uses.length > 0}
+			<section>
+				<h2 id="uses">{sections.uses}</h2>
+				<DepEdges edges={project_page.uses} side="to" />
+			</section>
+		{/if}
+
+		{#if project_page.used_by.length > 0 || project_page.uses.length > 0}
+			<p class="width_atmost_md">
+				<small>
+					Read from the repos' manifests on
+					<time datetime={stack_snapshot.checked}>{stack_snapshot.checked}</time>.
+					{snapshot_notes.declares} {snapshot_notes.tables} See
+					<a href={resolve('/projects/dependencies')}>every dependency in the stack</a>.
+				</small>
+			</p>
+		{/if}
+
+		{#if project_page.repos.length > 0}
+			<section>
+				<h2 id="commands">{sections.commands}</h2>
+				{#each project_page.repos as repo (repo.repo)}
+					{#if project_page.repos.length > 1}<h3>{repo.repo}</h3>{/if}
+					{#if repo.check_script !== null}
+						<p class="width_atmost_md">
+							The <code>check</code> script of its <code>package.json</code>:
+						</p>
+						<pre class="commands">{repo.check_script}</pre>
+					{:else}
+						<p class="width_atmost_md">
+							{repo.npm ? 'Its package.json has no check script.' : 'It has no package.json.'}
+							{repo.cargo ? 'It has a Cargo workspace, whose checks are cargo commands.' : ''}
+						</p>
+					{/if}
+					{#each repo.workflows as workflow (workflow.file)}
+						<details>
+							<summary>
+								The commands of <code>.github/workflows/{workflow.file}</code>
+							</summary>
+							<ol>
+								{#each workflow.runs as run, index (index)}
+									<li><pre class="commands">{run}</pre></li>
+								{/each}
+							</ol>
+						</details>
+					{:else}
+						<p class="width_atmost_md">It has no CI workflow.</p>
+					{/each}
+				{/each}
+				<p class="width_atmost_md">
+					<small>
+						Read from the repo on
+						<time datetime={stack_snapshot.checked}>{stack_snapshot.checked}</time>.
+						{snapshot_notes.commands}
+					</small>
+				</p>
+			</section>
+		{/if}
 
 		{#if lens.failures.length > 0 || lens.holds.length > 0}
 			<section>
@@ -261,3 +337,11 @@
 		{/if}
 	</PageSections>
 {/if}
+
+<style>
+	/* a command is read whole, so it wraps and never scrolls sideways */
+	.commands {
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+</style>

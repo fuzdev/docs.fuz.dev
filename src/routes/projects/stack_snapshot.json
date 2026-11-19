@@ -1,0 +1,2272 @@
+{
+	"checked": "2026-11-19",
+	"repos": [
+		{
+			"repo": "fuz_template",
+			"project": "fuz_template",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"cargo fmt --check",
+						"cargo clippy --locked --workspace --all-targets -- -D warnings",
+						"cargo test --locked --workspace",
+						"cargo doc --locked --workspace --no-deps"
+					]
+				}
+			]
+		},
+		{
+			"repo": "zzz",
+			"project": "zzz",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"cp .env.development.example .env.development",
+						"cp .env.production.example .env.production",
+						"npx svelte-kit sync",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "zervo",
+			"project": "zervo",
+			"npm": true,
+			"cargo": true,
+			"check_script": null,
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\nrustfmt --version",
+						"cargo fmt --check",
+						"sh -n scripts/audit_daemon.sh\nsh -n scripts/servo_gap_sites.sh\npython3 -m py_compile scripts/strip_secure_proxy.py"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_forge",
+			"project": "fuz_forge",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"cargo fmt -p fuz_forge -p fuz_forge_server -p fuz_forge_wire -p testing_fuz_forge_server -p xtask --check",
+						"cargo clippy --locked --workspace --all-targets -- -D warnings",
+						"cargo test --locked --workspace",
+						"cargo test --locked -p fuz_forge_server -- --ignored --test-threads=1",
+						"cargo xtask check-release",
+						"cargo doc --locked --workspace --no-deps --document-private-items",
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_app",
+			"project": "fuz_app",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build",
+						"curl -fsSL https://bun.sh/install | bash -s \"bun-v$CROSS_BUN_VERSION\"\necho \"$HOME/.bun/bin\" >> \"$GITHUB_PATH\"",
+						"node --version\nbun --version\n[ \"$(bun --version)\" = \"$CROSS_BUN_VERSION\" ]",
+						"npm ci",
+						"npx svelte-kit sync",
+						"npm run test:cross:ts",
+						"npm run test:cross:ts-differential"
+					]
+				},
+				{
+					"file": "cross-canary.yml",
+					"runs": [
+						"curl -fsSL https://bun.sh/install | bash\necho \"$HOME/.bun/bin\" >> \"$GITHUB_PATH\"",
+						"node --version\nbun --version",
+						"npm ci",
+						"npx svelte-kit sync",
+						"FUZ_TEST_CROSS_BACKEND=1 npx vitest run --project cross_backend_ts_bun --project cross_backend_ts_differential"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz",
+			"project": "fuz",
+			"npm": false,
+			"cargo": true,
+			"check_script": null,
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"cargo fmt --all --check",
+						"cargo clippy --locked --workspace --all-targets -- -D warnings",
+						"cargo test --locked --workspace",
+						"umask 000\ncargo test --locked --workspace",
+						"cargo xtask check-release",
+						"cargo doc --locked --workspace --no-deps --all-features --document-private-items",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"scripts/fuzi-gate.sh --glibc-only",
+						"scripts/install-test.sh",
+						"scripts/install-test-mutants.sh",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"psql postgres://fuz_test:fuz_test@localhost:5432/fuz_test \\\n  -c 'CREATE DATABASE fuz_db_test;' \\\n  -c 'CREATE DATABASE fuz_auth_test;' \\\n  -c 'CREATE DATABASE fuz_cell_test;' \\\n  -c 'CREATE DATABASE fuz_fact_test;' \\\n  -c 'CREATE DATABASE fuz_fact_serving_test;' \\\n  -c 'CREATE DATABASE fuz_actions_test;' \\\n  -c 'CREATE DATABASE fuz_db_admin_test;' \\\n  -c 'CREATE DATABASE fuz_realtime_test;' \\\n  -c 'CREATE DATABASE fuz_cell_actions_test;'",
+						"cargo test --locked -p fuz_db -p fuz_http -p fuz_auth -p fuz_cell -p fuz_fact -p fuz_fact_serving -p fuz_actions -p fuz_db_admin -p fuz_realtime -p fuz_cell_actions -- --ignored --test-threads=1"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_css",
+			"project": "fuz_css",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_ui",
+			"project": "fuz_ui",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_code",
+			"project": "fuz_code",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "mdz",
+			"project": "mdz",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_blog",
+			"project": "fuz_blog",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "gro",
+			"project": "gro",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npm run bootstrap",
+						"npx @fuzdev/gro check --workspace --build",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"cargo xtask check-js",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0\ncargo xtask check-rust",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"env -u CARGO_INCREMENTAL cargo xtask check-reproducible"
+					]
+				},
+				{
+					"file": "release.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"if [ -e \"$BUILD_ROOT\" ]; then\n  echo \"::error::$BUILD_ROOT already exists on this runner\"\n  exit 1\nfi\nsudo install -d -o \"$(id -u)\" -g \"$(id -g)\" -m 755 \"$BUILD_ROOT\"\ncp -a \"$GITHUB_WORKSPACE\" \"$BUILD_ROOT/gro\"\nmkdir \"$BUILD_ROOT/cargo\"\necho \"CARGO_HOME=$BUILD_ROOT/cargo\" >> \"$GITHUB_ENV\"",
+						"version=$(cargo metadata --locked --no-deps --format-version 1 \\\n  | jq -r '.packages[] | select(.name == \"gro_cli\") | .version')\nif [ -z \"$version\" ]; then\n  echo \"::error::no gro_cli version in Cargo.toml\"\n  exit 1\nfi\nif [ \"$GITHUB_EVENT_NAME\" != push ]; then\n  echo \"::notice::a $GITHUB_EVENT_NAME run on $GITHUB_REF has no tag: the tag check is skipped, not passed (workspace version $version)\"\nelif [ \"$GITHUB_REF_NAME\" != \"fgro-v$version\" ]; then\n  echo \"::error::the tag '$GITHUB_REF_NAME' isn't 'fgro-v' + the workspace version '$version' in Cargo.toml\"\n  exit 1\nfi\necho \"VERSION=$version\" >> \"$GITHUB_ENV\"",
+						"cargo xtask fetch-v8",
+						"sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0\ncargo xtask build --release --verify",
+						"line=$(target/gro_snapshot/release/fgro --version)\necho \"$line\"\ncase \"$line\" in\n  \"fgro $VERSION (commit $GITHUB_SHA, \"*\", snapshot)\") ;;\n  *)\n    echo \"::error::expected 'fgro $VERSION (commit $GITHUB_SHA, …, snapshot)'\"\n    exit 1\n    ;;\nesac",
+						"export LC_ALL=C\nbinary=target/gro_snapshot/release/fgro\nprefix=\"$BUILD_ROOT/\"\nroots=(/home/ /Users/ /root/ /.cargo/ /.rustup/)\nfor dir in \"$HOME\" \"$GITHUB_WORKSPACE\" \"$RUNNER_TEMP\" \"$RUNNER_TOOL_CACHE\"; do\n  dir=${dir%/}\n  if [ -n \"$dir\" ]; then roots+=(\"$dir/\"); fi\ndone\n# the prefix must be there, so a scan that read nothing fails\nif ! grep -qaF -- \"$prefix\" \"$binary\"; then\n  echo \"::error::the binary holds no path under $prefix: the build didn't run from it, or the scan failed\"\n  exit 1\nfi\nleaks=$(\n  {\n    { grep -aobF -- \"$prefix\" \"$binary\" || true; } | awk -F: '{ print \"P\\t\" $1 }'\n    for root in \"${roots[@]}\"; do\n      { grep -aobF -- \"$root\" \"$binary\" || true; } | awk -F: -v root=\"$root\" '{ print \"R\\t\" $1 \"\\t\" root }'\n    done\n  } | awk -F '\\t' -v prefix=\"$prefix\" '\n    $1 == \"P\" { in_prefix[$2] = 1; next }\n    {\n      offset = $2; root = $3; excused = 0\n      for (k = 1; k + length(root) - 1 <= length(prefix); k++) {\n        if (substr(prefix, k, length(root)) == root && (offset - k + 1) in in_prefix) {\n          excused = 1\n          break\n        }\n      }\n      if (!excused) print offset \"\\t\" root\n    }\n  ' | sort -n -u\n)\nescaped=$(printf '%s' \"$prefix\" | sed 's/[][\\\\.*^$+?(){}|]/\\\\&/g')\necho \"paths under $prefix in the binary, by their first two components:\"\ngrep -aoE -- \"$escaped[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\" \"$binary\" | sort | uniq -c || true\nif [ -n \"$leaks\" ]; then\n  echo \"::error::the binary contains builder paths outside $prefix\"\n  head -n 10 <<<\"$leaks\" | while IFS=$'\\t' read -r offset root; do\n    printf '%s at byte %s: ' \"$root\" \"$offset\"\n    { tail -c \"+$((offset + 1))\" \"$binary\" || true; } | head -c 160 | tr -c '[:print:]' '?'\n    echo\n  done\n  exit 1\nfi",
+						"mkdir -p \"$RUNNER_TEMP/asset\"\ncp target/gro_snapshot/release/fgro \"$RUNNER_TEMP/asset/fgro-linux-x64-gnu\"\nsha512=$(sha512sum \"$RUNNER_TEMP/asset/fgro-linux-x64-gnu\" | cut -d ' ' -f 1)\necho \"sha512=$sha512\" >> \"$GITHUB_OUTPUT\"\necho \"$sha512  fgro-linux-x64-gnu\"",
+						"downloaded=$(sha512sum fgro-linux-x64-gnu | cut -d ' ' -f 1)\nif [ -z \"$BUILT_SHA512\" ] || [ \"$downloaded\" != \"$BUILT_SHA512\" ]; then\n  echo \"::error::the downloaded binary's SHA-512 '$downloaded' isn't the build job's '$BUILT_SHA512'\"\n  exit 1\nfi\nsha512sum fgro-linux-x64-gnu > SHA512SUMS\ncat SHA512SUMS",
+						"version=${GITHUB_REF_NAME#fgro-v}\nnotes=\"$RUNNER_TEMP/release_notes.md\"\nawk -v heading=\"## $version\" '\n  $0 == heading { found = 1; next }\n  found && /^## / { exit }\n  found { print }\n' crates/CHANGELOG.md | sed -e '/./,$!d' > \"$notes\"\nif ! grep -q '[^[:space:]]' \"$notes\"; then\n  echo \"::error::crates/CHANGELOG.md has no '## $version' section, or it's empty\"\n  exit 1\nfi\n{\n  echo\n  echo \"Linux x86_64 only, built on Ubuntu 24.04, so it needs glibc 2.39 or later (not Debian 12 or Ubuntu 22.04).\"\n  echo \"To verify and install it, see [install](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/src/docs/runtime.md#install).\"\n} >> \"$notes\"\ncat \"$notes\"",
+						"version=${GITHUB_REF_NAME#fgro-v}\nprerelease=()\ncase \"$version\" in *-*) prerelease=(--prerelease) ;; esac\ngh release create \"$GITHUB_REF_NAME\" \\\n  \"$RUNNER_TEMP/assets/fgro-linux-x64-gnu\" \"$RUNNER_TEMP/assets/SHA512SUMS\" \\\n  --verify-tag --title \"fgro $version\" \\\n  --notes-file \"$RUNNER_TEMP/release_notes.md\" \\\n  \"${prerelease[@]}\""
+					]
+				}
+			]
+		},
+		{
+			"repo": "tsv",
+			"project": "tsv",
+			"npm": true,
+			"cargo": true,
+			"check_script": "cargo fmt --check && npm run format:audit && npm run pins:audit && npm run docs:audit && npm run docs:audit:docsrs && npm run deps:audit && npm run package:audit && npm run typecheck && npm run typecheck:features && npm run typecheck:wasm32 && npm run typecheck:scripts && npm run typecheck:bench-core && npm run conformance:audit && npm run variants:audit && npm run scan:audit && npm run fanout:audit && npm run roundtrip:audit && npm run roundtrip:audit:prettier && npm run discovery:audit && npm run binding:audit && npm run authoring:audit && npm run paren:audit && npm run razor:audit && npm run fuzz:audit && npm run fuzz:audit:debug && npm run test:node && npm run test && npm run test:depth && npm run test:audits && npm run swallow:audit && npm run comments:audit && npm run gaps:audit && npm run blanks:audit && npm run fabrication:audit && npm run census:audit && npm run width:audit && npm run ignore:audit && npm run check:ast-types && npm run check:loc && npm run lint",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"cargo metadata --locked --format-version 1 > /dev/null",
+						"npm ci",
+						"npm ci --prefix crates/tsv_debug/sidecar",
+						"npm run check",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"npm ci",
+						"npm run build:packages",
+						"npm run validate:artifacts",
+						"npm run test:npm:run\nnpm run test:npm:parse:run\nnpm run test:npm:all:run",
+						"npm run test:napi:npm",
+						"npm run validate:napi",
+						"npm run test:depth:napi",
+						"npm run engines:audit",
+						"npm run test:depth:wasm",
+						"npm run publish:crates:package",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"npm ci --prefix crates/tsv_debug/sidecar",
+						"cargo test --locked --workspace --no-fail-fast",
+						"npm run test:napi",
+						"npm run test:napi:npm"
+					]
+				},
+				{
+					"file": "release.yml",
+					"runs": [
+						"echo \"::error::a real publish (dry_run=false) must be dispatched on the release tag, not on '$GITHUB_REF_NAME' — dispatch it on the tag, or leave dry_run=true to rehearse\"\nexit 1",
+						"if ! command -v rustup >/dev/null; then\n  curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none\n  echo \"$HOME/.cargo/bin\" >> \"$GITHUB_PATH\"\n  export PATH=\"$HOME/.cargo/bin:$PATH\"\nfi\nrustup toolchain install --no-self-update\nrustup component add llvm-tools-preview\nrustup show active-toolchain",
+						"mkdir -p .pgo\nnode scripts/pgo/pgo.ts corpora --fetch",
+						"cargo build --locked -p tsv_cli --release\nsh scripts/pgo/build.sh instrument .pgo",
+						"docker run --rm -v \"$PWD:/work\" -w /work \\\n  -e CARGO_HOME=/work/.container-cargo \\\n  -e RUSTUP_HOME=/work/.container-rustup \\\n  almalinux:8 bash -ec '\n    dnf install -y -q gcc curl\n    curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none\n    export PATH=\"/work/.container-cargo/bin:$PATH\"\n    rustup toolchain install --no-self-update\n    cargo build --locked -p tsv_cli --release\n    sh scripts/pgo/build.sh instrument .pgo'",
+						"channel=$(sed -n 's/^channel = \"\\(.*\\)\"$/\\1/p' rust-toolchain.toml)\ndocker run --rm -v \"$PWD:/work\" -w /work \\\n  -e CARGO_HOME=/work/.container-cargo \\\n  -e RUSTFLAGS='-C target-feature=-crt-static' \\\n  \"rust:${channel:?no channel in rust-toolchain.toml}-alpine\" sh -ec '\n    apk add --no-cache musl-dev\n    rustup toolchain install --no-self-update\n    cargo build --locked -p tsv_cli --release\n    sh scripts/pgo/build.sh instrument .pgo'",
+						"node scripts/pgo/pgo.ts stage --phase instrument --triple ${{ matrix.triple }}",
+						"node scripts/pgo/pgo.ts train --triple ${{ matrix.triple }}",
+						"docker run --rm -v \"$PWD:/work\" -v \"$PWD/../corpora:/corpora:ro\" -w /work \\\n  node:24.14.1-alpine \\\n  node scripts/pgo/pgo.ts train --triple ${{ matrix.triple }} --corpora /corpora",
+						"node scripts/pgo/pgo.ts merge --triple ${{ matrix.triple }}",
+						"sh scripts/pgo/build.sh use .pgo",
+						"docker run --rm -v \"$PWD:/work\" -w /work \\\n  -e CARGO_HOME=/work/.container-cargo \\\n  -e RUSTUP_HOME=/work/.container-rustup \\\n  almalinux:8 bash -ec '\n    dnf install -y -q gcc\n    export PATH=\"/work/.container-cargo/bin:$PATH\"\n    sh scripts/pgo/build.sh use .pgo'",
+						"channel=$(sed -n 's/^channel = \"\\(.*\\)\"$/\\1/p' rust-toolchain.toml)\ndocker run --rm -v \"$PWD:/work\" -w /work \\\n  -e CARGO_HOME=/work/.container-cargo \\\n  -e RUSTFLAGS='-C target-feature=-crt-static' \\\n  \"rust:${channel:?no channel in rust-toolchain.toml}-alpine\" sh -ec '\n    apk add --no-cache musl-dev\n    rustup toolchain install --no-self-update\n    sh scripts/pgo/build.sh use .pgo'",
+						"node scripts/pgo/pgo.ts gate-builds --triple ${{ matrix.triple }}\nnode scripts/pgo/pgo.ts gate-sections --triple ${{ matrix.triple }}",
+						"node scripts/pgo/pgo.ts stage --phase use --triple ${{ matrix.triple }}",
+						"for artifact in crates/tsv_napi/pkg/${{ matrix.triple }}/tsv_napi.node crates/tsv_napi/pkg/${{ matrix.triple }}/tsv; do\n  # objdump runs alone (not in the substitution pipeline) so an unreadable\n  # artifact fails the step loudly instead of vanishing under pipefail; the\n  # grep pipeline takes `|| true` so a no-match yields the visible \"none\"\n  # rather than killing the step inside the assignment.\n  objdump -T \"$artifact\" > /tmp/syms.txt\n  max=$(grep -oE 'GLIBC_[0-9]+\\.[0-9]+' /tmp/syms.txt | sort -uV | tail -1 || true)\n  echo \"$artifact max versioned glibc symbol: ${max:-none}\"\n  if [ -n \"$max\" ]; then\n    top=$(printf '%s\\nGLIBC_2.28\\n' \"$max\" | sort -V | tail -1)\n    if [ \"$top\" != \"GLIBC_2.28\" ]; then\n      echo \"FAIL: glibc floor exceeded in $artifact ($max > 2.28) — was the build run outside the container?\"\n      exit 1\n    fi\n  fi\ndone",
+						"for artifact in crates/tsv_napi/pkg/${{ matrix.triple }}/tsv_napi.node crates/tsv_napi/pkg/${{ matrix.triple }}/tsv; do\n  # objdump runs alone first: inside the `if` pipeline its failure — exactly\n  # what a missing or non-dynamic artifact produces — would read as \"no\n  # GLIBC_ refs\" and pass the gate vacuously.\n  objdump -T \"$artifact\" > /tmp/syms.txt\n  if grep -q 'GLIBC_' /tmp/syms.txt; then\n    echo \"FAIL: musl artifact $artifact references GLIBC_ symbols\"\n    exit 1\n  fi\ndone",
+						"node scripts/pgo/pgo.ts byteid --triple ${{ matrix.triple }}",
+						"docker run --rm -v \"$PWD:/work\" -v \"$PWD/../corpora:/corpora:ro\" -w /work \\\n  node:24.14.1-alpine \\\n  node scripts/pgo/pgo.ts byteid --triple ${{ matrix.triple }} --corpora /corpora",
+						"CARGO_TARGET_DIR=.pgo/target-shapes node scripts/pgo/pgo.ts depth-shapes",
+						"node scripts/pgo/pgo.ts depth --triple ${{ matrix.triple }}",
+						"docker run --rm -v \"$PWD:/work\" -w /work \\\n  node:24.14.1-alpine \\\n  node scripts/pgo/pgo.ts depth --triple ${{ matrix.triple }}",
+						"node scripts/roots/validate_napi_artifact.ts --triple ${{ matrix.triple }} --pgo",
+						"node --test scripts/test_napi_npm.ts",
+						"docker run --rm -v \"$PWD:/work\" -w /work node:24.14.1-alpine \\\n  node --test scripts/test_napi_npm.ts",
+						"for d in crates/tsv_napi/pkg/napi-*; do\n  mv \"$d\" \"crates/tsv_napi/pkg/${d##*/napi-}\"\ndone\nls crates/tsv_napi/pkg",
+						"node scripts/roots/build_napi_packages.ts --loader-only",
+						"flags=()\nif [ \"$GITHUB_REF_TYPE\" = \"tag\" ]; then\n  flags+=(--expect-tag \"$GITHUB_REF_NAME\")\nfi\nif [ \"$GITHUB_EVENT_NAME\" = \"schedule\" ] || [ \"$DRY_RUN\" = \"true\" ]; then\n  # schedule is ALWAYS dry-run — see the trigger comment.\n  flags+=(--dry-run)\nelif [ \"$GITHUB_REF_TYPE\" != \"tag\" ]; then\n  echo \"::error::refusing a real publish off the non-tag ref '$GITHUB_REF_NAME' — dispatch it on the release tag\"\n  exit 1\nelse\n  flags+=(--provenance)\nfi\nnode scripts/roots/publish_napi.ts \"${flags[@]}\"",
+						"node scripts/roots/release_notes.ts \"$GITHUB_REF_NAME\" > \"$RUNNER_TEMP/release_notes.md\"\ncat \"$RUNNER_TEMP/release_notes.md\"",
+						"node scripts/roots/release_assets.ts \"$GITHUB_REF_NAME\" --out \"$RUNNER_TEMP/assets\"\ncat \"$RUNNER_TEMP/assets/SHA512SUMS\"",
+						"if gh release view \"$GITHUB_REF_NAME\" --json tagName >/dev/null 2>&1; then\n  echo \"Release $GITHUB_REF_NAME already exists — re-uploading assets only\"\n  gh release upload \"$GITHUB_REF_NAME\" \"$RUNNER_TEMP\"/assets/* --clobber\nelse\n  gh release create \"$GITHUB_REF_NAME\" \"$RUNNER_TEMP\"/assets/* --verify-tag \\\n    --title \"$GITHUB_REF_NAME\" --notes-file \"$RUNNER_TEMP/release_notes.md\"\nfi",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"npm ci",
+						"flags=()\nif [ \"$GITHUB_REF_TYPE\" = \"tag\" ]; then\n  flags+=(--expect-tag \"$GITHUB_REF_NAME\")\nfi\nnpm run publish:crates -- \"${flags[@]}\""
+					]
+				}
+			]
+		},
+		{
+			"repo": "tsv.fuz.dev",
+			"project": "tsv",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "vscode-extension-tsv-format",
+			"project": "tsv-format",
+			"npm": true,
+			"cargo": false,
+			"check_script": "npm run typecheck && npm run build && npm run test",
+			"workflows": []
+		},
+		{
+			"repo": "svelte-docinfo",
+			"project": "svelte-docinfo",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npm run setup-examples",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_repos",
+			"project": "fuz_repos",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"git --version\nversion=$(git --version | awk '{print $3}')\nif ! printf '%s\\n%s\\n' 2.44.0 \"$version\" | sort -V -C; then\n  echo \"::error::the fuz_repos tests need git 2.44 or newer, found $version\"\n  exit 1\nfi",
+						"cargo fmt --check",
+						"cargo clippy --workspace --all-targets --locked -- -D warnings",
+						"cargo doc --workspace --no-deps --all-features --document-private-items --locked",
+						"cargo test --workspace --locked --no-fail-fast"
+					]
+				}
+			]
+		},
+		{
+			"repo": "docs.fuz.dev",
+			"project": "fuz-stack",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "corpora",
+			"project": "corpora",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace",
+						"npm run materialize:check"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_util",
+			"project": "fuz_util",
+			"npm": true,
+			"cargo": false,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build"
+					]
+				}
+			]
+		},
+		{
+			"repo": "fuz_schema",
+			"project": "fuz_schema",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"npm ci",
+						"npx @fuzdev/gro check --workspace --build",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"cargo fmt --check",
+						"cargo clippy --workspace --all-targets -- -D warnings",
+						"cargo test --workspace",
+						"cargo doc --workspace --no-deps --all-features --document-private-items",
+						"cargo build -p fuz_schema_wasm --target wasm32-unknown-unknown --release\nwasm=\"${CARGO_TARGET_DIR:-target}/wasm32-unknown-unknown/release/fuz_schema_wasm.wasm\"\nceiling_file=crates/fuz_schema_wasm/wasm_size_ceiling.txt\nsize=$(wc -c < \"$wasm\")\n# the one line that is not a comment, which may be indented, or blank;\n# a second keeps its newline, which the number check refuses\nceiling=$(grep -vE '^[[:space:]]*(#|$)' \"$ceiling_file\" | tr -d ' \\t\\r' || true)\ncase $ceiling in\n  '' | *[!0-9]*)\n    echo \"::error file=$ceiling_file::no ceiling read from $ceiling_file: it holds one number of bytes, and # comments\"\n    exit 1\n    ;;\nesac\necho \"fuz_schema_wasm.wasm: $size bytes, ceiling $ceiling\"\nif [ \"$size\" -gt \"$ceiling\" ]; then\n  echo \"::error file=$ceiling_file::fuz_schema_wasm.wasm is $size bytes, over the ceiling of $ceiling. The build reaches code it didn't: diff an unstripped build (CARGO_PROFILE_RELEASE_STRIP=false) against one under the ceiling with twiggy diff, and keep what the wasm reaches from reaching the issues. Raise the ceiling in $ceiling_file only for growth that is meant.\"\n  exit 1\nfi"
+					]
+				}
+			]
+		},
+		{
+			"repo": "blake3",
+			"project": "blake3",
+			"npm": true,
+			"cargo": true,
+			"check_script": "npm run typecheck && npm run test:rust && npm run test:tooling && npm run lint && npm run lint:docs && cargo fmt --all --check && tsv format --check .",
+			"workflows": []
+		},
+		{
+			"repo": "zap",
+			"project": "zap",
+			"npm": true,
+			"cargo": true,
+			"check_script": "gro check",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"npm ci",
+						"if ! command -v busybox >/dev/null || ! command -v setfacl >/dev/null; then\n  sudo apt-get update\n  sudo apt-get install -y busybox acl\nfi\nbusybox true\ngetfacl --version",
+						"cargo fmt -p zap -p zap_core -p zap_types -p xtask --check",
+						"cargo clippy --locked --workspace --all-targets -- -D warnings",
+						"cargo test --locked --workspace",
+						"umask 000\ncargo test --locked --workspace",
+						"echo \"::warning::zap config validate e2e skipped: no fgro build in CI (ZAP_FGRO unset)\"\ntarget/debug/zap version",
+						"npx @fuzdev/gro check --workspace --build",
+						"cargo xtask check-release",
+						"cargo doc --locked --workspace --no-deps --all-features --document-private-items"
+					]
+				}
+			]
+		},
+		{
+			"repo": "pglet",
+			"project": "pglet",
+			"npm": true,
+			"cargo": true,
+			"check_script": "cargo clippy --workspace --all-targets -- -D warnings && npm run check:stripped && npm run check:wasm-features && cargo fmt --check && npm run check:docs && npm run check:ts && npm run check:benches && npm run check:release",
+			"workflows": [
+				{
+					"file": "check.yml",
+					"runs": [
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version",
+						"npm ci",
+						"cargo metadata --locked --format-version 1 > /dev/null",
+						"npm run check",
+						"npm run test:rust",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"npm ci",
+						"npm run test:npm",
+						"npm run size:check",
+						"npm run wasm:build:opfs && grep -q 'class PgletBtreePersistent' crates/pglet_wasm/pkg-opfs/pglet_wasm.d.ts",
+						"rustup toolchain install --no-self-update\nrustup show active-toolchain",
+						"sudo install -d /usr/share/postgresql-common/pgdg\nsudo curl -sS -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \\\n  https://www.postgresql.org/media/keys/ACCC4CF8.asc\necho \"deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \\\n  https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" \\\n  | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null\nsudo apt-get update\nsudo apt-get install -y --no-install-recommends postgresql-client-18\necho /usr/lib/postgresql/18/bin >> \"$GITHUB_PATH\"",
+						"psql --version\npg_dump --version\ntest \"$(pg_dump --version | grep -oE '[0-9]+' | head -1)\" -ge 18",
+						"cargo xtask gates --check --only test:fixtures,test:fixtures:profile-lock,test:dump,test:pg-dump,test:copy,test:keywords"
+					]
+				}
+			]
+		}
+	],
+	"edges": [
+		{
+			"from": "corpora",
+			"from_repo": "corpora",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "runtime",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz",
+			"manifest": "cargo",
+			"source": "path",
+			"kind": "runtime",
+			"via": [
+				"fuz_actions",
+				"fuz_artifact",
+				"fuz_auth",
+				"fuz_cell",
+				"fuz_cell_actions",
+				"fuz_crypto",
+				"fuz_db",
+				"fuz_db_admin",
+				"fuz_fact",
+				"fuz_fact_serving",
+				"fuz_http",
+				"fuz_realtime",
+				"fuz_release",
+				"fuz_sign",
+				"fuz_storage",
+				"fuz_sys"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "fuz",
+			"manifest": "cargo",
+			"source": "path",
+			"kind": "runtime",
+			"via": [
+				"fuz_eval"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz",
+			"manifest": "cargo",
+			"source": "path",
+			"kind": "runtime",
+			"via": [
+				"fuz_actions",
+				"fuz_auth",
+				"fuz_db",
+				"fuz_http",
+				"fuz_pty",
+				"fuz_realtime",
+				"fuz_sys"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz_app",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_app"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_app",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_app"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_repos",
+			"manifest": "cargo",
+			"source": "path",
+			"kind": "runtime",
+			"via": [
+				"fuz_git",
+				"fuz_repos"
+			]
+		},
+		{
+			"from": "blake3",
+			"from_repo": "blake3",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "corpora",
+			"from_repo": "corpora",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "runtime",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
+			"from": "blake3",
+			"from_repo": "blake3",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "corpora",
+			"from_repo": "corpora",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "pglet",
+			"from_repo": "pglet",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "blake3",
+			"from_repo": "blake3",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "corpora",
+			"from_repo": "corpora",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "peer",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "pglet",
+			"from_repo": "pglet",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "svelte-docinfo",
+			"from_repo": "svelte-docinfo",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "pglet",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"@fuzdev/pglet-wasm"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "pglet",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/pglet-wasm"
+			]
+		},
+		{
+			"from": "fuz-stack",
+			"from_repo": "docs.fuz.dev",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_app",
+			"from_repo": "fuz_app",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_blog",
+			"from_repo": "fuz_blog",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_code",
+			"from_repo": "fuz_code",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_css",
+			"from_repo": "fuz_css",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_repos",
+			"from_repo": "fuz_repos",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_schema",
+			"from_repo": "fuz_schema",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_template",
+			"from_repo": "fuz_template",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_ui",
+			"from_repo": "fuz_ui",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "fuz_util",
+			"from_repo": "fuz_util",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "peer_optional",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "mdz",
+			"from_repo": "mdz",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "tsv",
+			"from_repo": "tsv.fuz.dev",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "zap",
+			"from_repo": "zap",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "zzz",
+			"from_repo": "zzz",
+			"to": "svelte-docinfo",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"svelte-docinfo"
+			]
+		},
+		{
+			"from": "blake3",
+			"from_repo": "blake3",
+			"to": "tsv",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/tsv"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "tsv",
+			"manifest": "cargo",
+			"source": "registry",
+			"kind": "runtime",
+			"via": [
+				"tsv_ts"
+			]
+		},
+		{
+			"from": "gro",
+			"from_repo": "gro",
+			"to": "tsv",
+			"manifest": "npm",
+			"kind": "runtime",
+			"via": [
+				"@fuzdev/tsv"
+			]
+		},
+		{
+			"from": "tsv-format",
+			"from_repo": "vscode-extension-tsv-format",
+			"to": "tsv",
+			"manifest": "npm",
+			"kind": "runtime",
+			"via": [
+				"@fuzdev/tsv-format-wasm"
+			]
+		},
+		{
+			"from": "fuz_forge",
+			"from_repo": "fuz_forge",
+			"to": "zap",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/zap"
+			]
+		}
+	]
+}

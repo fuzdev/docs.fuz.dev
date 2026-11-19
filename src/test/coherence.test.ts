@@ -2,6 +2,7 @@ import { describe, test, assert } from 'vitest';
 
 import {
 	claims_checked,
+	failure_blank_rungs,
 	failure_holds,
 	failure_reached_holds,
 	failures,
@@ -87,6 +88,19 @@ describe('failures', () => {
 				}
 			}
 		}
+	});
+
+	// the gaps page lists a row's blank rungs beside its holds, so the two must be the whole row
+	test("a failure's blank rungs and its holds are every rung, with none in both", () => {
+		for (const f of failures) {
+			const held = failure_holds(f).map(({ rung }) => rung);
+			const blank = failure_blank_rungs(f);
+			assert.deepEqual([...held, ...blank].toSorted(), [...rung_ids].toSorted(), f.id);
+		}
+		assert.ok(
+			failures.some((f) => failure_blank_rungs(f).length > 0),
+			'no row has a blank rung, so the grid has no blank cell'
+		);
 	});
 
 	test('every status is used', () => {

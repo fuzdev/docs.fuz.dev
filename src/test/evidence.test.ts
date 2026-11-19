@@ -3,6 +3,7 @@ import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { coherence_entries } from '#routes/coherence/coherence.ts';
+import { glossary_entries } from '#routes/glossary/glossary.ts';
 import {
 	entries_to_links,
 	evidence_check,
@@ -424,7 +425,7 @@ describe('links_outside_repos', () => {
 });
 
 describe("the pages' data", () => {
-	const entries = [...coherence_entries(), ...values_entries()];
+	const entries = [...coherence_entries(), ...values_entries(), ...glossary_entries()];
 	const links = entries_to_links(entries);
 
 	test('every entry links exactly one artifact, by https or a route on this site', () => {

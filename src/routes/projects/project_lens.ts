@@ -28,7 +28,7 @@ import {
 	type OracleComparison,
 	type RungId
 } from '#routes/coherence/coherence.ts';
-import { STACK_OWNER, stack_projects, type StackProject } from '#routes/stack_projects.ts';
+import { STACK_OWNER, type StackProject } from '#routes/stack_projects.ts';
 import {
 	contexts,
 	decisions,
@@ -195,11 +195,3 @@ export const project_lens_sections = (lens: ProjectLens): Record<string, string>
 	}
 	return sections;
 };
-
-/** Every project's lens, in the stack page's order. */
-export const project_lenses: Array<ProjectLens> = stack_projects.map(project_lens);
-
-/** The lenses with something in them, which are the projects that have a page. */
-export const project_lenses_with_records: Array<ProjectLens> = project_lenses.filter(
-	(lens) => project_lens_size(lens) > 0
-);

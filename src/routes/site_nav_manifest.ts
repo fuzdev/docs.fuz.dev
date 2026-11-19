@@ -42,21 +42,56 @@ export const nav_coherence_families = [
 	}
 ] as const;
 
-/** The coherence section's table pages. */
+/** The coherence section's other pages, the gaps and then each table, with a page's own sections. */
 export const nav_coherence_tables = [
-	{ title: 'Rules that moved down', path: '/coherence/moved' },
-	{ title: 'Oracles in use', path: '/coherence/oracles' },
-	{ title: 'Actions kept with a person', path: '/coherence/actions' },
-	{ title: 'Gates', path: '/coherence/gates' }
+	{
+		path: '/coherence/gaps',
+		title: 'What the holds leave out',
+		sections: {
+			design: 'The design drifts',
+			checks: 'The checks weaken',
+			claims: 'The claims go unverified',
+			sessions: 'The sessions overstep',
+			actions: 'Actions nothing refuses',
+			ci: 'Where CI runs less'
+		}
+	},
+	{ title: 'Rules that moved down', path: '/coherence/moved', sections: {} },
+	{ title: 'Oracles in use', path: '/coherence/oracles', sections: {} },
+	{ title: 'Actions kept with a person', path: '/coherence/actions', sections: {} },
+	{ title: 'Gates', path: '/coherence/gates', sections: {} }
 ] as const;
 
-/** The projects that have a page, each with its page's sections by anchor. */
+/** The glossary page's sections, by anchor. */
+export const nav_glossary_sections: Record<string, string> = {
+	rungs: 'The ladder',
+	checks: 'Checks',
+	comparisons: 'Twins and comparisons',
+	agents: 'Working with agents',
+	planning: 'Planning'
+};
+
+/** The stack's projects, each with its page's sections by anchor. */
 export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string, string> }> = [
-	{ name: 'zzz', sections: { oracles: 'Comparisons that name it', gates: 'Gates' } },
-	{ name: 'zervo', sections: { holds: 'Holds that name it', gates: 'Gates' } },
+	{ name: 'fuz_template', sections: { uses: 'What it uses', commands: 'Its check script and CI' } },
+	{
+		name: 'zzz',
+		sections: {
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
+			oracles: 'Comparisons that name it',
+			gates: 'Gates'
+		}
+	},
+	{
+		name: 'zervo',
+		sections: { commands: 'Its check script and CI', holds: 'Holds that name it', gates: 'Gates' }
+	},
 	{
 		name: 'fuz_forge',
 		sections: {
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -68,6 +103,9 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	{
 		name: 'fuz_app',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			moved: 'Rules that moved down',
@@ -77,6 +115,8 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	{
 		name: 'fuz',
 		sections: {
+			used_by: 'What uses it',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -84,13 +124,50 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 			values: 'Values'
 		}
 	},
-	{ name: 'fuz_css', sections: { holds: 'Holds that name it' } },
-	{ name: 'fuz_ui', sections: { holds: 'Holds that name it' } },
-	{ name: 'fuz_code', sections: { values: 'Values' } },
-	{ name: 'mdz', sections: { holds: 'Holds that name it', oracles: 'Comparisons that name it' } },
+	{
+		name: 'fuz_css',
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
+			holds: 'Holds that name it'
+		}
+	},
+	{
+		name: 'fuz_ui',
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
+			holds: 'Holds that name it'
+		}
+	},
+	{
+		name: 'fuz_code',
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
+			values: 'Values'
+		}
+	},
+	{
+		name: 'mdz',
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
+			holds: 'Holds that name it',
+			oracles: 'Comparisons that name it'
+		}
+	},
+	{ name: 'fuz_blog', sections: { uses: 'What it uses', commands: 'Its check script and CI' } },
 	{
 		name: 'gro',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -101,6 +178,9 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	{
 		name: 'tsv',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -109,14 +189,29 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 			values: 'Values'
 		}
 	},
-	{ name: 'tsv-format', sections: { gates: 'Gates' } },
+	{
+		name: 'tsv-format',
+		sections: { uses: 'What it uses', commands: 'Its check script and CI', gates: 'Gates' }
+	},
+	{
+		name: 'svelte-docinfo',
+		sections: { used_by: 'What uses it', uses: 'What it uses', commands: 'Its check script and CI' }
+	},
 	{
 		name: 'fuz_repos',
-		sections: { holds: 'Holds that name it', actions: 'Actions kept with a person' }
+		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
+			holds: 'Holds that name it',
+			actions: 'Actions kept with a person'
+		}
 	},
 	{
 		name: 'fuz-stack',
 		sections: {
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			gates: 'Gates',
 			actions: 'Actions kept with a person',
@@ -124,10 +219,20 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 			values: 'Values'
 		}
 	},
-	{ name: 'corpora', sections: { gates: 'Gates' } },
+	{
+		name: 'corpora',
+		sections: { uses: 'What it uses', commands: 'Its check script and CI', gates: 'Gates' }
+	},
+	{
+		name: 'fuz_util',
+		sections: { used_by: 'What uses it', uses: 'What it uses', commands: 'Its check script and CI' }
+	},
 	{
 		name: 'fuz_schema',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -138,6 +243,9 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	{
 		name: 'blake3',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -148,6 +256,9 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	{
 		name: 'zap',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',
@@ -158,6 +269,9 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 	{
 		name: 'pglet',
 		sections: {
+			used_by: 'What uses it',
+			uses: 'What it uses',
+			commands: 'Its check script and CI',
 			holds: 'Holds that name it',
 			oracles: 'Comparisons that name it',
 			gates: 'Gates',

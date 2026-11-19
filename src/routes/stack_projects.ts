@@ -17,6 +17,13 @@ export interface StackProject {
 	repos: ReadonlyArray<string>;
 	/** The routes of this site that render the project, for the one project this site is. */
 	routes?: ReadonlyArray<string>;
+	/**
+	 * npm packages of the project that another stack repo depends on and that no
+	 * committed manifest names, since each is built into an ignored directory. The
+	 * snapshot task maps a dependency on one to the project, and fails on a name under
+	 * the stack's scope that is neither here nor a published root package.
+	 */
+	packages?: ReadonlyArray<string>;
 }
 
 /** In the stack page's order. */
@@ -33,7 +40,16 @@ export const stack_projects = [
 	{ name: 'mdz', repos: ['mdz'] },
 	{ name: 'fuz_blog', repos: ['fuz_blog'] },
 	{ name: 'gro', repos: ['gro'] },
-	{ name: 'tsv', repos: ['tsv', 'tsv.fuz.dev'] },
+	{
+		name: 'tsv',
+		repos: ['tsv', 'tsv.fuz.dev'],
+		packages: [
+			'@fuzdev/tsv',
+			'@fuzdev/tsv-wasm',
+			'@fuzdev/tsv-format-wasm',
+			'@fuzdev/tsv-parse-wasm'
+		]
+	},
 	{ name: 'tsv-format', repos: ['vscode-extension-tsv-format'] },
 	{ name: 'svelte-docinfo', repos: ['svelte-docinfo'] },
 	{ name: 'fuz_repos', repos: ['fuz_repos'] },
@@ -41,9 +57,9 @@ export const stack_projects = [
 	{ name: 'corpora', repos: ['corpora'] },
 	{ name: 'fuz_util', repos: ['fuz_util'] },
 	{ name: 'fuz_schema', repos: ['fuz_schema'] },
-	{ name: 'blake3', repos: ['blake3'] },
+	{ name: 'blake3', repos: ['blake3'], packages: ['@fuzdev/blake3-wasm'] },
 	{ name: 'zap', repos: ['zap'] },
-	{ name: 'pglet', repos: ['pglet'] }
+	{ name: 'pglet', repos: ['pglet'], packages: ['@fuzdev/pglet-wasm'] }
 ] as const satisfies ReadonlyArray<StackProject>;
 
 /** A project's name. A record that is about one project is typed with it. */

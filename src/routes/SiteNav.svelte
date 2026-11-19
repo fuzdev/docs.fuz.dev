@@ -19,6 +19,7 @@
 	import {
 		nav_coherence_families,
 		nav_coherence_tables,
+		nav_glossary_sections,
 		nav_projects
 	} from './site_nav_manifest.ts';
 	import { site_sections, type SiteSectionName } from './site_sections.ts';
@@ -28,7 +29,8 @@
 
 	// the single pages that list their own sections
 	const page_sections: Partial<Record<SiteSectionName, Record<string, string>>> = {
-		values: values_sections
+		values: values_sections,
+		glossary: nav_glossary_sections
 	};
 </script>
 
@@ -107,8 +109,23 @@
 							</li>
 						{/each}
 						{#each nav_coherence_tables as table (table.path)}
+							{@const table_href = resolve(table.path)}
 							<li>
-								<MenuLink class="menuitem" href={resolve(table.path)}>{table.title}</MenuLink>
+								<MenuLink class="menuitem" href={table_href}>{table.title}</MenuLink>
+								{#if page.url.pathname === table_href}
+									<ul class="unstyled sub narrow-only">
+										{#each Object.entries(table.sections) as [id, title] (id)}
+											<li>
+												<a
+													class={['menuitem', { selected: id === page.url.hash.slice(1) }]}
+													href="{table_href}#{id}"
+												>
+													{title}
+												</a>
+											</li>
+										{/each}
+									</ul>
+								{/if}
 							</li>
 						{/each}
 					</ul>

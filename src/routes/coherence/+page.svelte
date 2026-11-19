@@ -18,6 +18,7 @@
 	} from './coherence.ts';
 	import {
 		coherence_family_paths,
+		coherence_gaps_page,
 		coherence_inventory_ids,
 		coherence_inventory_pages
 	} from './coherence_pages.ts';
@@ -47,8 +48,9 @@
 		{/each}
 		<p class="width_atmost_md">
 			The projects named are the ones on the <a href="https://www.fuz.dev/stack">Fuz stack page</a>.
-			See also the <a href={resolve('/skills')}>skills</a> the written rung cites, and the
-			<a href={resolve('/values')}>values</a> the stack's design is measured against.
+			See also the <a href={resolve('/skills')}>skills</a> the written rung cites, the
+			<a href={resolve('/values')}>values</a> the stack's design is measured against, and the
+			<a href={resolve('/glossary')}>glossary</a> for the words used here.
 		</p>
 		<p class="width_atmost_md">
 			<small>
@@ -126,8 +128,12 @@
 	</section>
 
 	<section>
-		<h2 id="tables">The tables</h2>
+		<h2 id="more">More in this section</h2>
 		<ul>
+			<li>
+				<a href={resolve(coherence_gaps_page.path)}>{coherence_gaps_page.title}</a>
+				<span class="text_70">— every gap in the grid, gathered</span>
+			</li>
 			{#each coherence_inventory_ids as id (id)}
 				<li>
 					<a href={resolve(coherence_inventory_pages[id].path)}>

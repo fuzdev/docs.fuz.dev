@@ -76,6 +76,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>hash - tools - docs.fuz.dev</title>
+</svelte:head>
+
 <div>
 	<h1>hash</h1>
 

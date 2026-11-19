@@ -7,6 +7,8 @@
 	import { FUZ_DEV_URL, MAIN_HEADER_MARGIN_TOP } from '@fuzdev/fuz_ui/constants.ts';
 	import ProjectLinks from '@fuzdev/fuz_ui/ProjectLinks.svelte';
 
+	import { site_sections } from './site_sections.ts';
+
 	const site = site_context.get();
 </script>
 
@@ -35,13 +37,22 @@
 						<a href="https://github.com/fuzdev"><code>@fuzdev</code></a> projects.
 					</p>
 					<p>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-						For more see the <a href={resolve('/skills')}>skills</a> and generated
-						<a href={resolve('/docs')}>docs</a>, and for human-written docs, visit the packages
-						below.
+						For what the stack is, see the <a href="https://www.fuz.dev/stack">Fuz stack page</a>,
+						and for API docs and human-written docs, visit the packages below.
 					</p>
 				</div>
 			</div>
+		</section>
+		<section class="panel p_lg shadow_inset_xs mb_lg">
+			<h2 class="mt_0 mb_lg">On this site</h2>
+			<ul class="unstyled">
+				{#each site_sections as section (section.name)}
+					<li>
+						<a href={resolve(`/${section.name}`)}>{section.icon} {section.name}</a>
+						<span class="text_70">— {section.summary}</span>
+					</li>
+				{/each}
+			</ul>
 		</section>
 		<section class="panel p_lg shadow_inset_xs">
 			<ProjectLinks />

@@ -1,8 +1,8 @@
 <script lang="ts">
 	/**
 	 * A single page with its sections listed in a sticky column beside it on
-	 * wide screens, as `Docs` lists a tome's links; at or below 1000px the
-	 * column hides and the site's sidebar lists the sections instead.
+	 * wide screens; at or below 1000px the column hides and the site's sidebar
+	 * lists the sections instead.
 	 *
 	 * @module
 	 */
@@ -19,7 +19,7 @@
 		children: Snippet;
 	} = $props();
 
-	// selected by the URL's hash, as `DocsPageLinks` selects; stale once the reader scrolls
+	// selected by the URL's hash, so stale once the reader scrolls
 	const hash = $derived(page.url.hash.slice(1));
 </script>
 

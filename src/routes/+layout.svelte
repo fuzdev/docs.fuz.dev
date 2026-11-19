@@ -7,12 +7,8 @@
 	import AppShell from '@fuzdev/fuz_ui/AppShell.svelte';
 	import Breadcrumb from '@fuzdev/fuz_ui/Breadcrumb.svelte';
 	import { SidebarState } from '@fuzdev/fuz_ui/sidebar_state.svelte.ts';
-	import { DocsLinks, docs_links_context } from '@fuzdev/fuz_ui/docs_helpers.svelte.ts';
 	import { SiteState, site_context } from '@fuzdev/fuz_ui/site.svelte.ts';
 	import { logo_docs_fuz_dev } from '@fuzdev/fuz_ui/logos.ts';
-	import { href_contains_current_page } from '@fuzdev/fuz_ui/page_helpers.ts';
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
 	import pkg_json from 'virtual:pkg.json';
 	import type { Snippet } from 'svelte';
 
@@ -27,14 +23,8 @@
 	// `glyph` and `repo_url` derive from `pkg_json`; `icon` stays explicit (structured `SvgData`).
 	site_context.set(new SiteState({ icon: logo_docs_fuz_dev, pkg_json }));
 
-	// shared with `/docs`, so the sidebar can list a docs page's links on narrow screens
-	docs_links_context.set(new DocsLinks());
-
 	// named so the header's menu button can carry `aria-controls`
 	const sidebar_state = new SidebarState({ id: 'site-nav' });
-
-	// `Docs` renders its own `<main>`
-	const in_docs = $derived(href_contains_current_page(resolve('/docs'), page.url));
 </script>
 
 <svelte:head>
@@ -66,21 +56,16 @@
 				menu
 			</button>
 		</header>
-		{#if in_docs}
+		<main class="site-main">
 			{@render children()}
-		{:else}
-			<main class="site-main">
-				{@render children()}
-			</main>
-		{/if}
+		</main>
 	</AppShell>
 </ThemeRoot>
 
 <style>
 	:global(.site-shell.app-shell) {
-		/* the wide sidebar and the pages' sticky columns sit below the header */
+		/* the wide sidebar sits below the header */
 		--sidebar_top: var(--site_header_height);
-		--docs_sticky_top: var(--site_header_height);
 	}
 	/* on `html` so the scroll padding can read it; an anchor jump lands with its target clear of the sticky header */
 	:global(html:has(.site-shell)) {

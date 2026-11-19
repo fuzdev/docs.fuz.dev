@@ -30,8 +30,9 @@ export const task: Task<Args> = {
 ```
 
 - **Import from the module**: `@fuzdev/gro/task.ts` has `Task`, `TaskContext`,
-  `TaskError`, `SilentError`, and `InvokeTask`. The bare `@fuzdev/gro` entry
-  re-exports a few of them and older files use it.
+  and `InvokeTask`; `@fuzdev/gro/task_error.ts` has `TaskError` and
+  `SilentError`. The bare `@fuzdev/gro` entry re-exports a few of them and
+  older files use it.
 - **A `@nodocs` doc comment on `Args` and `task`.** Every task module exports
   those two names, so in a library's `src/lib` they would collide under the
   flat-namespace check.
@@ -128,8 +129,10 @@ anything else a builtin.
   import { gen_task_registry } from '@fuzdev/gro/task_registry.ts';
   import { fs } from '@fuzdev/gro/fs.ts';
   import { create_fs_paths } from '@fuzdev/gro/fs_paths.ts';
+  import { cwd } from '@fuzdev/gro/cwd.ts';
+  import { env } from '@fuzdev/gro/env.ts';
 
-  export const gen = gen_task_registry(create_fs_paths(fs));
+  export const gen = gen_task_registry(create_fs_paths(fs, { cwd: cwd(), home: env.get('HOME') }));
   ```
 
   A task without an exported `Args` accepts anything, so export the schema.

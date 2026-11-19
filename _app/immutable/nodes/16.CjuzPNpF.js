@@ -1,0 +1,1 @@
+import"../chunks/4hYOTDS5.js";import{t as e}from"../chunks/DDEN3J9b.js";function t(t){e(t,{family:`sessions`})}export{t as component};

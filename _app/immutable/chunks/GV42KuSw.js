@@ -1,1 +1,0 @@
-var e={grid:`The grid`,holds:`What holds each failure`,oracles:`Oracles in use`,actions:`Actions kept with a person`,gates:`Gates`};export{e as t};

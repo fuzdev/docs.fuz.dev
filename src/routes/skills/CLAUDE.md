@@ -26,7 +26,7 @@ src/routes/skills/
         └── {slug}/+page.svelte # [generated] one per reference doc
 ```
 
-## What the gen does
+## Gen file pattern
 
 `skill_docs.gen.ts`:
 

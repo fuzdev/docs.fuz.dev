@@ -2744,14 +2744,14 @@
 		{
 			"repo": "docs.fuz.dev",
 			"project": "fuz-stack",
-			"commit": "f64dae1440938941005c0e784087334e82cd8fc7",
+			"commit": "0d8cc0bd8c51eb8b2bc7b7eebb5817dac32a0f4f",
 			"npm": true,
 			"cargo": false,
 			"exports": false,
 			"check_script": "gro check",
 			"check_lines": [
 				{
-					"line": 41,
+					"line": 70,
 					"command": "gro check",
 					"comment": "typecheck, test, gen --check, format --check, lint (run before committing)",
 					"before_committing": true

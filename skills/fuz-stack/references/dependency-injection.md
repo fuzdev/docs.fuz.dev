@@ -198,19 +198,21 @@ the platform and builds the bundle once.
 - **Optional with a default** at a public surface whose callers shouldn't
   have to wire it: fuz_css's generator options take `deps = default_fs_deps`.
 - **One function's own interface** when a combination is unique and sharing
-  it would only couple things. It may mix in data, deliberately:
+  it would only couple things:
 
   ```typescript
   // fuz_app auth/bootstrap_account.ts (comments trimmed)
   export interface BootstrapAccountDeps {
   	db: Db;
-  	token_path: string;
-  	read_secure_file: (path: string) => Promise<Uint8Array>;
-  	delete_file: (path: string) => Promise<void>;
+  	token_store: BootstrapTokenStore;
   	password: Pick<PasswordHashDeps, 'hash_password'>;
+  	keyring: Keyring;
   	log: Logger;
   }
   ```
+
+  It may mix in data, deliberately, and say so: fuz_app's `PgFactStoreDeps`
+  carries `disk_root` and `embedded_threshold` beside its `fs` capability.
 
 - **Files**, in fuz_css's layout: interfaces in `deps.ts`, production
   implementations in `deps_defaults.ts`, fakes in a test-side module. A

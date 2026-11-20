@@ -21,7 +21,8 @@ not `cargo check`).
 - `fuz_actions` — `ActionSpec`, dispatch, the RPC and WebSocket routers, and
   `server`, the toolkit `run_app` composes
 - `fuz_http` — `compose_stack` (the one composition root), `BaseServerEnv`,
-  the JSON-RPC envelope, the origin and host gates, shutdown
+  the JSON-RPC envelope, the origin and host gates, the strict request
+  readers, shutdown
 - `fuz_auth` — credentials, sessions, roles, rate limits, audit
 - `fuz_db` — pool, migrations, query helpers, `status`
 - `fuz_realtime` — WebSocket and SSE registries
@@ -195,9 +196,10 @@ suite launches.
 **Browser gates**
 
 - `SameSite=Strict` keeps other sites out but not other ports on the same
-  host, so the spine's JSON handlers answer 415 to a `POST` with no
-  `Content-Type` or a form or text one, the requests a browser sends
-  cross-origin with no preflight.
+  host, so the spine's JSON handlers answer 415 to a `POST` whose
+  `Content-Type` is missing, a form or text type (the requests a browser
+  sends cross-origin with no preflight), or anything but one well-formed
+  line: sent twice, empty, or holding a comma.
 - The host gate (DNS rebinding) is on by default: a server answers only to
   loopback names and the hosts its allowlist names, so a deploy lists the
   origin it's served from.
@@ -205,6 +207,18 @@ suite launches.
   `RouteGroup::refuse_simple_requests` on groups that take no form uploads.
   The origin allowlist is the only gate on a WebSocket upgrade, which is
   never preflighted, so `http://localhost:*` admits every local page.
+- A hand-written route reads its query with `RawQuery` and
+  `fuz_http::read_query_pairs` (then `query_first`), and its path params
+  with `fuz_http::RouteParams<T>` as its first extractor that can refuse,
+  never axum's `Query` or `Path`: those decode leniently and refuse in plain
+  text. An undecodable query is `invalid_query_params`, a param
+  `invalid_route_params` (./twin-impl.md §Request input).
+- Route each path in one `RouteGroup`: each group's method router carries
+  the 405 fallback, and `compose_stack` panics at boot on a path split
+  across two. A server with a static or SPA fallback of its own answers an
+  unmatched `/api/` path with `fuz_actions::server::unmatched_route_response`.
+- A server that mints a session or token through its own code takes the
+  account lock first (./db-patterns.md §Locks and order).
 
 **Rate limiters**
 

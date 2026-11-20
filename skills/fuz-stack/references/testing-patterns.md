@@ -199,6 +199,25 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
   suites and their harness are fuz_app's (its `src/lib/testing/CLAUDE.md`);
   how TS and Rust twins are held together is in ./twin-impl.md.
 
+## Tests that pin a change
+
+- **Probe the unchanged system first.** A regression test is seen failing,
+  or the race seen losing, against the code before the fix. A test written
+  after the fix may pass for the wrong reason.
+- **A negative case proves its credential live before killing it**: log in
+  and make one authorized call, then change the password or delete the
+  account, then assert the refusal. Otherwise a broken fixture reads as a
+  refusal.
+- **A lock is pinned by playing the other transaction.** Hold one at a gate
+  (a latched hasher, a held commit), run the other to completion or into
+  the wait, release, and assert the final state (rows, status). The order
+  comes from the gate, never from a sleep.
+- **What only real Postgres can show is said so in the test's doc**: lock
+  waits, deadlocks and row order need a second connection, which the
+  in-memory drivers don't have. Those cases run under `create_pg_factory`
+  (`TEST_DATABASE_URL`) or the Rust `#[ignore]` suites, and the module doc
+  names which half is which.
+
 ## Fixture tests
 
 Parsers, analyzers, and transformers test against a directory per case: an

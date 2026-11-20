@@ -43,8 +43,8 @@ export const query_create_invite = async (
 - **`INSERT … RETURNING` rows pass through `assert_row(row, context)`** in
   TS: a missing row on an insert is a bug, not a not-found.
 - **A unique violation surfaces as Postgres `23505`**
-  (`is_pg_unique_violation`). The handler, not the query, turns it into a
-  wire error.
+  (`is_pg_unique_violation`). The handler maps it to a wire error. A rule,
+  by contrast, belongs in the query (§Locks and order).
 - **Transactions are the caller's.** A query takes whatever handle it's given
   (pool or transaction) and never opens its own.
 - **A bulk delete whose rows have a post-commit effect returns their ids**,
@@ -210,6 +210,29 @@ fn decode_grant_row(row: &tokio_postgres::Row) -> Result<CellGrantRow, CellError
 - An action handler never commits; the dispatcher does. Code that opens its
   own transaction commits with `fuz_db::commit_checked` (see
   ./rust-spine.md).
+
+## Locks and order
+
+- **A row that carries a credential or authority is inserted under its
+  principal's account-row lock, with the re-check.** Run the lock first in
+  the inserting transaction (`query_account_lock_verified` for a login,
+  `query_account_lock_live` otherwise), and refuse when the account is gone
+  or its hash changed. A password change and a delete write the account row
+  before they revoke, so a mint either waits and is refused or commits
+  first and is revoked. The insert's own foreign-key lock never conflicts
+  with that write.
+- **Lock several accounts in one statement, in id order**
+  (`query_account_lock_live_many`), the order the last-admin guard takes.
+  Two transactions that take two accounts in opposite orders deadlock.
+- **A locking read that feeds a count is ordered** (`ORDER BY` the ids), so
+  every caller takes its rows in the same sequence.
+- **A cascade's returned rows are ordered** when anything downstream is
+  compared across spines (audit rows, notifications). A CTE over
+  `UPDATE … RETURNING` with an ordered outer select does it; unordered, the
+  spines' audit logs differ.
+- **A rule a caller can reach by calling a query lives in the query**, as a
+  typed error (`RoleGrantOfferError::RecipientNotActive`), not only in the
+  spine's handler, so a consumer calling the query directly gets it.
 
 ## Anti-patterns
 

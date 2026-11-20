@@ -90,12 +90,23 @@ its own fixtures and cross tests.
   required on the family defaults and inherited by a config that spreads
   one. A _known-divergence ledger row_ or an `xfail_until`, each with a
   tracking id: both fail once the difference stops showing, so they clean
-  themselves. A suite `exclude` carries a required reason.
+  themselves. A suite `exclude` carries a required reason. A difference the
+  runtime forces (Node and Bun resolve dot segments before the app sees the
+  request) is a capability that picks which answer a row expects, not a
+  skip, so the declaration fails the day the runtime changes. A backend that
+  answers part of the surface its own way (a static fallback) declares that
+  and keeps the rest of the suite.
 - **Declaration parity**: the schema snapshot from DB introspection, the RPC
   method manifest, and the migration tracker are compared across backends.
 - **Strict parsing of read bodies**: every populated read response is parsed
   with the strict TS schema, which catches missing, extra, and renamed
   fields wholesale.
+- **A grammar both spines read is one conformance table**: JSON in fuz_app's
+  `testing/cross_backend/` and a byte-identical copy beside the Rust reader,
+  compared byte for byte by fuz_app's parity project, so a row is edited in
+  both. Each spine runs the table as a unit leg over its own reader, and a
+  raw-socket wire leg sends the rows a client library would rewrite. A read
+  the unit legs already cover gets no `_testing_*` backdoor.
 - **Shared fixtures for hand-written logic**: a JSON case table in the
   consumer's repo, read by its TS tests and by its Rust tests through
   `include_str!` (grammars, validators, env handling, retired env names). A
@@ -115,6 +126,33 @@ difference is either converged or recorded.
 consumer bottoms out in shared upstream code. Its real parity surface is
 what it writes twice: handlers, domain parsing, auth glue, env loading,
 subprocess use.
+
+## Request input
+
+- **The spine reads its own input, over the raw lines and the raw target.**
+  Every header a gate or credential decides on has one strict reader per
+  spine (`http/request_headers.ts`, `auth/credential_headers.ts` ↔
+  `fuz_http::request_headers`, `fuz_auth::credential_headers`), and the
+  query and path params have one decoder (`http/request_target.ts` ↔
+  `fuz_http::request_target`). A framework helper (`c.req.header`,
+  `c.req.query`, axum's `Query` / `Path`, `HeaderMap::get`) reads the first
+  line or decodes leniently, and each runtime does it differently.
+- **Refuse, don't repair.** A repeated gate header, an empty line, a value
+  off its grammar, or a comma is refused. A percent escape that doesn't
+  decode is refused, never kept as text and never replaced with U+FFFD:
+  either way a handler reads a value the client never sent, and two inputs
+  collapse into one.
+- **A TS route handler takes the route context alone** (`(route)`, reading
+  `route.input`, `route.params`, `route.query_pairs`) and returns a result
+  as data (`route_ok`, `route_fail`, `route_raw`, `route_sse`). It never
+  sees the Hono context or builds a `Response`; the spine answers after the
+  commit.
+- **An unmatched request has one answer on both spines**: a method a path
+  doesn't serve is `405 {"error":"method_not_allowed"}` with `Allow`, ahead
+  of authentication; an unmatched path is `404 {"error":"route_not_found"}`
+  under `/api/` and the plain-text `404 Not Found` elsewhere, decided on the
+  raw path. A server with its own fallback hands its `/api/` misses to the
+  spine's answer.
 
 ## Wire shapes
 
@@ -178,8 +216,8 @@ ones. Rust names are crates in the fuz repo.
 | Session token at rest | BLAKE3, unkeyed | 64 lowercase hex | fuz_app `auth/session_queries.ts` `hash_session_token` | `fuz_auth::hash_session_token` | hash, then look up |
 | API token at rest | BLAKE3 of the whole `secret_fuz_token_…` | 64 lowercase hex | fuz_app `auth/api_token.ts` `hash_api_token` | `fuz_auth::hash_api_token` | hash, then look up |
 | Password | Argon2id, m=19456 t=2 p=1 | PHC string | fuz_app `auth/password_argon2.ts` | `fuz_auth` `password_argon2.rs` | library verify; an unknown account verifies against the same precomputed dummy hash |
-| Session cookie | HMAC-SHA256 | `<identity>:<expires_at>.<sig>`; `expires_at` ASCII digits within `u64`; `sig` standard padded base64 of the 32-byte MAC; keys of 32+ characters | fuz_app `auth/keyring.ts`, `auth/session_cookie.ts` | `fuz_auth` `keyring.rs`, `session_cookie.rs` | strict decode (one spelling per MAC), then the MAC verify |
-| Daemon token | none (raw secret) | 43 base64url characters | fuz_app `auth/daemon_token.ts` | `fuz_auth` `daemon_token.rs` | constant time (TS checks the grammar first; an off-form value fails the compare on either side) |
+| Session cookie | HMAC-SHA256 | `<identity>:<expires_at>.<sig>`; `expires_at` ASCII digits within `u64`; `sig` standard padded base64 of the 32-byte MAC; keys of 32+ characters | fuz_app `auth/keyring.ts`, `auth/session_cookie.ts` | `fuz_auth` `keyring.rs`, `session_cookie.rs` | strict decode (one spelling per MAC), then the MAC verify; written and read raw, never percent-encoded: the first `<name>=` pair of the `Cookie` lines, verbatim, nothing decoded or unquoted |
+| Daemon token | none (raw secret) | 43 base64url characters | fuz_app `auth/daemon_token.ts` | `fuz_auth` `daemon_token.rs` | the header's one line must be 43 base64url characters (`is_daemon_token_shaped` on both spines), or it is not a daemon token and the walk goes on; then constant time |
 | Bootstrap token | none (raw secret) | the file's bytes minus one optional trailing LF, 32 bytes or more | fuz_app `auth/bootstrap_account.ts` | `fuz_auth` `bootstrap.rs` | raw bytes in constant time; no other trimming |
 | Shell-checked download | SHA-512 | sidecar line `<128 lowercase hex>  <name>\n` | build scripts (`gro.config.ts`) | `fuz_release` | `sha512sum -c`; the Rust reader is strict on case, separator, and newline where the shell tool is lenient |
 

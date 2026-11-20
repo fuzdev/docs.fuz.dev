@@ -446,7 +446,8 @@ Unit tests in `#[cfg(test)] mod tests`, integration tests in `tests/`.
   per test). Write and run them locally. A crate that gains one joins the CI
   job's `-p` list by hand, and a missing entry leaves the job green with the
   suite never run, so a test holds that list to the tree (fuz's
-  `db_suite_lists.rs`). A workspace with such a job has one.
+  `db_suite_lists.rs`). A workspace with such a job has one. A race is made
+  exact, not hammered (./testing-patterns.md §Tests that pin a change).
 - **A gated suite never passes by skipping.** A test that needs an external
   program returns early where it's absent, and one sentinel test fails
   naming every missing program unless an explicit `*_ALLOW_NO_<NAME>=1`

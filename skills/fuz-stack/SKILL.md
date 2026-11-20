@@ -303,7 +303,7 @@ Read by task:
   env and browser gates, actions and the JSON-RPC envelope, realtime, a
   CLI's daemon lifecycle, `check-release`
 - ./references/db-patterns.md — any SQL: query modules, `*_COLUMNS`
-  projections, `col!` decode, the drift guard (TS and Rust)
+  projections, `col!` decode, the drift guard, locks and order (TS and Rust)
 - ./references/twin-impl.md — anything with a TS twin, and any hash,
   token, or secret format: naming parity, the cross-backend harness, wire
   shapes, serde boundary conformance, digests (algorithm, encoding, and

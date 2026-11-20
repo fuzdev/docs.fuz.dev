@@ -278,7 +278,9 @@ The essentials, each expanded in ./references/rust-patterns.md:
   `tsv` assign more; read a tool's table before touching its exits.
 - **A shipped CLI** parses with argh through an exit-code-correct wrapper,
   never `argh::from_env()`. A new command whose effect is hard to undo is a
-  dry run until `--wetrun`.
+  dry run until `--wetrun`. It never writes its own name as a literal, and
+  config that points at a tool is named for the role, not a development
+  binary's name.
 - **Closed sets are enums**, input structs deny unknown fields, and
   impossible states don't compile.
 - **DI** is a concrete `*Options` struct by default (no `*Deps` suffix in

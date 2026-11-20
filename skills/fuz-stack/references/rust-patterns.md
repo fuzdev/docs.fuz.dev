@@ -497,6 +497,29 @@ and aliases match.
 - **`--json`** is the machine surface: results on stdout, a stable
   snake_case `error.kind` on failure. Library code prints nothing.
 
+### A binary's name
+
+A program is shipped under one name and developed under another, so nothing
+it writes may assume either.
+
+- **No literal of its own name.** Usage text, hints, and error messages take
+  the name from one constant, or from the name the program was invoked as,
+  escaped for display. A test's expected output holds a placeholder for it.
+  Renaming the binary is then one line.
+- **A development build takes a prefixed name, and the shipped artifact the
+  plain one.** gro's runtime develops as `fgro` and ships as `gro`, so a
+  build from the checkout never stands in for the installed tool on `PATH`,
+  and prose can say which one it means while the two differ.
+- **Config is named for the role, never for the development binary.** An
+  environment variable, a flag, a lock-file field, or a wire field that
+  points at another tool says what the tool is (`ZAP_GRO`, `--gro`,
+  `gro_blake3`), since these outlive the development name and a lock or wire
+  field costs a version bump to rename. zap's `ZAP_FGRO`, `--fgro`, and
+  `fgro_blake3` predate the rule and move before gro's binary ships.
+- **An installed development copy sits at a path no build overwrites**, and
+  is updated deliberately. A tool that pins another by hash pins that copy,
+  never one in a build tree.
+
 ### Exit codes
 
 A small, stable contract: settle it early, document the table in the crate

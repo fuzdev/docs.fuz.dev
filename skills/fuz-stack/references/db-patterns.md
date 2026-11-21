@@ -216,16 +216,31 @@ fn decode_grant_row(row: &tokio_postgres::Row) -> Result<CellGrantRow, CellError
 - **A row that carries a credential or authority is inserted under its
   principal's account-row lock, with the re-check.** Run the lock first in
   the inserting transaction (`query_account_lock_verified` for a login,
-  `query_account_lock_live` otherwise), and refuse when the account is gone
-  or its hash changed. A password change and a delete write the account row
-  before they revoke, so a mint either waits and is refused or commits
-  first and is revoked. The insert's own foreign-key lock never conflicts
-  with that write.
+  `query_account_lock_live` for a token — both `FOR NO KEY UPDATE`, so two
+  mints of one account take turns and a cap never counts stale), and refuse
+  when the account is gone or its hash changed. A password change and a
+  delete write the account row before they revoke, so a mint either waits
+  and is refused or commits first and is revoked. The insert's own
+  foreign-key lock never conflicts with that write.
+- **Take the account row before anything hanging off it.** Every writer of
+  an account locks or writes its row before its sessions, tokens, offers or
+  invites — a purge too (`query_account_lock_for_purge`, `FOR UPDATE`),
+  ahead of revoking the credentials its cascade would otherwise delete in
+  plan order.
 - **Lock several accounts in one statement, in id order**
   (`query_account_lock_live_many`), the order the last-admin guard takes.
   Two transactions that take two accounts in opposite orders deadlock.
 - **A locking read that feeds a count is ordered** (`ORDER BY` the ids), so
   every caller takes its rows in the same sequence.
+- **A multi-row delete locks its rows through an id-ordered subselect**
+  (`WHERE id IN (SELECT id … ORDER BY id FOR UPDATE)`): a bare `DELETE`
+  walks whatever order the plan picks, a cached generic plan included, and
+  two of them deadlock.
+- **Take the weakest lock that conflicts with every write the rule guards
+  against.** A guard that must order removals takes `FOR NO KEY UPDATE`,
+  not `FOR UPDATE`: the foreign-key key share of an insert naming the row
+  only adds, and blocking it deadlocks inserts that already hold a lock the
+  guard wants next.
 - **A cascade's returned rows are ordered** when anything downstream is
   compared across spines (audit rows, notifications). A CTE over
   `UPDATE … RETURNING` with an ordered outer select does it; unordered, the

@@ -83,6 +83,15 @@ export const nav_projects: ReadonlyArray<{ name: string; sections: Record<string
 		}
 	},
 	{
+		name: 'cord',
+		sections: {
+			uses: 'What it uses',
+			third_party: 'What it declares from outside the stack',
+			commands: 'Its check script and CI',
+			gates: 'Gates'
+		}
+	},
+	{
 		name: 'zzz',
 		sections: {
 			uses: 'What it uses',

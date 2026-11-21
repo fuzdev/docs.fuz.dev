@@ -29,6 +29,7 @@ export interface StackProject {
 /** In the stack page's order. */
 export const stack_projects = [
 	{ name: 'fuz_template', repos: ['fuz_template'] },
+	{ name: 'cord', repos: ['cord'] },
 	{ name: 'zzz', repos: ['zzz'] },
 	{ name: 'zervo', repos: ['zervo'] },
 	{ name: 'fuz_forge', repos: ['fuz_forge'] },

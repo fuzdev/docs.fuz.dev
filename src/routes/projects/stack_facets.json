@@ -1,6 +1,6 @@
 {
-	"checked": "2026-11-19",
-	"commit": "4374f1e036aae6a882e9d433f8c219c7015dc09b",
+	"checked": "2026-11-21",
+	"commit": "aeb7b648062a0d542506ffe151c3a628d6e32cdf",
 	"layers": [
 		"apps and sites",
 		"fullstack",
@@ -64,6 +64,17 @@
 				"rust"
 			],
 			"site": "https://template.fuz.dev/"
+		},
+		{
+			"name": "cord",
+			"layer": "apps and sites",
+			"status": "early",
+			"languages": [
+				"ts",
+				"svelte",
+				"rust"
+			],
+			"site": null
 		},
 		{
 			"name": "zzz",

@@ -1,10 +1,10 @@
 {
-	"checked": "2026-11-19",
+	"checked": "2026-11-21",
 	"repos": [
 		{
 			"repo": "fuz_template",
 			"project": "fuz_template",
-			"commit": "0d9c23f8e0f3a10f9543cd1bffced66dbd254bc7",
+			"commit": "57237c3234b890e5285d983418a6fd390180d35e",
 			"npm": true,
 			"cargo": true,
 			"exports": false,
@@ -102,9 +102,113 @@
 			]
 		},
 		{
+			"repo": "cord",
+			"project": "cord",
+			"commit": "1dd54a805ed32413c393a89e88241a47e42988ca",
+			"npm": true,
+			"cargo": true,
+			"exports": false,
+			"check_script": "gro check",
+			"check_lines": [
+				{
+					"line": 397,
+					"command": "gro check",
+					"comment": "typecheck, test, gen --check, lint, format check",
+					"before_committing": false
+				}
+			],
+			"third_party": [
+				{
+					"name": "axum",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "deadpool-postgres",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "serde",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "serde_json",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "thiserror",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "tokio",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "tracing",
+					"manifest": "cargo",
+					"kind": "runtime"
+				},
+				{
+					"name": "uuid",
+					"manifest": "cargo",
+					"kind": "runtime"
+				}
+			],
+			"workflows": [
+				{
+					"file": "check.yml",
+					"on": [
+						{
+							"event": "push",
+							"branches": [
+								"main"
+							]
+						},
+						{
+							"event": "pull_request",
+							"branches": [
+								"**"
+							]
+						},
+						{
+							"event": "workflow_dispatch"
+						}
+					],
+					"jobs": [
+						{
+							"id": "build",
+							"runs_on": "ubuntu-latest",
+							"steps": [
+								{
+									"uses": "actions/checkout",
+									"pin": "commit"
+								},
+								{
+									"name": "Use Node.js ${{ matrix.node-version }}",
+									"uses": "actions/setup-node",
+									"pin": "commit"
+								},
+								{
+									"run": "npm ci"
+								},
+								{
+									"run": "npx @fuzdev/gro check --workspace --build"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
 			"repo": "zzz",
 			"project": "zzz",
-			"commit": "fdba1d5c88afcf6bab8e2c7672221261a26aec45",
+			"commit": "9fcc74c0119227ab8ea4fadc9db8c8860a4dc43e",
 			"npm": true,
 			"cargo": true,
 			"exports": true,
@@ -285,7 +389,7 @@
 		{
 			"repo": "zervo",
 			"project": "zervo",
-			"commit": "8cb4a70e6022fd1b04ab9388f2c4481f3197c8f2",
+			"commit": "353cc873f04f0364a17b1e2b00639d384586c50c",
 			"npm": true,
 			"cargo": true,
 			"exports": false,
@@ -368,7 +472,7 @@
 		{
 			"repo": "fuz_forge",
 			"project": "fuz_forge",
-			"commit": "08d6952c2495f286e2d5f28a1c2928f004c53587",
+			"commit": "a75a99c6f269569c9a524a83a201773679e61dcb",
 			"npm": true,
 			"cargo": true,
 			"exports": true,
@@ -572,7 +676,7 @@
 		{
 			"repo": "fuz_app",
 			"project": "fuz_app",
-			"commit": "76954346749b390b99929d413e3ef1c33e42738a",
+			"commit": "db3ebc904725ca89a9398a6762d7cc41cb42408e",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -762,7 +866,7 @@
 		{
 			"repo": "fuz",
 			"project": "fuz",
-			"commit": "c881490642685118f83e7a7d9a1c53dfdd6bf05b",
+			"commit": "d7b81db78f3fd99c34d63397c4a080fc7db83932",
 			"npm": false,
 			"cargo": true,
 			"exports": false,
@@ -1134,13 +1238,80 @@
 							]
 						}
 					]
+				},
+				{
+					"file": "cross-contract.yml",
+					"on": [
+						{
+							"event": "schedule",
+							"cron": [
+								"43 5 * * *"
+							]
+						},
+						{
+							"event": "workflow_dispatch"
+						}
+					],
+					"jobs": [
+						{
+							"id": "cross-contract",
+							"runs_on": "ubuntu-latest",
+							"steps": [
+								{
+									"uses": "actions/checkout",
+									"pin": "commit"
+								},
+								{
+									"uses": "actions/checkout",
+									"pin": "commit"
+								},
+								{
+									"name": "Install Rust",
+									"run": "rustup toolchain install --no-self-update\nrustup show active-toolchain\ncargo --version"
+								},
+								{
+									"uses": "Swatinem/rust-cache",
+									"pin": "commit"
+								},
+								{
+									"name": "Use Node.js 24.14",
+									"uses": "actions/setup-node",
+									"pin": "commit"
+								},
+								{
+									"name": "Build the spine test binary",
+									"run": "cargo build --locked -p testing_spine_stub --bin testing_spine_stub --profile cross-test"
+								},
+								{
+									"name": "Install fuz_app dependencies",
+									"run": "npm ci"
+								},
+								{
+									"name": "Sync SvelteKit",
+									"run": "npx svelte-kit sync"
+								},
+								{
+									"name": "Rust spine stub suite",
+									"run": "npm run test:cross:rust-spine-stub"
+								},
+								{
+									"name": "Parity suite",
+									"run": "npm run test:cross:parity"
+								},
+								{
+									"name": "Security suite",
+									"run": "npm run test:cross:security"
+								}
+							]
+						}
+					]
 				}
 			]
 		},
 		{
 			"repo": "fuz_css",
 			"project": "fuz_css",
-			"commit": "4720d5a118e33c2a5a80e2c79a38a35990ffecf0",
+			"commit": "2c6bbb3d6037bf32e371a7cec5b4af7d61f48029",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -1234,7 +1405,7 @@
 		{
 			"repo": "fuz_ui",
 			"project": "fuz_ui",
-			"commit": "7980e9c391add2c2b434c0c5e86c27eee93b536d",
+			"commit": "08fbf2802480a9546b355be159018768d0f3d7ab",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -1313,7 +1484,7 @@
 		{
 			"repo": "fuz_code",
 			"project": "fuz_code",
-			"commit": "0e4efa6a0400628dc0a33df1cef1bb18abd4710a",
+			"commit": "23284bdc66f32dd15cb2c620ebf68d5cf4ea6596",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -1397,7 +1568,7 @@
 		{
 			"repo": "mdz",
 			"project": "mdz",
-			"commit": "1616b6256025f9bdc8badf4242b0681ffa76f7f5",
+			"commit": "c4bb18fe5b2eaf2e023cb8c9d586d278f34d3394",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -1491,7 +1662,7 @@
 		{
 			"repo": "fuz_blog",
 			"project": "fuz_blog",
-			"commit": "154a8a54003a5ac97294c14a895c3529300c6358",
+			"commit": "ef104dc09b97224407dbb53db5a69dee1b8cb455",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -1565,7 +1736,7 @@
 		{
 			"repo": "gro",
 			"project": "gro",
-			"commit": "adc3a23684115b019d152e511dd6ccb6e088e13f",
+			"commit": "9bf72e22ca92438436c507e9f2602cf36c4c0980",
 			"npm": true,
 			"cargo": true,
 			"exports": true,
@@ -1605,11 +1776,6 @@
 				{
 					"name": "deno_webidl",
 					"manifest": "cargo",
-					"kind": "runtime"
-				},
-				{
-					"name": "dotenv",
-					"manifest": "npm",
 					"kind": "runtime"
 				},
 				{
@@ -1817,8 +1983,8 @@
 									"run": "if [ -e \"$BUILD_ROOT\" ]; then\n  echo \"::error::$BUILD_ROOT already exists on this runner\"\n  exit 1\nfi\nsudo install -d -o \"$(id -u)\" -g \"$(id -g)\" -m 755 \"$BUILD_ROOT\"\ncp -a \"$GITHUB_WORKSPACE\" \"$BUILD_ROOT/gro\"\nmkdir \"$BUILD_ROOT/cargo\"\necho \"CARGO_HOME=$BUILD_ROOT/cargo\" >> \"$GITHUB_ENV\""
 								},
 								{
-									"name": "Refuse a tag that isn't the workspace version",
-									"run": "version=$(cargo metadata --locked --no-deps --format-version 1 \\\n  | jq -r '.packages[] | select(.name == \"gro_cli\") | .version')\nif [ -z \"$version\" ]; then\n  echo \"::error::no gro_cli version in Cargo.toml\"\n  exit 1\nfi\nif [ \"$GITHUB_EVENT_NAME\" != push ]; then\n  echo \"::notice::a $GITHUB_EVENT_NAME run on $GITHUB_REF has no tag: the tag check is skipped, not passed (workspace version $version)\"\nelif [ \"$GITHUB_REF_NAME\" != \"fgro-v$version\" ]; then\n  echo \"::error::the tag '$GITHUB_REF_NAME' isn't 'fgro-v' + the workspace version '$version' in Cargo.toml\"\n  exit 1\nfi\necho \"VERSION=$version\" >> \"$GITHUB_ENV\""
+									"name": "Refuse a tag that isn't the package's version",
+									"run": "version=$(jq -r '.version | strings' package.json)\nif [ -z \"$version\" ]; then\n  echo \"::error::no string version in package.json\"\n  exit 1\nfi\nif [ \"$GITHUB_EVENT_NAME\" != push ]; then\n  echo \"::notice::a $GITHUB_EVENT_NAME run on $GITHUB_REF has no tag: the tag check is skipped, not passed (package version $version)\"\nelif [ \"$GITHUB_REF_NAME\" != \"fgro-v$version\" ]; then\n  echo \"::error::the tag '$GITHUB_REF_NAME' isn't 'fgro-v' + package.json's version '$version'\"\n  exit 1\nfi\necho \"VERSION=$version\" >> \"$GITHUB_ENV\""
 								},
 								{
 									"name": "Fetch V8",
@@ -1885,7 +2051,7 @@
 		{
 			"repo": "tsv",
 			"project": "tsv",
-			"commit": "8239638a254fad4e75bd033eb54202139dac160a",
+			"commit": "2d14cc132dde4825d3d35656519ec058317f8148",
 			"npm": true,
 			"cargo": true,
 			"exports": false,
@@ -2436,7 +2602,7 @@
 		{
 			"repo": "tsv.fuz.dev",
 			"project": "tsv",
-			"commit": "da0fdd765bac42516f5b99150a347da66db7dac6",
+			"commit": "68f315a3a87e2725176135a84e77eda20cc4e888",
 			"npm": true,
 			"cargo": false,
 			"exports": false,
@@ -2511,14 +2677,14 @@
 		{
 			"repo": "svelte-docinfo",
 			"project": "svelte-docinfo",
-			"commit": "f5c967dfe3cc5cdbe142dad74cc86bfb9dea1162",
+			"commit": "fd495034f09a3ed355910f455c086d4c0edcdee3",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
 			"check_script": "gro check",
 			"check_lines": [
 				{
-					"line": 781,
+					"line": 841,
 					"command": "gro check",
 					"comment": "typecheck, test, gen --check, format --check, lint",
 					"before_committing": false
@@ -2744,7 +2910,7 @@
 		{
 			"repo": "docs.fuz.dev",
 			"project": "fuz-stack",
-			"commit": "0d8cc0bd8c51eb8b2bc7b7eebb5817dac32a0f4f",
+			"commit": "7b2332235fb67a025ea5800a570b5516577f44e1",
 			"npm": true,
 			"cargo": false,
 			"exports": false,
@@ -2873,7 +3039,7 @@
 		{
 			"repo": "fuz_util",
 			"project": "fuz_util",
-			"commit": "b18c21ea9f3ebbf96cc4bc6568c6c38f17739b6e",
+			"commit": "4c1820e5765fcfb9059b8b0c2b97f93bfb82ae48",
 			"npm": true,
 			"cargo": false,
 			"exports": true,
@@ -2957,7 +3123,7 @@
 		{
 			"repo": "fuz_schema",
 			"project": "fuz_schema",
-			"commit": "7015c25cb063319d72026f72c571d525a5e19fbb",
+			"commit": "2c5e7d0e500af05fef0754718b554447aaa69e5b",
 			"npm": true,
 			"cargo": true,
 			"exports": true,
@@ -3127,7 +3293,7 @@
 		{
 			"repo": "zap",
 			"project": "zap",
-			"commit": "1d350dbc5e39eacacad446c27748566d86647ad4",
+			"commit": "4caf2e82178eb3e944d10fe92ffed14f0e981c2a",
 			"npm": true,
 			"cargo": true,
 			"exports": true,
@@ -3301,7 +3467,7 @@
 		{
 			"repo": "pglet",
 			"project": "pglet",
-			"commit": "dbb03952d7dfaf24ca3bafc218f7d41193038f23",
+			"commit": "f57e3a0177f8a8816c17b7e08247a8b152936c1b",
 			"npm": true,
 			"cargo": true,
 			"exports": false,
@@ -3578,6 +3744,16 @@
 	],
 	"edges": [
 		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "blake3",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/blake3-wasm"
+			]
+		},
+		{
 			"from": "corpora",
 			"from_repo": "corpora",
 			"to": "blake3",
@@ -3768,6 +3944,22 @@
 			]
 		},
 		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "fuz",
+			"manifest": "cargo",
+			"source": "path",
+			"kind": "runtime",
+			"via": [
+				"fuz_actions",
+				"fuz_auth",
+				"fuz_cell",
+				"fuz_db",
+				"fuz_http",
+				"fuz_sys"
+			]
+		},
+		{
 			"from": "fuz_forge",
 			"from_repo": "fuz_forge",
 			"to": "fuz",
@@ -3822,6 +4014,16 @@
 			]
 		},
 		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "fuz_app",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_app"
+			]
+		},
+		{
 			"from": "fuz_forge",
 			"from_repo": "fuz_forge",
 			"to": "fuz_app",
@@ -3839,6 +4041,16 @@
 			"kind": "peer",
 			"via": [
 				"@fuzdev/fuz_app"
+			]
+		},
+		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "fuz_code",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_code"
 			]
 		},
 		{
@@ -3999,6 +4211,16 @@
 			"kind": "dev",
 			"via": [
 				"@fuzdev/fuz_code"
+			]
+		},
+		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "fuz_css",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_css"
 			]
 		},
 		{
@@ -4184,6 +4406,16 @@
 			]
 		},
 		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "fuz_schema",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_schema"
+			]
+		},
+		{
 			"from": "corpora",
 			"from_repo": "corpora",
 			"to": "fuz_schema",
@@ -4364,6 +4596,16 @@
 			]
 		},
 		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "fuz_ui",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_ui"
+			]
+		},
+		{
 			"from": "fuz-stack",
 			"from_repo": "docs.fuz.dev",
 			"to": "fuz_ui",
@@ -4526,6 +4768,16 @@
 		{
 			"from": "blake3",
 			"from_repo": "blake3",
+			"to": "fuz_util",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/fuz_util"
+			]
+		},
+		{
+			"from": "cord",
+			"from_repo": "cord",
 			"to": "fuz_util",
 			"manifest": "npm",
 			"kind": "dev",
@@ -4734,6 +4986,16 @@
 			]
 		},
 		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "gro",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/gro"
+			]
+		},
+		{
 			"from": "corpora",
 			"from_repo": "corpora",
 			"to": "gro",
@@ -4921,6 +5183,16 @@
 			"kind": "dev",
 			"via": [
 				"@fuzdev/gro"
+			]
+		},
+		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "mdz",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/mdz"
 			]
 		},
 		{
@@ -5281,6 +5553,9 @@
 			"source": "registry",
 			"kind": "runtime",
 			"via": [
+				"tsv_css",
+				"tsv_ignore",
+				"tsv_svelte",
 				"tsv_ts"
 			]
 		},
@@ -5302,6 +5577,16 @@
 			"kind": "runtime",
 			"via": [
 				"@fuzdev/tsv-format-wasm"
+			]
+		},
+		{
+			"from": "cord",
+			"from_repo": "cord",
+			"to": "zap",
+			"manifest": "npm",
+			"kind": "dev",
+			"via": [
+				"@fuzdev/zap"
 			]
 		},
 		{

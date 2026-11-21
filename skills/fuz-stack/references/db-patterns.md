@@ -232,10 +232,23 @@ fn decode_grant_row(row: &tokio_postgres::Row) -> Result<CellGrantRow, CellError
   Two transactions that take two accounts in opposite orders deadlock.
 - **A locking read that feeds a count is ordered** (`ORDER BY` the ids), so
   every caller takes its rows in the same sequence.
-- **A multi-row delete locks its rows through an id-ordered subselect**
-  (`WHERE id IN (SELECT id … ORDER BY id FOR UPDATE)`): a bare `DELETE`
-  walks whatever order the plan picks, a cached generic plan included, and
-  two of them deadlock.
+- **A multi-row write locks its rows first, in one id-ordered statement**
+  (`WHERE id IN (SELECT id … ORDER BY id FOR UPDATE)`), an `UPDATE` as much
+  as a `DELETE`: a bare one walks whatever order the plan picks, a cached
+  generic plan included, and two of them deadlock. A transaction that writes
+  rows in two statements (an offer cascade's incoming and outgoing halves)
+  locks all of them in one statement before either write.
+- **One class order everywhere**: accounts, then the rows that hang off them
+  (offers, credentials), then grants and actors — each class in id order. A
+  new transaction that takes them in another order is the next deadlock.
+- **Two rows at two strengths is two statements**, lower id first — one
+  locking clause takes one strength.
+- **A later statement writes only the rows its lock took** — name the locked
+  ids, or hold the parent rows (the account) that keep a new row out; a fresh
+  predicate picks up rows created in between, out of order.
+- **A cascade's writes count.** A `DELETE` whose foreign keys cascade or
+  `SET NULL` into other parents' rows writes those rows in heap order: lock
+  their parents first, in the class order.
 - **Take the weakest lock that conflicts with every write the rule guards
   against.** A guard that must order removals takes `FOR NO KEY UPDATE`,
   not `FOR UPDATE`: the foreign-key key share of an insert naming the row

@@ -222,25 +222,22 @@ fn decode_grant_row(row: &tokio_postgres::Row) -> Result<CellGrantRow, CellError
   delete write the account row before they revoke, so a mint either waits
   and is refused or commits first and is revoked. The insert's own
   foreign-key lock never conflicts with that write.
-- **Take the account row before anything hanging off it.** Every writer of
-  an account locks or writes its row before its sessions, tokens, offers or
-  invites — a purge too (`query_account_lock_for_purge`, `FOR UPDATE`),
-  ahead of revoking the credentials its cascade would otherwise delete in
-  plan order.
-- **Lock several accounts in one statement, in id order**
-  (`query_account_lock_live_many`), the order the last-admin guard takes.
-  Two transactions that take two accounts in opposite orders deadlock.
-- **A locking read that feeds a count is ordered** (`ORDER BY` the ids), so
-  every caller takes its rows in the same sequence.
+- **One class order everywhere**: accounts, then the rows that hang off them
+  (credentials, offers, invites), then grants and actors — each class in id
+  order. Every writer of an account takes its row first, a purge too
+  (`query_account_lock_for_purge`, `FOR UPDATE`, before it revokes the
+  credentials its cascade would otherwise delete in plan order). A new
+  transaction that takes rows in another order is the next deadlock.
+- **Lock several rows of one class in one statement, in id order**
+  (`query_account_lock_live_many`; `ORDER BY` the ids on a locking read that
+  feeds a count, as the last-admin guard does). Two transactions that take
+  two rows in opposite orders deadlock.
 - **A multi-row write locks its rows first, in one id-ordered statement**
   (`WHERE id IN (SELECT id … ORDER BY id FOR UPDATE)`), an `UPDATE` as much
   as a `DELETE`: a bare one walks whatever order the plan picks, a cached
   generic plan included, and two of them deadlock. A transaction that writes
   rows in two statements (an offer cascade's incoming and outgoing halves)
   locks all of them in one statement before either write.
-- **One class order everywhere**: accounts, then the rows that hang off them
-  (offers, credentials), then grants and actors — each class in id order. A
-  new transaction that takes them in another order is the next deadlock.
 - **Two rows at two strengths is two statements**, lower id first — one
   locking clause takes one strength.
 - **A later statement writes only the rows its lock took** — name the locked

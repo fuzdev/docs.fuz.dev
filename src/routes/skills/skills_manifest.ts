@@ -87,7 +87,7 @@ export const skills = [
 				path: '/skills/fuz-stack/references/path-references',
 				title: 'Path References',
 				description:
-					'Path typography in docs (navigable vs module vs code-shaped) and import specifier rules'
+					'Path typography in docs (navigable vs module vs code-shaped), import specifier rules, and case-sensitive path patterns'
 			},
 			{
 				slug: 'rust-dependencies',

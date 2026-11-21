@@ -241,8 +241,8 @@ gro sync        # svelte-kit sync + package.json exports; run when check says th
   or secret format
 - ./references/tsdoc-comments.md — writing doc comments: tag forms, links,
   where tags are dropped, drift
-- ./references/path-references.md — paths in docs and comments, and import
-  specifiers in source
+- ./references/path-references.md — paths in docs and comments, import
+  specifiers in source, and case-sensitive path patterns
 - ./references/mdz.md — writing mdz content or wiring its renderer
 - ./references/documentation-system.md — setting up or changing a docs site:
   the pipeline, tomes, the library context

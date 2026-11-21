@@ -1,5 +1,5 @@
 ---
-description: Path typography in docs (navigable vs module vs code-shaped) and import specifier rules
+description: Path typography in docs (navigable vs module vs code-shaped), import specifier rules, and case-sensitive path patterns
 ---
 
 # Path References
@@ -7,7 +7,8 @@ description: Path typography in docs (navigable vs module vs code-shaped) and im
 In prose, the typography says what a path is: a **file you can navigate to**
 is bare, and a **code identifier** is backticked. mdz turns a bare `./` or
 `../` path into a link, so the wrong form is a broken link or a dead
-reference. The last section covers import specifiers in source.
+reference. The last sections cover import specifiers in source and path
+patterns.
 
 ## Navigable paths are bare
 
@@ -118,3 +119,19 @@ module ships.
   `#lib` and `#routes` inside `src/lib`. It doesn't see an inline
   `import('#lib/…')` in a type position, so keep those out of `src/lib` in
   review.
+
+## Path patterns match by case
+
+A glob or ignore pattern matches names in the case they have on disk, on
+every OS: `gro format`'s patterns, gen `inputs`, and the ignore files tsv
+reads (`.formatignore`, `.prettierignore`). Case folding belongs to a
+filesystem, not an OS. A macOS volume can be case-sensitive, and a USB stick
+or a casefolded directory on Linux can fold, so a pattern that relied on
+folding would name different files on different machines.
+
+- **A named file, and a pattern's directories up to its first wildcard,
+  resolve through the filesystem**, which accepts any case it folds
+  (`gro format src/Lib/foo.ts` on a folding volume finds `src/lib/foo.ts`).
+- **Past the first wildcard nothing folds**, even on a folding volume:
+  `src/**/*.TS` doesn't match `a.ts`, and `src/*/Lib/*.ts` doesn't match
+  `src/x/lib/a.ts`, as in the shell. Write a pattern in the case on disk.

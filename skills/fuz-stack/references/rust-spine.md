@@ -65,14 +65,14 @@ pub async fn run_app(options: RunAppOptions) -> Result<(), StartupError> {
     let env = BaseServerEnv::from_process(ENV_OPTIONS)?;
     let addr = env.bind_addr(default_addr)?;
     let shutdown = fuz_http::shutdown_token();
-    let mode = match build_router(&env, backend, extra_action_specs_factory).await? {
-        BuiltRouter::BootOnly(router) => ServeMode::BootOnly(router),
-        BuiltRouter::Live { router, app } => ServeMode::Live {
-            router,
-            backend: app.backend.serve_backend(Some(upkeep_options(app.backend.auth_cleanup_options()))),
-        },
+    let (router, upkeep) = match build_router(&env, backend, extra_action_specs_factory).await? {
+        BuiltRouter::BootOnly(router) => (router, None),
+        BuiltRouter::Live { router, app } => {
+            (router, Some(upkeep_options(app.backend.auth_cleanup_options())))
+        }
     };
-    serve_until_shutdown(mode, ServeOptions { server_name: SERVER_NAME, addr, drain_timeout, shutdown }).await
+    let options = ServeOptions { server_name: SERVER_NAME, addr, drain_timeout, shutdown, upkeep };
+    serve_until_shutdown(router, options).await
 }
 
 // router.rs, the body of build_router(env, backend_options, extra_action_specs_factory)
@@ -120,17 +120,17 @@ Ok(BuiltRouter::Live { router, app })
   the other chains reference `actor`.
 - `RunAppOptions`, embedding `SpineRunOptions` as `spine` and adding only its
   own seams
-- its `App`, its action specs, its `BuiltRouter` (an enum: the
-  `BootOnlyRouter` alone, or the full router with its app), and an
+- its `App`, its action specs, its `BuiltRouter` (an enum: the boot-only
+  router alone, or the full router with its app), and an
   `upkeep_options(auth_cleanup, …) -> UpkeepOptions`
 
 **The toolkit owns, and a consumer never re-implements**: the boot
 (`create_app_backend`; its rustdoc has the order), every route state
 (`AppBackend`'s builders), serving and shutdown (`serve_until_shutdown`:
-bind, start upkeep, serve, close live connections, drain within the timeout,
-join upkeep), the standard command line (`start`, `db-status`, `--help`; a
-server with commands of its own extends it over `parse_server_invocation`),
-and the error policy (`StartupError`, whose `exit_code()` is `2` for what the
+bind, start upkeep, serve, then within one timeout close live connections,
+drain requests, join upkeep, drain detached writes), the standard command
+line (`start`, `db-status`, `--help`; a server with commands of its own
+extends it over `parse_server_invocation`), and the error policy (`StartupError`, whose `exit_code()` is `2` for what the
 operator must fix locally and `1` otherwise).
 
 The workspace's release profile sets `panic = "unwind"`, so the stack can
@@ -235,20 +235,22 @@ suite launches.
 
 **Upkeep**
 
-- Periodic work runs through the `upkeep` handed to
-  `AppBackend::serve_backend`: the spine's auth cleanup
+- Periodic work runs through `ServeOptions::upkeep`: the spine's auth cleanup
   plus each consumer task in `extra`, a boxed closure taking the shutdown
   token and calling `fuz_http::spawn_periodic` or a spine sweeper
   (`fuz_fact::spawn_orphan_temp_sweeper` for a server with a disk fact
-  store). It starts after the bind, so migrations have run, and is joined
-  before `serve_until_shutdown` returns. `build_router` spawns nothing.
-- `ServeMode::Live` pairs the full router with its backend's
-  `ServeBackend` (the closer shutdown closes live connections through, the
-  detached writes it drains), so through `serve_until_shutdown` a live
-  router never serves without them; `ServeMode::BootOnly` takes only the
-  `BootOnlyRouter` that `boot_only` builds. The guarantee is
-  `serve_until_shutdown`'s: `fuz_http::serve_with_shutdown`, the transport
-  primitive below it, takes any closer.
+  store). It starts after the bind, so migrations have run, and must stop on
+  the token: the shutdown joins it within its one bound and aborts it past
+  that. `build_router` spawns nothing.
+- The router carries what its shutdown owes: `AppBackend::stack_options`
+  sets the backend's `ShutdownDuties` (the connection closer and the
+  `BackgroundWrites` tracker), the composed `GatedRouter` keeps them, and
+  `fuz_http::serve_with_shutdown` — which takes no closer — closes, drains
+  the requests, joins the upkeep, and drains the writes, all within one drain
+  timeout. Compose a live router only over the backend's options: one over
+  `StackOptions::without_backend` carries no duties, and
+  `serve_until_shutdown` refuses it at boot (`StartupError::Config`) when it
+  is handed upkeep, which only a server with a backend has.
 - Consumer teardown (killing child processes) runs after
   `serve_until_shutdown` returns.
 

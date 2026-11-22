@@ -51,7 +51,11 @@ if invocation == ServerInvocation::DbStatus {
     return fuz_db::status::run_db_status_cli(&app_migration_namespaces()).await;
 }
 match run_app(RunAppOptions {
-    spine: SpineRunOptions::production(Arc::new(Argon2idHasher::new()), DEFAULT_ADDR),
+    spine: SpineRunOptions::production(
+        Arc::new(Argon2idHasher::new()),
+        AuthCleanupSchedule::Every(DEFAULT_AUTH_CLEANUP_INTERVAL), // required: there is no default schedule
+        DEFAULT_ADDR,
+    ),
     extra_action_specs_factory: None,
 }).await {
     Ok(()) => ExitCode::SUCCESS,
@@ -65,13 +69,13 @@ pub async fn run_app(options: RunAppOptions) -> Result<(), StartupError> {
     let env = BaseServerEnv::from_process(ENV_OPTIONS)?;
     let addr = env.bind_addr(default_addr)?;
     let shutdown = fuz_http::shutdown_token();
-    let (router, upkeep) = match build_router(&env, backend, extra_action_specs_factory).await? {
-        BuiltRouter::BootOnly(router) => (router, None),
-        BuiltRouter::Live { router, app } => {
-            (router, Some(upkeep_options(app.backend.auth_cleanup_options())))
-        }
+    let router = match build_router(&env, backend, extra_action_specs_factory).await? {
+        BuiltRouter::BootOnly(router) => router,
+        // the backend's auth cleanup rides on the router (its serve duties)
+        BuiltRouter::Live { router, .. } => router,
     };
-    let options = ServeOptions { server_name: SERVER_NAME, addr, drain_timeout, shutdown, upkeep };
+    let extra_upkeep = Vec::new(); // the server's own sweeps, if any
+    let options = ServeOptions { server_name: SERVER_NAME, addr, drain_timeout, shutdown, extra_upkeep };
     serve_until_shutdown(router, options).await
 }
 
@@ -120,15 +124,17 @@ Ok(BuiltRouter::Live { router, app })
   the other chains reference `actor`.
 - `RunAppOptions`, embedding `SpineRunOptions` as `spine` and adding only its
   own seams
-- its `App`, its action specs, its `BuiltRouter` (an enum: the boot-only
-  router alone, or the full router with its app), and an
-  `upkeep_options(auth_cleanup, …) -> UpkeepOptions`
+- its `App`, its action specs, and its `BuiltRouter` (an enum: the boot-only
+  router alone, or the full router with its app)
+- its `AuthCleanupSchedule`, written out in `main` (and in its `testing_*`
+  binary's `testing_backend_options`) — there is no default
 
 **The toolkit owns, and a consumer never re-implements**: the boot
 (`create_app_backend`; its rustdoc has the order), every route state
 (`AppBackend`'s builders), serving and shutdown (`serve_until_shutdown`:
 bind, start upkeep, serve, then within one timeout close live connections,
-drain requests, join upkeep, drain detached writes), the standard command
+drain requests, join upkeep, drain detached writes; a shutdown that ran out
+of time is `StartupError::ShutdownGivenUp`, exit `1`), the standard command
 line (`start`, `db-status`, `--help`; a server with commands of its own
 extends it over `parse_server_invocation`), and the error policy (`StartupError`, whose `exit_code()` is `2` for what the
 operator must fix locally and `1` otherwise).
@@ -240,22 +246,29 @@ suite launches.
 
 **Upkeep**
 
-- Periodic work runs through `ServeOptions::upkeep`: the spine's auth cleanup
-  plus each consumer task in `extra`, a boxed closure taking the shutdown
-  token and calling `fuz_http::spawn_periodic` or a spine sweeper
+- The spine's auth cleanup rides on the router. `SpineBackendOptions`
+  carries an `AuthCleanupSchedule` with no default (`Every(interval)` in
+  production, `Off` for a server held to a twin that sweeps nothing, or a
+  test that must not sweep), and for `Every` the backend's serve duties carry `fuz_auth::AuthCleanup`,
+  a `fuz_http::Upkeep`.
+- A server's own periodic work goes in `ServeOptions::extra_upkeep`: each a
+  boxed closure taking the shutdown token and calling
+  `fuz_http::spawn_periodic` or a spine sweeper
   (`fuz_fact::spawn_orphan_temp_sweeper` for a server with a disk fact
-  store). It starts after the bind, so migrations have run, and must stop on
-  the token: the shutdown joins it within its one bound and aborts it past
-  that. `build_router` spawns nothing.
-- The router carries what its shutdown owes: `AppBackend::stack_options`
-  sets the backend's `ShutdownDuties` (the connection closer and the
-  `BackgroundWrites` tracker), the composed `GatedRouter` keeps them, and
-  `fuz_http::serve_with_shutdown` — which takes no closer — closes, drains
-  the requests, joins the upkeep, and drains the writes, all within one drain
-  timeout. Compose a live router only over the backend's options: one over
-  `StackOptions::without_backend` carries no duties, and
-  `serve_until_shutdown` refuses it at boot (`StartupError::Config`) when it
-  is handed upkeep, which only a server with a backend has.
+  store). All upkeep starts after the bind, so migrations have run, and must
+  stop on the token: the shutdown joins it within its one bound and aborts
+  it past that. `build_router` spawns nothing.
+- The router carries what serving it owes: `AppBackend::stack_options`
+  sets the backend's `ServeDuties` (the auth cleanup, the connection closer
+  and the `BackgroundWrites` tracker), the composed `GatedRouter` keeps them,
+  and `fuz_http::serve_with_shutdown` — which takes no closer — spawns the
+  upkeep, then at shutdown closes, drains the requests, joins the upkeep,
+  and drains the writes, all within one drain timeout. Compose a live router
+  only over the backend's options: one over `StackOptions::without_backend`
+  carries no duties, and is served with no cleanup, no close and no drain.
+- A shutdown that gives up on anything is a failed exit:
+  `serve_until_shutdown` returns `StartupError::ShutdownGivenUp` with the
+  counts (exit `1`), and prints no `shutdown complete` line.
 - Consumer teardown (killing child processes) runs after
   `serve_until_shutdown` returns.
 

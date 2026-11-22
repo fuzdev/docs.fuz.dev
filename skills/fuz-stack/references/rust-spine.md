@@ -65,18 +65,19 @@ pub async fn run_app(options: RunAppOptions) -> Result<(), StartupError> {
     let env = BaseServerEnv::from_process(ENV_OPTIONS)?;
     let addr = env.bind_addr(default_addr)?;
     let shutdown = fuz_http::shutdown_token();
-    let BuiltRouter { router, app } =
-        build_router(&env, backend, extra_action_specs_factory).await?;
-    serve_until_shutdown(router, ServeOptions {
-        server_name: SERVER_NAME, addr, drain_timeout, shutdown,
-        connection_closer: app.as_ref().map(|app| app.backend.connection_closer()),
-        upkeep: app.as_ref().map(|app| upkeep_options(app.backend.auth_cleanup_options())),
-    }).await
+    let mode = match build_router(&env, backend, extra_action_specs_factory).await? {
+        BuiltRouter::BootOnly(router) => ServeMode::BootOnly(router),
+        BuiltRouter::Live { router, app } => ServeMode::Live {
+            router,
+            backend: app.backend.serve_backend(Some(upkeep_options(app.backend.auth_cleanup_options()))),
+        },
+    };
+    serve_until_shutdown(mode, ServeOptions { server_name: SERVER_NAME, addr, drain_timeout, shutdown }).await
 }
 
 // router.rs, the body of build_router(env, backend_options, extra_action_specs_factory)
 if env.database_url.is_none() {
-    return Ok(BuiltRouter { router: boot_only(env, &APP_BACKEND_SPEC, SERVER_NAME)?, app: None });
+    return Ok(BuiltRouter::BootOnly(boot_only(env, &APP_BACKEND_SPEC, SERVER_NAME)?));
 }
 let BootedAppBackend { backend, ready } = create_app_backend(env, &APP_BACKEND_SPEC, backend_options).await?;
 let app = App::new(backend); // the consumer's domain state, holding the backend
@@ -102,7 +103,7 @@ let group = RouteGroup::new(
     BodyCap::Bytes(DEFAULT_BODY_LIMIT_BYTES),
 );
 let router = compose_stack([group], fallback_group(), &backend.stack_options());
-Ok(BuiltRouter { router, app: Some(app) })
+Ok(BuiltRouter::Live { router, app })
 ```
 
 **The consumer declares**:
@@ -119,7 +120,8 @@ Ok(BuiltRouter { router, app: Some(app) })
   the other chains reference `actor`.
 - `RunAppOptions`, embedding `SpineRunOptions` as `spine` and adding only its
   own seams
-- its `App`, its action specs, its `BuiltRouter`, and an
+- its `App`, its action specs, its `BuiltRouter` (an enum: the
+  `BootOnlyRouter` alone, or the full router with its app), and an
   `upkeep_options(auth_cleanup, …) -> UpkeepOptions`
 
 **The toolkit owns, and a consumer never re-implements**: the boot
@@ -233,14 +235,20 @@ suite launches.
 
 **Upkeep**
 
-- Periodic work runs through `ServeOptions::upkeep`: the spine's auth cleanup
+- Periodic work runs through the `upkeep` handed to
+  `AppBackend::serve_backend`: the spine's auth cleanup
   plus each consumer task in `extra`, a boxed closure taking the shutdown
   token and calling `fuz_http::spawn_periodic` or a spine sweeper
   (`fuz_fact::spawn_orphan_temp_sweeper` for a server with a disk fact
   store). It starts after the bind, so migrations have run, and is joined
   before `serve_until_shutdown` returns. `build_router` spawns nothing.
-- Pass the closer the app already holds (`backend.connection_closer()`), so
-  a swept session's connections close.
+- `ServeMode::Live` pairs the full router with its backend's
+  `ServeBackend` (the closer shutdown closes live connections through, the
+  detached writes it drains), so through `serve_until_shutdown` a live
+  router never serves without them; `ServeMode::BootOnly` takes only the
+  `BootOnlyRouter` that `boot_only` builds. The guarantee is
+  `serve_until_shutdown`'s: `fuz_http::serve_with_shutdown`, the transport
+  primitive below it, takes any closer.
 - Consumer teardown (killing child processes) runs after
   `serve_until_shutdown` returns.
 

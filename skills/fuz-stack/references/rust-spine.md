@@ -214,7 +214,12 @@ suite launches.
   with `fuz_http::RouteParams<T>` as its first extractor that can refuse,
   never axum's `Query` or `Path`: those decode leniently and refuse in plain
   text. An undecodable query is `invalid_query_params`, a param
-  `invalid_route_params` (./twin-impl.md §Request input).
+  `invalid_route_params` (./twin-impl.md §Request input). The fuz
+  workspace enforces it with clippy's `disallowed-types` and
+  `disallowed-methods` (axum's `Path`, `RawPathParams`, `Query` and `Form`,
+  `form_urlencoded::parse`, `Url::query_pairs`); a consumer workspace copies
+  those entries into its own `clippy.toml`, which replaces rather than
+  merges with any other.
 - Route each path in one `RouteGroup`: each group's method router carries
   the 405 fallback, and `compose_stack` panics at boot on a path split
   across two. A server with a static or SPA fallback of its own answers an
@@ -308,7 +313,13 @@ fn thing_get_spec() -> ActionSpec {
   on `post_commit_effects` and run after the commit.
 - Code that opens its own transaction (a hand-written route, a task) commits
   with `fuz_db::commit_checked`, which refuses to commit a transaction a
-  swallowed statement error already aborted.
+  swallowed statement error already aborted. That commit also marks the
+  request, so a client that drops it past the commit no longer cancels
+  what follows (`fuz_db::CommitWatch`). An autocommit write on a pooled
+  client, or a commit on a task the request spawns, marks nothing: a
+  request write with a tail (a broadcast, a close, an effect, an audit
+  row) goes in a transaction committed through `commit_checked`, or keeps
+  its tail on the task that commits.
 - Gate reads by the action's `AuthSpec`, not by which transport it arrived
   on.
 

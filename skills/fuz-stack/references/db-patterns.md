@@ -26,12 +26,19 @@ export const query_create_invite = async (
 	deps: QueryDeps,
 	input: CreateInviteInput
 ): Promise<Invite> => {
-	const row = await deps.db.query_one<Invite>(
-		`INSERT INTO invite (email, username, created_by)
-		 VALUES ($1, $2, $3)
-		 RETURNING ${columns_sql(INVITE_COLUMNS, invite_expr(''))}`,
-		[input.email ?? null, input.username ?? null, input.created_by]
-	);
+	// … the issuer rule first: lock its account, refuse an inactive one (§Locks and order)
+	let row;
+	try {
+		row = await deps.db.query_one<Invite>(
+			`INSERT INTO invite (email, username, created_by)
+			 VALUES ($1, $2, $3)
+			 RETURNING ${columns_sql(INVITE_COLUMNS, invite_expr(''))}`,
+			[input.email ?? null, input.username ?? null, input.created_by]
+		);
+	} catch (err: unknown) {
+		if (is_pg_unique_violation(err)) throw new InviteDuplicateError();
+		throw err;
+	}
 	return assert_row(row, 'INSERT INTO invite');
 };
 ```
@@ -43,8 +50,10 @@ export const query_create_invite = async (
 - **`INSERT … RETURNING` rows pass through `assert_row(row, context)`** in
   TS: a missing row on an insert is a bug, not a not-found.
 - **A unique violation surfaces as Postgres `23505`**
-  (`is_pg_unique_violation`). The handler maps it to a wire error. A rule,
-  by contrast, belongs in the query (§Locks and order).
+  (`is_pg_unique_violation`). A query a consumer may call maps it to a typed
+  error (`InviteDuplicateError`, `InviteCreateError::Duplicate`), and the
+  handler maps that to a wire error. A rule, by contrast, belongs in the
+  query (§Locks and order).
 - **Transactions are the caller's.** A query takes whatever handle it's given
   (pool or transaction) and never opens its own.
 - **A bulk delete whose rows have a post-commit effect returns their ids**,

@@ -24,8 +24,8 @@
 		<link href="/_app/immutable/chunks/BVD6feMB.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CqwOFnF0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Ca92e7Wu.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.SS_LbiBC.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.CzpL5x4F.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CSr7qELL.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.fDHsoNzO.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/tGSav42S.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CzM4Strj.js" rel="modulepreload">
@@ -34,17 +34,17 @@
 		<link href="/_app/immutable/chunks/I43VcF-0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dhra7MwJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DH3EA9C4.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DPtltFxB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DHi_evLC.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BNQrbBnx.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/C3r36__a.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DRual-Je.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Ci0j2YBJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BnG-MPC6.js" rel="modulepreload">
 		<link href="/_app/immutable/nodes/2.D3d_i9nN.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/28.C4MvnjSJ.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/28.CdfzB7Eo.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BOKZrYN9.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/D7jy1q1g.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/D0Iuj-af.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D6McuMuf.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><!--1p7q6x9--><!--[0--><style media="(max-width: 800px)">
 			@layer fuz_ui.app_shell_base, fuz_ui.app_shell_narrow;
 			@layer fuz_ui.app_shell_narrow {
@@ -54,6 +54,7 @@
 				.app-shell > .app-shell-sidebar {
 					visibility: hidden;
 					top: 0;
+					left: 0;
 					height: 100%;
 					translate: -100% 0;
 					width: min(var(--sidebar_width), 85vw);
@@ -87,7 +88,7 @@
 		</style><!--]--><!----><!--1ft64a3--><!----><title>Database Query Patterns - fuz-stack - docs.fuz.dev</title>
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/_virtual_pkg.C59yMZ2n.css" rel="stylesheet">
-		<link href="/_app/immutable/assets/0.CoMNhNoB.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.DSTINdVD.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/SkillDocPage.BIYMVdcU.css" rel="stylesheet">
 	</head>
 	<body data-sveltekit-preload-data="hover">
@@ -106,20 +107,29 @@ sides.<!--]--><!--]--><!----></p><!--]--><!--[15--><!--[0--><!--[--><code data-l
 	deps<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">QueryDeps</span></span></span><span class="token_punctuation">,</span>
 	input<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">CreateInviteInput</span></span></span>
 <span class="token_punctuation">)</span><span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">Promise</span><span class="token_operator">&lt;</span><span class="token_type_name token_class_name">Invite</span><span class="token_operator">></span></span></span> <span class="token_operator">=></span> <span class="token_punctuation">{</span>
-	<span class="token_keyword">const</span> row <span class="token_operator">=</span> <span class="token_special_keyword">await</span> deps<span class="token_punctuation">.</span>db<span class="token_punctuation">.</span><span class="token_generic_function"><span class="token_function">query_one</span><span class="token_generic token_class_name"><span class="token_operator">&lt;</span><span class="token_type_name token_class_name">Invite</span><span class="token_operator">></span></span></span><span class="token_punctuation">(</span>
-		<span class="token_template_string"><span class="token_template_punctuation token_string">`</span><span class="token_string">INSERT INTO invite (email, username, created_by)
-		 VALUES ($1, $2, $3)
-		 RETURNING </span><span class="token_interpolation"><span class="token_interpolation_punctuation token_punctuation">${</span><span class="token_function">columns_sql</span><span class="token_punctuation">(</span><span class="token_constant">INVITE_COLUMNS</span><span class="token_punctuation">,</span> <span class="token_function">invite_expr</span><span class="token_punctuation">(</span><span class="token_string">''</span><span class="token_punctuation">))</span><span class="token_interpolation_punctuation token_punctuation">}</span></span><span class="token_template_punctuation token_string">`</span></span><span class="token_punctuation">,</span>
-		<span class="token_punctuation">[</span>input<span class="token_punctuation">.</span>email <span class="token_operator">??</span> <span class="token_keyword">null</span><span class="token_punctuation">,</span> input<span class="token_punctuation">.</span>username <span class="token_operator">??</span> <span class="token_keyword">null</span><span class="token_punctuation">,</span> input<span class="token_punctuation">.</span>created_by<span class="token_punctuation">]</span>
-	<span class="token_punctuation">);</span>
+	<span class="token_comment">// … the issuer rule first: lock its account, refuse an inactive one (§Locks and order)</span>
+	<span class="token_keyword">let</span> row<span class="token_punctuation">;</span>
+	<span class="token_special_keyword">try</span> <span class="token_punctuation">{</span>
+		row <span class="token_operator">=</span> <span class="token_special_keyword">await</span> deps<span class="token_punctuation">.</span>db<span class="token_punctuation">.</span><span class="token_generic_function"><span class="token_function">query_one</span><span class="token_generic token_class_name"><span class="token_operator">&lt;</span><span class="token_type_name token_class_name">Invite</span><span class="token_operator">></span></span></span><span class="token_punctuation">(</span>
+			<span class="token_template_string"><span class="token_template_punctuation token_string">`</span><span class="token_string">INSERT INTO invite (email, username, created_by)
+			 VALUES ($1, $2, $3)
+			 RETURNING </span><span class="token_interpolation"><span class="token_interpolation_punctuation token_punctuation">${</span><span class="token_function">columns_sql</span><span class="token_punctuation">(</span><span class="token_constant">INVITE_COLUMNS</span><span class="token_punctuation">,</span> <span class="token_function">invite_expr</span><span class="token_punctuation">(</span><span class="token_string">''</span><span class="token_punctuation">))</span><span class="token_interpolation_punctuation token_punctuation">}</span></span><span class="token_template_punctuation token_string">`</span></span><span class="token_punctuation">,</span>
+			<span class="token_punctuation">[</span>input<span class="token_punctuation">.</span>email <span class="token_operator">??</span> <span class="token_keyword">null</span><span class="token_punctuation">,</span> input<span class="token_punctuation">.</span>username <span class="token_operator">??</span> <span class="token_keyword">null</span><span class="token_punctuation">,</span> input<span class="token_punctuation">.</span>created_by<span class="token_punctuation">]</span>
+		<span class="token_punctuation">);</span>
+	<span class="token_punctuation">}</span> <span class="token_special_keyword">catch</span> <span class="token_punctuation">(</span>err<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_builtin">unknown</span></span></span><span class="token_punctuation">)</span> <span class="token_punctuation">{</span>
+		<span class="token_special_keyword">if</span> <span class="token_punctuation">(</span><span class="token_function">is_pg_unique_violation</span><span class="token_punctuation">(</span>err<span class="token_punctuation">))</span> <span class="token_special_keyword">throw</span> <span class="token_keyword">new</span> <span class="token_class_name">InviteDuplicateError</span><span class="token_punctuation">();</span>
+		<span class="token_special_keyword">throw</span> err<span class="token_punctuation">;</span>
+	<span class="token_punctuation">}</span>
 	<span class="token_special_keyword">return</span> <span class="token_function">assert_row</span><span class="token_punctuation">(</span>row<span class="token_punctuation">,</span> <span class="token_string">'INSERT INTO invite'</span><span class="token_punctuation">);</span>
 <span class="token_punctuation">};</span><!----><!--]--></code><!--]--><!--]--><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Values are parameterized, never interpolated.<!--]--><!--]--><!----></strong><!--]--><!--[2--> Only column references,
 <!--]--><!--[3--><!--[-1--><code>$N::type</code><!--]--><!--]--><!--[2--> placeholders, and projection consts are spliced into the text.
 A dynamic identifier (a table name in DDL or <!--]--><!--[3--><!--[-1--><code>TRUNCATE</code><!--]--><!--]--><!--[2-->) passes through
 <!--]--><!--[3--><!--[-1--><code>assert_valid_sql_identifier</code><!--]--><!--]--><!--[2--> first.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>INSERT … RETURNING</code><!--]--><!--]--><!--[2--> rows pass through <!--]--><!--[3--><!--[-1--><code>assert_row(row, context)</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> in
 TS: a missing row on an insert is a bug, not a not-found.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A unique violation surfaces as Postgres <!--]--><!--[3--><!--[-1--><code>23505</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2-->
-(<!--]--><!--[3--><!--[-1--><code>is_pg_unique_violation</code><!--]--><!--]--><!--[2-->). The handler, not the query, turns it into a
-wire error.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Transactions are the caller's.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A query takes whatever handle it's given
+(<!--]--><!--[3--><!--[-1--><code>is_pg_unique_violation</code><!--]--><!--]--><!--[2-->). A query a consumer may call maps it to a typed
+error (<!--]--><!--[3--><!--[-1--><code>InviteDuplicateError</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>InviteCreateError::Duplicate</code><!--]--><!--]--><!--[2-->), and the
+handler maps that to a wire error. A rule, by contrast, belongs in the
+query (§Locks and order).<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Transactions are the caller's.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A query takes whatever handle it's given
 (pool or transaction) and never opens its own.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A bulk delete whose rows have a post-commit effect returns their ids<!--]--><!--]--><!----></strong><!--]--><!--[2-->,
 not a count (<!--]--><!--[3--><!--[-1--><code>query_session_cleanup_expired</code><!--]--><!--]--><!--[2-->): the caller commits, then
 closes the connections of exactly what it deleted. Effects that leave the
@@ -226,7 +236,42 @@ own tables. Never copy a spine chain's
 table list into a consumer, so a spine table addition reaches every
 registry through one edit.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->An action handler never commits; the dispatcher does. Code that opens its
 own transaction commits with <!--]--><!--[3--><!--[-1--><code>fuz_db::commit_checked</code><!--]--><!--]--><!--[2--> (see
-<!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/rust-spine"><!--[--><!--[2-->./rust-spine<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2-->).<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="anti-patterns"><!--[--><!--[2-->Anti-patterns<!--]--><!--]--><!----></h2><!----><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>SELECT *</code><!--]--><!--]--><!--[2--> or <!--]--><!--[3--><!--[-1--><code>RETURNING *</code><!--]--><!--]--><!--[2--> on a table read, "mapper-fed" or not. The
+<!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/rust-spine"><!--[--><!--[2-->./rust-spine<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2-->).<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="locks-and-order"><!--[--><!--[2-->Locks and order<!--]--><!--]--><!----></h2><!----><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A row that carries a credential or authority is inserted under its
+principal's account-row lock, with the re-check.<!--]--><!--]--><!----></strong><!--]--><!--[2--> Run the lock first in
+the inserting transaction (<!--]--><!--[3--><!--[-1--><code>query_account_lock_verified</code><!--]--><!--]--><!--[2--> for a login,
+<!--]--><!--[3--><!--[-1--><code>query_account_lock_live</code><!--]--><!--]--><!--[2--> for a token — both <!--]--><!--[3--><!--[-1--><code>FOR NO KEY UPDATE</code><!--]--><!--]--><!--[2-->, so two
+mints of one account take turns and a cap never counts stale), and refuse
+when the account is gone or its hash changed. A password change and a
+delete write the account row before they revoke, so a mint either waits
+and is refused or commits first and is revoked. The insert's own
+foreign-key lock never conflicts with that write.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->One class order everywhere<!--]--><!--]--><!----></strong><!--]--><!--[2-->: accounts, then the rows that hang off them
+(credentials, offers, invites), then grants and actors — each class in id
+order. Every writer of an account takes its row first, a purge too
+(<!--]--><!--[3--><!--[-1--><code>query_account_lock_for_purge</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>FOR UPDATE</code><!--]--><!--]--><!--[2-->, before it revokes the
+credentials its cascade would otherwise delete in plan order). A new
+transaction that takes rows in another order is the next deadlock.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Lock several rows of one class in one statement, in id order<!--]--><!--]--><!----></strong><!--]--><!--[2-->
+(<!--]--><!--[3--><!--[-1--><code>query_account_lock_live_many</code><!--]--><!--]--><!--[2-->; <!--]--><!--[3--><!--[-1--><code>ORDER BY</code><!--]--><!--]--><!--[2--> the ids on a locking read that
+feeds a count, as the last-admin guard does). Two transactions that take
+two rows in opposite orders deadlock.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A multi-row write locks its rows first, in one id-ordered statement<!--]--><!--]--><!----></strong><!--]--><!--[2-->
+(<!--]--><!--[3--><!--[-1--><code>WHERE id IN (SELECT id … ORDER BY id FOR UPDATE)</code><!--]--><!--]--><!--[2-->), an <!--]--><!--[3--><!--[-1--><code>UPDATE</code><!--]--><!--]--><!--[2--> as much
+as a <!--]--><!--[3--><!--[-1--><code>DELETE</code><!--]--><!--]--><!--[2-->: a bare one walks whatever order the plan picks, a cached
+generic plan included, and two of them deadlock. A transaction that writes
+rows in two statements (an offer cascade's incoming and outgoing halves)
+locks all of them in one statement before either write.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Two rows at two strengths is two statements<!--]--><!--]--><!----></strong><!--]--><!--[2-->, lower id first — one
+locking clause takes one strength.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A later statement writes only the rows its lock took<!--]--><!--]--><!----></strong><!--]--><!--[2--> — name the locked
+ids, or hold the parent rows (the account) that keep a new row out; a fresh
+predicate picks up rows created in between, out of order.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A cascade's writes count.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A <!--]--><!--[3--><!--[-1--><code>DELETE</code><!--]--><!--]--><!--[2--> whose foreign keys cascade or
+<!--]--><!--[3--><!--[-1--><code>SET NULL</code><!--]--><!--]--><!--[2--> into other parents' rows writes those rows in heap order: lock
+their parents first, in the class order.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Take the weakest lock that conflicts with every write the rule guards
+against.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A guard that must order removals takes <!--]--><!--[3--><!--[-1--><code>FOR NO KEY UPDATE</code><!--]--><!--]--><!--[2-->,
+not <!--]--><!--[3--><!--[-1--><code>FOR UPDATE</code><!--]--><!--]--><!--[2-->: the foreign-key key share of an insert naming the row
+only adds, and blocking it deadlocks inserts that already hold a lock the
+guard wants next.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A cascade's returned rows are ordered<!--]--><!--]--><!----></strong><!--]--><!--[2--> when anything downstream is
+compared across spines (audit rows, notifications). A CTE over
+<!--]--><!--[3--><!--[-1--><code>UPDATE … RETURNING</code><!--]--><!--]--><!--[2--> with an ordered outer select does it; unordered, the
+spines' audit logs differ.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A rule a caller can reach by calling a query lives in the query<!--]--><!--]--><!----></strong><!--]--><!--[2-->, as a
+typed error (<!--]--><!--[3--><!--[-1--><code>RoleGrantOfferError::RecipientNotActive</code><!--]--><!--]--><!--[2-->), not only in the
+spine's handler, so a consumer calling the query directly gets it.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="anti-patterns"><!--[--><!--[2-->Anti-patterns<!--]--><!--]--><!----></h2><!----><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>SELECT *</code><!--]--><!--]--><!--[2--> or <!--]--><!--[3--><!--[-1--><code>RETURNING *</code><!--]--><!--]--><!--[2--> on a table read, "mapper-fed" or not. The
 mapper narrows the wire, not the read. (Inside a CTE whose outer select
 projects through the const is fine.)<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A second column list: a qualified copy, a <!--]--><!--[3--><!--[-1--><code>SELECT id, name</code><!--]--><!--]--><!--[2--> typed at one
 site, a shared hand-typed list decoded by integer index.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Folding a derived expression into the const.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[2-->Related: <!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/testing-patterns"><!--[--><!--[2-->./testing-patterns<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>describe_db</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>.db.test.ts</code><!--]--><!--]--><!--[2-->),
@@ -241,16 +286,16 @@ site, a shared hand-typed list decoded by integer index.<!--]--><!--]--><!----><
 			
 			<script>
 				{
-					__sveltekit_v986jf = {
+					__sveltekit_5jy0qt = {
 						base: "",
-						version: "a7e9844b4ed0662fa85f1f7773a22f2f77a74e0b"
+						version: "629949baf38a1871356ad2d6bef890a7a308ddee"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.DUOMWNPK.js").then(async (kit) => {
-						kit.init(__sveltekit_v986jf);
-						const app = await import("/_app/immutable/entry/app.SS_LbiBC.js");
+						kit.init(__sveltekit_5jy0qt);
+						const app = await import("/_app/immutable/entry/app.CSr7qELL.js");
 						kit.start(app, element, {
 							node_ids: [0, 2, 28],
 							data: [null,null,null],

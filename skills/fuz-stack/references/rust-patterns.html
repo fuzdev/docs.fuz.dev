@@ -24,8 +24,8 @@
 		<link href="/_app/immutable/chunks/BVD6feMB.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CqwOFnF0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Ca92e7Wu.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.SS_LbiBC.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.CzpL5x4F.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CSr7qELL.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.fDHsoNzO.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/tGSav42S.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CzM4Strj.js" rel="modulepreload">
@@ -34,17 +34,17 @@
 		<link href="/_app/immutable/chunks/I43VcF-0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dhra7MwJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DH3EA9C4.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DPtltFxB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DHi_evLC.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BNQrbBnx.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/C3r36__a.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DRual-Je.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Ci0j2YBJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BnG-MPC6.js" rel="modulepreload">
 		<link href="/_app/immutable/nodes/2.D3d_i9nN.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/37.DWrbaJUL.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/37.LxFyj5Gl.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BOKZrYN9.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/D7jy1q1g.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/D0Iuj-af.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D6McuMuf.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><!--1p7q6x9--><!--[0--><style media="(max-width: 800px)">
 			@layer fuz_ui.app_shell_base, fuz_ui.app_shell_narrow;
 			@layer fuz_ui.app_shell_narrow {
@@ -54,6 +54,7 @@
 				.app-shell > .app-shell-sidebar {
 					visibility: hidden;
 					top: 0;
+					left: 0;
 					height: 100%;
 					translate: -100% 0;
 					width: min(var(--sidebar_width), 85vw);
@@ -87,7 +88,7 @@
 		</style><!--]--><!----><!--1ft64a3--><!----><title>Rust Patterns - fuz-stack - docs.fuz.dev</title>
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/_virtual_pkg.C59yMZ2n.css" rel="stylesheet">
-		<link href="/_app/immutable/assets/0.CoMNhNoB.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.DSTINdVD.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/SkillDocPage.BIYMVdcU.css" rel="stylesheet">
 	</head>
 	<body data-sveltekit-preload-data="hover">
@@ -391,7 +392,8 @@ with <!--]--><!--[3--><!--[-1--><code>--ignored --test-threads=1</code><!--]--><
 per test). Write and run them locally. A crate that gains one joins the CI
 job's <!--]--><!--[3--><!--[-1--><code>-p</code><!--]--><!--]--><!--[2--> list by hand, and a missing entry leaves the job green with the
 suite never run, so a test holds that list to the tree (fuz's
-<!--]--><!--[3--><!--[-1--><code>db_suite_lists.rs</code><!--]--><!--]--><!--[2-->). A workspace with such a job has one.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A gated suite never passes by skipping.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A test that needs an external
+<!--]--><!--[3--><!--[-1--><code>db_suite_lists.rs</code><!--]--><!--]--><!--[2-->). A workspace with such a job has one. A race is made
+exact, not hammered (<!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/testing-patterns"><!--[--><!--[2-->./testing-patterns<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2--> §Tests that pin a change).<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A gated suite never passes by skipping.<!--]--><!--]--><!----></strong><!--]--><!--[2--> A test that needs an external
 program returns early where it's absent, and one sentinel test fails
 naming every missing program unless an explicit <!--]--><!--[3--><!--[-1--><code>*_ALLOW_NO_&lt;NAME>=1</code><!--]--><!--]--><!--[2-->
 accepts it (zap's <!--]--><!--[3--><!--[-1--><code>required_programs.rs</code><!--]--><!--]--><!--[2-->). Where a stand-in binary can replace the program,
@@ -426,7 +428,21 @@ the TS tools use too (zap's convergence, the prune and release-log
 commands). An installer or builder executes by default and takes
 <!--]--><!--[3--><!--[-1--><code>--dry-run</code><!--]--><!--]--><!--[2--> (<!--]--><!--[3--><!--[-1--><code>fuzi</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>fuz artifact build</code><!--]--><!--]--><!--[2-->). A new destructive command takes
 the first form.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[3--><!--[-1--><code>--json</code><!--]--><!--]--><!--]--><!----></strong><!--]--><!--[2--> is the machine surface: results on stdout, a stable
-snake_case <!--]--><!--[3--><!--[-1--><code>error.kind</code><!--]--><!--]--><!--[2--> on failure. Library code prints nothing.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h3 id="exit-codes"><!--[--><!--[2-->Exit codes<!--]--><!--]--><!----></h3><!----><!--]--><!--[8--><p><!--[--><!--[2-->A small, stable contract: settle it early, document the table in the crate
+snake_case <!--]--><!--[3--><!--[-1--><code>error.kind</code><!--]--><!--]--><!--[2--> on failure. Library code prints nothing.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h3 id="a-binarys-name"><!--[--><!--[2-->A binary's name<!--]--><!--]--><!----></h3><!----><!--]--><!--[8--><p><!--[--><!--[2-->A program is shipped under one name and developed under another, so nothing
+it writes may assume either.<!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->No literal of its own name.<!--]--><!--]--><!----></strong><!--]--><!--[2--> Usage text, hints, and error messages take
+the name from one constant, or from the name the program was invoked as,
+escaped for display. A test's expected output holds a placeholder for it.
+Renaming the binary is then one line.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->A development build takes a prefixed name, and the shipped artifact the
+plain one.<!--]--><!--]--><!----></strong><!--]--><!--[2--> gro's runtime develops as <!--]--><!--[3--><!--[-1--><code>fgro</code><!--]--><!--]--><!--[2--> and ships as <!--]--><!--[3--><!--[-1--><code>gro</code><!--]--><!--]--><!--[2-->, so a
+build from the checkout never stands in for the installed tool on <!--]--><!--[3--><!--[-1--><code>PATH</code><!--]--><!--]--><!--[2-->,
+and prose can say which one it means while the two differ.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Config is named for the role, never for the development binary.<!--]--><!--]--><!----></strong><!--]--><!--[2--> An
+environment variable, a flag, a lock-file field, or a wire field that
+points at another tool says what the tool is (<!--]--><!--[3--><!--[-1--><code>ZAP_GRO</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>--gro</code><!--]--><!--]--><!--[2-->,
+<!--]--><!--[3--><!--[-1--><code>gro_blake3</code><!--]--><!--]--><!--[2-->), since these outlive the development name and a lock or wire
+field costs a version bump to rename. zap's <!--]--><!--[3--><!--[-1--><code>ZAP_FGRO</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>--fgro</code><!--]--><!--]--><!--[2-->, and
+<!--]--><!--[3--><!--[-1--><code>fgro_blake3</code><!--]--><!--]--><!--[2--> predate the rule and move before gro's binary ships.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->An installed development copy sits at a path no build overwrites<!--]--><!--]--><!----></strong><!--]--><!--[2-->, and
+is updated deliberately. A tool that pins another by hash pins that copy,
+never one in a build tree.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h3 id="exit-codes"><!--[--><!--[2-->Exit codes<!--]--><!--]--><!----></h3><!----><!--]--><!--[8--><p><!--[--><!--[2-->A small, stable contract: settle it early, document the table in the crate
 doc, assert each category in a test. <!--]--><!--[4--><strong><!--[--><!--[2-->Key codes to what the caller must do
 next, not to the error's type.<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Default dialect<!--]--><!--]--><!----></strong><!--]--><!--[2-->: <!--]--><!--[3--><!--[-1--><code>0</code><!--]--><!--]--><!--[2--> success; <!--]--><!--[3--><!--[-1--><code>2</code><!--]--><!--]--><!--[2--> the caller must change something
 local before running again (arguments, config, credentials); <!--]--><!--[3--><!--[-1--><code>1</code><!--]--><!--]--><!--[2-->
@@ -527,16 +543,16 @@ alone. CLIs write diagnostics to stderr and results to stdout.<!--]--><!--]--><!
 			
 			<script>
 				{
-					__sveltekit_v986jf = {
+					__sveltekit_5jy0qt = {
 						base: "",
-						version: "a7e9844b4ed0662fa85f1f7773a22f2f77a74e0b"
+						version: "629949baf38a1871356ad2d6bef890a7a308ddee"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.DUOMWNPK.js").then(async (kit) => {
-						kit.init(__sveltekit_v986jf);
-						const app = await import("/_app/immutable/entry/app.SS_LbiBC.js");
+						kit.init(__sveltekit_5jy0qt);
+						const app = await import("/_app/immutable/entry/app.CSr7qELL.js");
 						kit.start(app, element, {
 							node_ids: [0, 2, 37],
 							data: [null,null,null],

@@ -24,8 +24,8 @@
 		<link href="/_app/immutable/chunks/BVD6feMB.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CqwOFnF0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Ca92e7Wu.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.SS_LbiBC.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.CzpL5x4F.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CSr7qELL.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.fDHsoNzO.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/tGSav42S.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CzM4Strj.js" rel="modulepreload">
@@ -34,17 +34,17 @@
 		<link href="/_app/immutable/chunks/I43VcF-0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dhra7MwJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DH3EA9C4.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DPtltFxB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DHi_evLC.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BNQrbBnx.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/C3r36__a.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DRual-Je.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Ci0j2YBJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BnG-MPC6.js" rel="modulepreload">
 		<link href="/_app/immutable/nodes/2.D3d_i9nN.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/29.DZgG2UTG.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/29.B-d8ui0j.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BOKZrYN9.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/D7jy1q1g.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/D0Iuj-af.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D6McuMuf.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><!--1p7q6x9--><!--[0--><style media="(max-width: 800px)">
 			@layer fuz_ui.app_shell_base, fuz_ui.app_shell_narrow;
 			@layer fuz_ui.app_shell_narrow {
@@ -54,6 +54,7 @@
 				.app-shell > .app-shell-sidebar {
 					visibility: hidden;
 					top: 0;
+					left: 0;
 					height: 100%;
 					translate: -100% 0;
 					width: min(var(--sidebar_width), 85vw);
@@ -87,7 +88,7 @@
 		</style><!--]--><!----><!--1ft64a3--><!----><title>Dependency Injection - fuz-stack - docs.fuz.dev</title>
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/_virtual_pkg.C59yMZ2n.css" rel="stylesheet">
-		<link href="/_app/immutable/assets/0.CoMNhNoB.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.DSTINdVD.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/SkillDocPage.BIYMVdcU.css" rel="stylesheet">
 	</head>
 	<body data-sveltekit-preload-data="hover">
@@ -210,15 +211,15 @@ closer's <!--]--><!--[3--><!--[-1--><code>add</code><!--]--><!--]--><!--[2-->. E
 runs its removers when assembly throws and when it closes.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="shapes"><!--[--><!--[2-->Shapes<!--]--><!--]--><!----></h2><!----><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Required first parameter<!--]--><!--]--><!----></strong><!--]--><!--[2--> for internal and library functions:
 <!--]--><!--[3--><!--[-1--><code>create_account_route_specs(deps: RouteFactoryDeps, options: AccountRouteOptions)</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Optional with a default<!--]--><!--]--><!----></strong><!--]--><!--[2--> at a public surface whose callers shouldn't
 have to wire it: fuz_css's generator options take <!--]--><!--[3--><!--[-1--><code>deps = default_fs_deps</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->One function's own interface<!--]--><!--]--><!----></strong><!--]--><!--[2--> when a combination is unique and sharing
-it would only couple things. It may mix in data, deliberately:<!--]--><!--[15--><!--[0--><!--[--><code data-lang="typescript" class="svelte-jqsy8a"><!--[-1--><!----><span class="token_comment">// fuz_app auth/bootstrap_account.ts (comments trimmed)</span>
+it would only couple things:<!--]--><!--[15--><!--[0--><!--[--><code data-lang="typescript" class="svelte-jqsy8a"><!--[-1--><!----><span class="token_comment">// fuz_app auth/bootstrap_account.ts (comments trimmed)</span>
 <span class="token_special_keyword">export</span> <span class="token_keyword">interface</span> <span class="token_class_name">BootstrapAccountDeps</span> <span class="token_punctuation">{</span>
 	db<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">Db</span></span></span><span class="token_punctuation">;</span>
-	token_path<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_builtin">string</span></span></span><span class="token_punctuation">;</span>
-	<span class="token_function_variable token_function">read_secure_file</span><span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_punctuation">(</span>path<span class="token_operator">:</span> <span class="token_builtin">string</span><span class="token_punctuation">)</span> <span class="token_operator">=></span> <span class="token_type_name token_class_name">Promise</span><span class="token_operator">&lt;</span><span class="token_type_name token_class_name">Uint8Array</span><span class="token_operator">></span></span></span><span class="token_punctuation">;</span>
-	<span class="token_function_variable token_function">delete_file</span><span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_punctuation">(</span>path<span class="token_operator">:</span> <span class="token_builtin">string</span><span class="token_punctuation">)</span> <span class="token_operator">=></span> <span class="token_type_name token_class_name">Promise</span><span class="token_operator">&lt;</span><span class="token_keyword">void</span><span class="token_operator">></span></span></span><span class="token_punctuation">;</span>
+	token_store<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">BootstrapTokenStore</span></span></span><span class="token_punctuation">;</span>
 	password<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">Pick</span><span class="token_operator">&lt;</span><span class="token_type_name token_class_name">PasswordHashDeps</span><span class="token_punctuation">,</span> <span class="token_string">'hash_password'</span><span class="token_operator">></span></span></span><span class="token_punctuation">;</span>
+	keyring<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">Keyring</span></span></span><span class="token_punctuation">;</span>
 	log<span class="token_type_annotation"><span class="token_operator">:</span> <span class="token_type"><span class="token_type_name token_class_name">Logger</span></span></span><span class="token_punctuation">;</span>
-<span class="token_punctuation">}</span><!----><!--]--></code><!--]--><!--]--><!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Files<!--]--><!--]--><!----></strong><!--]--><!--[2-->, in fuz_css's layout: interfaces in <!--]--><!--[3--><!--[-1--><code>deps.ts</code><!--]--><!--]--><!--[2-->, production
+<span class="token_punctuation">}</span><!----><!--]--></code><!--]--><!--]--><!--]--><!--[8--><p><!--[--><!--[2-->It may mix in data, deliberately, and say so: fuz_app's <!--]--><!--[3--><!--[-1--><code>PgFactStoreDeps</code><!--]--><!--]--><!--[2-->
+carries <!--]--><!--[3--><!--[-1--><code>disk_root</code><!--]--><!--]--><!--[2--> and <!--]--><!--[3--><!--[-1--><code>embedded_threshold</code><!--]--><!--]--><!--[2--> beside its <!--]--><!--[3--><!--[-1--><code>fs</code><!--]--><!--]--><!--[2--> capability.<!--]--><!--]--><!----></p><!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Files<!--]--><!--]--><!----></strong><!--]--><!--[2-->, in fuz_css's layout: interfaces in <!--]--><!--[3--><!--[-1--><code>deps.ts</code><!--]--><!--]--><!--[2-->, production
 implementations in <!--]--><!--[3--><!--[-1--><code>deps_defaults.ts</code><!--]--><!--]--><!--[2-->, fakes in a test-side module. A
 library whose consumers need the fakes ships them from <!--]--><!--[3--><!--[-1--><code>src/lib</code><!--]--><!--]--><!--[2-->: fuz_app's
 <!--]--><!--[3--><!--[-1--><code>runtime/deps.ts</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>runtime/node.ts</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>runtime/mock.ts</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="principles"><!--[--><!--[2-->Principles<!--]--><!--]--><!----></h2><!----><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[4--><strong><!--[--><!--[2-->Deps are stateless.<!--]--><!--]--><!----></strong><!--]--><!--[2--> Mutable state is passed beside the bundle, never
@@ -271,16 +272,16 @@ touching the old ones and never add one.<!--]--><!--]--><!----></li><!--]--><!--
 			
 			<script>
 				{
-					__sveltekit_v986jf = {
+					__sveltekit_5jy0qt = {
 						base: "",
-						version: "a7e9844b4ed0662fa85f1f7773a22f2f77a74e0b"
+						version: "629949baf38a1871356ad2d6bef890a7a308ddee"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.DUOMWNPK.js").then(async (kit) => {
-						kit.init(__sveltekit_v986jf);
-						const app = await import("/_app/immutable/entry/app.SS_LbiBC.js");
+						kit.init(__sveltekit_5jy0qt);
+						const app = await import("/_app/immutable/entry/app.CSr7qELL.js");
 						kit.start(app, element, {
 							node_ids: [0, 2, 29],
 							data: [null,null,null],

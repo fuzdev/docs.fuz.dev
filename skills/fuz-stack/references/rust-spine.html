@@ -24,8 +24,8 @@
 		<link href="/_app/immutable/chunks/BVD6feMB.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CqwOFnF0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Ca92e7Wu.js" rel="modulepreload">
-		<link href="/_app/immutable/entry/app.SS_LbiBC.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/0.CzpL5x4F.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CSr7qELL.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.fDHsoNzO.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/tGSav42S.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/CzM4Strj.js" rel="modulepreload">
@@ -34,17 +34,17 @@
 		<link href="/_app/immutable/chunks/I43VcF-0.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/Dhra7MwJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/DH3EA9C4.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DPtltFxB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DHi_evLC.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BNQrbBnx.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/C3r36__a.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/DRual-Je.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Ci0j2YBJ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/RLPrK7lm.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BnG-MPC6.js" rel="modulepreload">
 		<link href="/_app/immutable/nodes/2.D3d_i9nN.js" rel="modulepreload">
-		<link href="/_app/immutable/nodes/39.B5Fghvj8.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/39.DcNDNapQ.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/BOKZrYN9.js" rel="modulepreload">
 		<link href="/_app/immutable/chunks/D7jy1q1g.js" rel="modulepreload">
-		<link href="/_app/immutable/chunks/D0Iuj-af.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D6McuMuf.js" rel="modulepreload">
 		<!--12qhfyh--><!----><!--4fa0a9--><!--[-1--><!--]--><!----><!--1p7q6x9--><!--[0--><style media="(max-width: 800px)">
 			@layer fuz_ui.app_shell_base, fuz_ui.app_shell_narrow;
 			@layer fuz_ui.app_shell_narrow {
@@ -54,6 +54,7 @@
 				.app-shell > .app-shell-sidebar {
 					visibility: hidden;
 					top: 0;
+					left: 0;
 					height: 100%;
 					translate: -100% 0;
 					width: min(var(--sidebar_width), 85vw);
@@ -87,7 +88,7 @@
 		</style><!--]--><!----><!--1ft64a3--><!----><title>Rust Spine and Consumer Servers - fuz-stack - docs.fuz.dev</title>
 		<link href="/_app/immutable/assets/Svg.DfrCKcO9.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/_virtual_pkg.C59yMZ2n.css" rel="stylesheet">
-		<link href="/_app/immutable/assets/0.CoMNhNoB.css" rel="stylesheet">
+		<link href="/_app/immutable/assets/0.DSTINdVD.css" rel="stylesheet">
 		<link href="/_app/immutable/assets/SkillDocPage.BIYMVdcU.css" rel="stylesheet">
 	</head>
 	<body data-sveltekit-preload-data="hover">
@@ -101,7 +102,8 @@ rustdoc, the source to read before changing a call. A spine signature change
 sweeps every consumer and its test targets (<!--]--><!--[3--><!--[-1--><code>cargo clippy --all-targets</code><!--]--><!--]--><!--[2-->,
 not <!--]--><!--[3--><!--[-1--><code>cargo check</code><!--]--><!--]--><!--[2-->).<!--]--><!--]--><!----></p><!--]--><!--[14--><!----><h2 id="what-a-server-names"><!--[--><!--[2-->What a server names<!--]--><!--]--><!----></h2><!----><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_actions</code><!--]--><!--]--><!--[2--> — <!--]--><!--[3--><!--[-1--><code>ActionSpec</code><!--]--><!--]--><!--[2-->, dispatch, the RPC and WebSocket routers, and
 <!--]--><!--[3--><!--[-1--><code>server</code><!--]--><!--]--><!--[2-->, the toolkit <!--]--><!--[3--><!--[-1--><code>run_app</code><!--]--><!--]--><!--[2--> composes<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_http</code><!--]--><!--]--><!--[2--> — <!--]--><!--[3--><!--[-1--><code>compose_stack</code><!--]--><!--]--><!--[2--> (the one composition root), <!--]--><!--[3--><!--[-1--><code>BaseServerEnv</code><!--]--><!--]--><!--[2-->,
-the JSON-RPC envelope, the origin and host gates, shutdown<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_auth</code><!--]--><!--]--><!--[2--> — credentials, sessions, roles, rate limits, audit<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_db</code><!--]--><!--]--><!--[2--> — pool, migrations, query helpers, <!--]--><!--[3--><!--[-1--><code>status</code><!--]--><!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_realtime</code><!--]--><!--]--><!--[2--> — WebSocket and SSE registries<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_cell</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>fuz_cell_actions</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>fuz_fact</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>fuz_fact_serving</code><!--]--><!--]--><!--[2--> — cells
+the JSON-RPC envelope, the origin and host gates, the strict request
+readers, shutdown<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_auth</code><!--]--><!--]--><!--[2--> — credentials, sessions, roles, rate limits, audit<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_db</code><!--]--><!--]--><!--[2--> — pool, migrations, query helpers, <!--]--><!--[3--><!--[-1--><code>status</code><!--]--><!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_realtime</code><!--]--><!--]--><!--[2--> — WebSocket and SSE registries<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_cell</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>fuz_cell_actions</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>fuz_fact</code><!--]--><!--]--><!--[2--> / <!--]--><!--[3--><!--[-1--><code>fuz_fact_serving</code><!--]--><!--]--><!--[2--> — cells
 and content-addressed bytes, for servers that store them<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_sys</code><!--]--><!--]--><!--[2--> — logging init, <!--]--><!--[3--><!--[-1--><code>cli::report_failure</code><!--]--><!--]--><!--[2-->, the OS primitives<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>fuz_testing</code><!--]--><!--]--><!--[2--> (the <!--]--><!--[3--><!--[-1--><code>testing_*</code><!--]--><!--]--><!--[2--> binary and dev-deps only), <!--]--><!--[3--><!--[-1--><code>fuz_audit</code><!--]--><!--]--><!--[2--> (the
 xtask only)<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[14--><!----><h2 id="a-servers-shape"><!--[--><!--[2-->A server's shape<!--]--><!--]--><!----></h2><!----><!--]--><!--[8--><p><!--[--><!--[3--><!--[-1--><code>main</code><!--]--><!--]--><!--[2--> is logging init, swap-point selection, and one call. <!--]--><!--[3--><!--[-1--><code>run_app</code><!--]--><!--]--><!--[2--> owns the
 lifecycle. <!--]--><!--[3--><!--[-1--><code>build_router</code><!--]--><!--]--><!--[2--> owns composition. Every piece that isn't the
@@ -117,7 +119,11 @@ daemon differs at the edges (below).<!--]--><!--]--><!----></p><!--]--><!--[15--
     <span class="token_special_keyword">return</span> fuz_db<span class="token_punctuation">::</span>status<span class="token_punctuation">::</span><span class="token_function">run_db_status_cli</span><span class="token_punctuation">(</span><span class="token_operator">&amp;</span><span class="token_function">app_migration_namespaces</span><span class="token_punctuation">()).</span><span class="token_special_keyword">await</span><span class="token_punctuation">;</span>
 <span class="token_punctuation">}</span>
 <span class="token_special_keyword">match</span> <span class="token_function">run_app</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">RunAppOptions</span> <span class="token_punctuation">{</span>
-    spine<span class="token_punctuation">:</span> <span class="token_capitalized_identifier token_class_name">SpineRunOptions</span><span class="token_punctuation">::</span><span class="token_function">production</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">Arc</span><span class="token_punctuation">::</span><span class="token_function">new</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">Argon2idHasher</span><span class="token_punctuation">::</span><span class="token_function">new</span><span class="token_punctuation">()),</span> <span class="token_constant">DEFAULT_ADDR</span><span class="token_punctuation">),</span>
+    spine<span class="token_punctuation">:</span> <span class="token_capitalized_identifier token_class_name">SpineRunOptions</span><span class="token_punctuation">::</span><span class="token_function">production</span><span class="token_punctuation">(</span>
+        <span class="token_capitalized_identifier token_class_name">Arc</span><span class="token_punctuation">::</span><span class="token_function">new</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">Argon2idHasher</span><span class="token_punctuation">::</span><span class="token_function">new</span><span class="token_punctuation">()),</span>
+        <span class="token_capitalized_identifier token_class_name">AuthCleanupSchedule</span><span class="token_punctuation">::</span><span class="token_capitalized_identifier token_class_name">Every</span><span class="token_punctuation">(</span><span class="token_constant">DEFAULT_AUTH_CLEANUP_INTERVAL</span><span class="token_punctuation">),</span> <span class="token_comment">// required: there is no default schedule</span>
+        <span class="token_constant">DEFAULT_ADDR</span><span class="token_punctuation">,</span>
+    <span class="token_punctuation">),</span>
     extra_action_specs_factory<span class="token_punctuation">:</span> <span class="token_capitalized_identifier token_class_name">None</span><span class="token_punctuation">,</span>
 <span class="token_punctuation">}).</span><span class="token_special_keyword">await</span> <span class="token_punctuation">{</span>
     <span class="token_capitalized_identifier token_class_name">Ok</span><span class="token_punctuation">(())</span> <span class="token_operator">=></span> <span class="token_capitalized_identifier token_class_name">ExitCode</span><span class="token_punctuation">::</span><span class="token_constant">SUCCESS</span><span class="token_punctuation">,</span>
@@ -131,18 +137,19 @@ daemon differs at the edges (below).<!--]--><!--]--><!----></p><!--]--><!--[15--
     <span class="token_keyword">let</span> env <span class="token_operator">=</span> <span class="token_capitalized_identifier token_class_name">BaseServerEnv</span><span class="token_punctuation">::</span><span class="token_function">from_process</span><span class="token_punctuation">(</span><span class="token_constant">ENV_OPTIONS</span><span class="token_punctuation">)</span><span class="token_operator">?</span><span class="token_punctuation">;</span>
     <span class="token_keyword">let</span> addr <span class="token_operator">=</span> env<span class="token_punctuation">.</span><span class="token_function">bind_addr</span><span class="token_punctuation">(</span>default_addr<span class="token_punctuation">)</span><span class="token_operator">?</span><span class="token_punctuation">;</span>
     <span class="token_keyword">let</span> shutdown <span class="token_operator">=</span> fuz_http<span class="token_punctuation">::</span><span class="token_function">shutdown_token</span><span class="token_punctuation">();</span>
-    <span class="token_keyword">let</span> <span class="token_capitalized_identifier token_class_name">BuiltRouter</span> <span class="token_punctuation">{</span> router<span class="token_punctuation">,</span> app <span class="token_punctuation">}</span> <span class="token_operator">=</span>
-        <span class="token_function">build_router</span><span class="token_punctuation">(</span><span class="token_operator">&amp;</span>env<span class="token_punctuation">,</span> backend<span class="token_punctuation">,</span> extra_action_specs_factory<span class="token_punctuation">).</span><span class="token_special_keyword">await</span><span class="token_operator">?</span><span class="token_punctuation">;</span>
-    <span class="token_function">serve_until_shutdown</span><span class="token_punctuation">(</span>router<span class="token_punctuation">,</span> <span class="token_capitalized_identifier token_class_name">ServeOptions</span> <span class="token_punctuation">{</span>
-        server_name<span class="token_punctuation">:</span> <span class="token_constant">SERVER_NAME</span><span class="token_punctuation">,</span> addr<span class="token_punctuation">,</span> drain_timeout<span class="token_punctuation">,</span> shutdown<span class="token_punctuation">,</span>
-        connection_closer<span class="token_punctuation">:</span> app<span class="token_punctuation">.</span><span class="token_function">as_ref</span><span class="token_punctuation">().</span><span class="token_function">map</span><span class="token_punctuation">(</span><span class="token_operator">|</span>app<span class="token_operator">|</span> app<span class="token_punctuation">.</span>backend<span class="token_punctuation">.</span><span class="token_function">connection_closer</span><span class="token_punctuation">()),</span>
-        upkeep<span class="token_punctuation">:</span> app<span class="token_punctuation">.</span><span class="token_function">as_ref</span><span class="token_punctuation">().</span><span class="token_function">map</span><span class="token_punctuation">(</span><span class="token_operator">|</span>app<span class="token_operator">|</span> <span class="token_function">upkeep_options</span><span class="token_punctuation">(</span>app<span class="token_punctuation">.</span>backend<span class="token_punctuation">.</span><span class="token_function">auth_cleanup_options</span><span class="token_punctuation">())),</span>
-    <span class="token_punctuation">}).</span><span class="token_special_keyword">await</span>
+    <span class="token_keyword">let</span> router <span class="token_operator">=</span> <span class="token_special_keyword">match</span> <span class="token_function">build_router</span><span class="token_punctuation">(</span><span class="token_operator">&amp;</span>env<span class="token_punctuation">,</span> backend<span class="token_punctuation">,</span> extra_action_specs_factory<span class="token_punctuation">).</span><span class="token_special_keyword">await</span><span class="token_operator">?</span> <span class="token_punctuation">{</span>
+        <span class="token_capitalized_identifier token_class_name">BuiltRouter</span><span class="token_punctuation">::</span><span class="token_capitalized_identifier token_class_name">BootOnly</span><span class="token_punctuation">(</span>router<span class="token_punctuation">)</span> <span class="token_operator">=></span> router<span class="token_punctuation">,</span>
+        <span class="token_comment">// the backend's auth cleanup rides on the router (its serve duties)</span>
+        <span class="token_capitalized_identifier token_class_name">BuiltRouter</span><span class="token_punctuation">::</span><span class="token_capitalized_identifier token_class_name">Live</span> <span class="token_punctuation">{</span> router<span class="token_punctuation">,</span> <span class="token_operator">..</span> <span class="token_punctuation">}</span> <span class="token_operator">=></span> router<span class="token_punctuation">,</span>
+    <span class="token_punctuation">};</span>
+    <span class="token_keyword">let</span> extra_upkeep <span class="token_operator">=</span> <span class="token_capitalized_identifier token_class_name">Vec</span><span class="token_punctuation">::</span><span class="token_function">new</span><span class="token_punctuation">();</span> <span class="token_comment">// the server's own sweeps, if any</span>
+    <span class="token_keyword">let</span> options <span class="token_operator">=</span> <span class="token_capitalized_identifier token_class_name">ServeOptions</span> <span class="token_punctuation">{</span> server_name<span class="token_punctuation">:</span> <span class="token_constant">SERVER_NAME</span><span class="token_punctuation">,</span> addr<span class="token_punctuation">,</span> drain_timeout<span class="token_punctuation">,</span> shutdown<span class="token_punctuation">,</span> extra_upkeep <span class="token_punctuation">};</span>
+    <span class="token_function">serve_until_shutdown</span><span class="token_punctuation">(</span>router<span class="token_punctuation">,</span> options<span class="token_punctuation">).</span><span class="token_special_keyword">await</span>
 <span class="token_punctuation">}</span>
 
 <span class="token_comment">// router.rs, the body of build_router(env, backend_options, extra_action_specs_factory)</span>
 <span class="token_special_keyword">if</span> env<span class="token_punctuation">.</span>database_url<span class="token_punctuation">.</span><span class="token_function">is_none</span><span class="token_punctuation">()</span> <span class="token_punctuation">{</span>
-    <span class="token_special_keyword">return</span> <span class="token_capitalized_identifier token_class_name">Ok</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">BuiltRouter</span> <span class="token_punctuation">{</span> router<span class="token_punctuation">:</span> <span class="token_function">boot_only</span><span class="token_punctuation">(</span>env<span class="token_punctuation">,</span> <span class="token_operator">&amp;</span><span class="token_constant">APP_BACKEND_SPEC</span><span class="token_punctuation">,</span> <span class="token_constant">SERVER_NAME</span><span class="token_punctuation">)</span><span class="token_operator">?</span><span class="token_punctuation">,</span> app<span class="token_punctuation">:</span> <span class="token_capitalized_identifier token_class_name">None</span> <span class="token_punctuation">});</span>
+    <span class="token_special_keyword">return</span> <span class="token_capitalized_identifier token_class_name">Ok</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">BuiltRouter</span><span class="token_punctuation">::</span><span class="token_capitalized_identifier token_class_name">BootOnly</span><span class="token_punctuation">(</span><span class="token_function">boot_only</span><span class="token_punctuation">(</span>env<span class="token_punctuation">,</span> <span class="token_operator">&amp;</span><span class="token_constant">APP_BACKEND_SPEC</span><span class="token_punctuation">,</span> <span class="token_constant">SERVER_NAME</span><span class="token_punctuation">)</span><span class="token_operator">?</span><span class="token_punctuation">));</span>
 <span class="token_punctuation">}</span>
 <span class="token_keyword">let</span> <span class="token_capitalized_identifier token_class_name">BootedAppBackend</span> <span class="token_punctuation">{</span> backend<span class="token_punctuation">,</span> ready <span class="token_punctuation">}</span> <span class="token_operator">=</span> <span class="token_function">create_app_backend</span><span class="token_punctuation">(</span>env<span class="token_punctuation">,</span> <span class="token_operator">&amp;</span><span class="token_constant">APP_BACKEND_SPEC</span><span class="token_punctuation">,</span> backend_options<span class="token_punctuation">).</span><span class="token_special_keyword">await</span><span class="token_operator">?</span><span class="token_punctuation">;</span>
 <span class="token_keyword">let</span> app <span class="token_operator">=</span> <span class="token_capitalized_identifier token_class_name">App</span><span class="token_punctuation">::</span><span class="token_function">new</span><span class="token_punctuation">(</span>backend<span class="token_punctuation">);</span> <span class="token_comment">// the consumer's domain state, holding the backend</span>
@@ -168,7 +175,7 @@ specs<span class="token_punctuation">.</span><span class="token_function">extend
     <span class="token_capitalized_identifier token_class_name">BodyCap</span><span class="token_punctuation">::</span><span class="token_capitalized_identifier token_class_name">Bytes</span><span class="token_punctuation">(</span><span class="token_constant">DEFAULT_BODY_LIMIT_BYTES</span><span class="token_punctuation">),</span>
 <span class="token_punctuation">);</span>
 <span class="token_keyword">let</span> router <span class="token_operator">=</span> <span class="token_function">compose_stack</span><span class="token_punctuation">([</span>group<span class="token_punctuation">],</span> <span class="token_function">fallback_group</span><span class="token_punctuation">(),</span> <span class="token_operator">&amp;</span>backend<span class="token_punctuation">.</span><span class="token_function">stack_options</span><span class="token_punctuation">());</span>
-<span class="token_capitalized_identifier token_class_name">Ok</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">BuiltRouter</span> <span class="token_punctuation">{</span> router<span class="token_punctuation">,</span> app<span class="token_punctuation">:</span> <span class="token_capitalized_identifier token_class_name">Some</span><span class="token_punctuation">(</span>app<span class="token_punctuation">)</span> <span class="token_punctuation">})</span><!----><!--]--></code><!--]--><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->The consumer declares<!--]--><!--]--><!----></strong><!--]--><!--[2-->:<!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>AppBackendSpec</code><!--]--><!--]--><!--[2-->, a <!--]--><!--[3--><!--[-1--><code>const</code><!--]--><!--]--><!--[2-->: session cookie name, <!--]--><!--[3--><!--[-1--><code>migration_namespaces</code><!--]--><!--]--><!--[2-->,
+<span class="token_capitalized_identifier token_class_name">Ok</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">BuiltRouter</span><span class="token_punctuation">::</span><span class="token_capitalized_identifier token_class_name">Live</span> <span class="token_punctuation">{</span> router<span class="token_punctuation">,</span> app <span class="token_punctuation">})</span><!----><!--]--></code><!--]--><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->The consumer declares<!--]--><!--]--><!----></strong><!--]--><!--[2-->:<!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>AppBackendSpec</code><!--]--><!--]--><!--[2-->, a <!--]--><!--[3--><!--[-1--><code>const</code><!--]--><!--]--><!--[2-->: session cookie name, <!--]--><!--[3--><!--[-1--><code>migration_namespaces</code><!--]--><!--]--><!--[2-->,
 <!--]--><!--[3--><!--[-1--><code>expected_schema_json</code><!--]--><!--]--><!--[2--> (the committed fixture <!--]--><!--[3--><!--[-1--><code>/ready</code><!--]--><!--]--><!--[2--> compares against,
 regenerated and drift-guarded by a test over
 <!--]--><!--[3--><!--[-1--><code>fuz_testing::assert_expected_schema_fixture</code><!--]--><!--]--><!--[2-->), <!--]--><!--[3--><!--[-1--><code>audit_sse</code><!--]--><!--]--><!--[2-->,
@@ -176,14 +183,16 @@ regenerated and drift-guarded by a test over
 its own beside <!--]--><!--[3--><!--[-1--><code>BaseServerEnv</code><!--]--><!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->one <!--]--><!--[3--><!--[-1--><code>const fn</code><!--]--><!--]--><!--[2--> returning its migration chain, shared by the boot,
 <!--]--><!--[3--><!--[-1--><code>db-status</code><!--]--><!--]--><!--[2-->, and the schema fixture test so they can't drift. Auth first:
 the other chains reference <!--]--><!--[3--><!--[-1--><code>actor</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>RunAppOptions</code><!--]--><!--]--><!--[2-->, embedding <!--]--><!--[3--><!--[-1--><code>SpineRunOptions</code><!--]--><!--]--><!--[2--> as <!--]--><!--[3--><!--[-1--><code>spine</code><!--]--><!--]--><!--[2--> and adding only its
-own seams<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->its <!--]--><!--[3--><!--[-1--><code>App</code><!--]--><!--]--><!--[2-->, its action specs, its <!--]--><!--[3--><!--[-1--><code>BuiltRouter</code><!--]--><!--]--><!--[2-->, and an
-<!--]--><!--[3--><!--[-1--><code>upkeep_options(auth_cleanup, …) -> UpkeepOptions</code><!--]--><!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->The toolkit owns, and a consumer never re-implements<!--]--><!--]--><!----></strong><!--]--><!--[2-->: the boot
+own seams<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->its <!--]--><!--[3--><!--[-1--><code>App</code><!--]--><!--]--><!--[2-->, its action specs, and its <!--]--><!--[3--><!--[-1--><code>BuiltRouter</code><!--]--><!--]--><!--[2--> (an enum: the boot-only
+router alone, or the full router with its app)<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->its <!--]--><!--[3--><!--[-1--><code>AuthCleanupSchedule</code><!--]--><!--]--><!--[2-->, written out in <!--]--><!--[3--><!--[-1--><code>main</code><!--]--><!--]--><!--[2--> (and in its <!--]--><!--[3--><!--[-1--><code>testing_*</code><!--]--><!--]--><!--[2-->
+binary's <!--]--><!--[3--><!--[-1--><code>testing_backend_options</code><!--]--><!--]--><!--[2-->) — there is no default<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->The toolkit owns, and a consumer never re-implements<!--]--><!--]--><!----></strong><!--]--><!--[2-->: the boot
 (<!--]--><!--[3--><!--[-1--><code>create_app_backend</code><!--]--><!--]--><!--[2-->; its rustdoc has the order), every route state
 (<!--]--><!--[3--><!--[-1--><code>AppBackend</code><!--]--><!--]--><!--[2-->'s builders), serving and shutdown (<!--]--><!--[3--><!--[-1--><code>serve_until_shutdown</code><!--]--><!--]--><!--[2-->:
-bind, start upkeep, serve, close live connections, drain within the timeout,
-join upkeep), the standard command line (<!--]--><!--[3--><!--[-1--><code>start</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>db-status</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>--help</code><!--]--><!--]--><!--[2-->; a
-server with commands of its own extends it over <!--]--><!--[3--><!--[-1--><code>parse_server_invocation</code><!--]--><!--]--><!--[2-->),
-and the error policy (<!--]--><!--[3--><!--[-1--><code>StartupError</code><!--]--><!--]--><!--[2-->, whose <!--]--><!--[3--><!--[-1--><code>exit_code()</code><!--]--><!--]--><!--[2--> is <!--]--><!--[3--><!--[-1--><code>2</code><!--]--><!--]--><!--[2--> for what the
+bind, start upkeep, serve, then within one timeout close live connections,
+drain requests, join upkeep, drain detached writes; a shutdown that ran out
+of time is <!--]--><!--[3--><!--[-1--><code>StartupError::ShutdownGivenUp</code><!--]--><!--]--><!--[2-->, exit <!--]--><!--[3--><!--[-1--><code>1</code><!--]--><!--]--><!--[2-->), the standard command
+line (<!--]--><!--[3--><!--[-1--><code>start</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>db-status</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>--help</code><!--]--><!--]--><!--[2-->; a server with commands of its own
+extends it over <!--]--><!--[3--><!--[-1--><code>parse_server_invocation</code><!--]--><!--]--><!--[2-->), and the error policy (<!--]--><!--[3--><!--[-1--><code>StartupError</code><!--]--><!--]--><!--[2-->, whose <!--]--><!--[3--><!--[-1--><code>exit_code()</code><!--]--><!--]--><!--[2--> is <!--]--><!--[3--><!--[-1--><code>2</code><!--]--><!--]--><!--[2--> for what the
 operator must fix locally and <!--]--><!--[3--><!--[-1--><code>1</code><!--]--><!--]--><!--[2--> otherwise).<!--]--><!--]--><!----></p><!--]--><!--[8--><p><!--[--><!--[2-->The workspace's release profile sets <!--]--><!--[3--><!--[-1--><code>panic = "unwind"</code><!--]--><!--]--><!--[2-->, so the stack can
 answer a request panic with a 500 (see <!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/rust-patterns"><!--[--><!--[2-->./rust-patterns<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2--> §Release profile).
 <!--]--><!--[3--><!--[-1--><code>fuz_http::server_env</code><!--]--><!--]--><!--[2-->'s module doc lists the shared env vars and their
@@ -223,26 +232,54 @@ closed set; unknown values error); the spine's wildcard opt-in takes
 exactly <!--]--><!--[3--><!--[-1--><code>true</code><!--]--><!--]--><!--[2--> or <!--]--><!--[3--><!--[-1--><code>false</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Through <!--]--><!--[3--><!--[-1--><code>from_vars</code><!--]--><!--]--><!--[2-->, trusted proxies default to the loopback hop under
 the consumer's own var, and <!--]--><!--[3--><!--[-1--><code>,</code><!--]--><!--]--><!--[2--> trusts none, the setting for a server with
 no reverse proxy.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Browser gates<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>SameSite=Strict</code><!--]--><!--]--><!--[2--> keeps other sites out but not other ports on the same
-host, so the spine's JSON handlers answer 415 to a <!--]--><!--[3--><!--[-1--><code>POST</code><!--]--><!--]--><!--[2--> with no
-<!--]--><!--[3--><!--[-1--><code>Content-Type</code><!--]--><!--]--><!--[2--> or a form or text one, the requests a browser sends
-cross-origin with no preflight.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->The host gate (DNS rebinding) is on by default: a server answers only to
+host, so the spine's JSON handlers answer 415 to a <!--]--><!--[3--><!--[-1--><code>POST</code><!--]--><!--]--><!--[2--> whose
+<!--]--><!--[3--><!--[-1--><code>Content-Type</code><!--]--><!--]--><!--[2--> is missing, a form or text type (the requests a browser
+sends cross-origin with no preflight), or anything but one well-formed
+line: sent twice, empty, or holding a comma.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->The host gate (DNS rebinding) is on by default: a server answers only to
 loopback names and the hosts its allowlist names, so a deploy lists the
 origin it's served from.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A loopback daemon lists exact origins and sets
 <!--]--><!--[3--><!--[-1--><code>RouteGroup::refuse_simple_requests</code><!--]--><!--]--><!--[2--> on groups that take no form uploads.
 The origin allowlist is the only gate on a WebSocket upgrade, which is
-never preflighted, so <!--]--><!--[3--><!--[-1--><code>http://localhost:*</code><!--]--><!--]--><!--[2--> admits every local page.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Rate limiters<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[2-->Build every spine limiter through <!--]--><!--[3--><!--[-1--><code>RateLimiterMode</code><!--]--><!--]--><!--[2-->
+never preflighted, so <!--]--><!--[3--><!--[-1--><code>http://localhost:*</code><!--]--><!--]--><!--[2--> admits every local page.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A hand-written route reads its query with <!--]--><!--[3--><!--[-1--><code>RawQuery</code><!--]--><!--]--><!--[2--> and
+<!--]--><!--[3--><!--[-1--><code>fuz_http::read_query_pairs</code><!--]--><!--]--><!--[2--> (then <!--]--><!--[3--><!--[-1--><code>query_first</code><!--]--><!--]--><!--[2-->), and its path params
+with <!--]--><!--[3--><!--[-1--><code>fuz_http::RouteParams&lt;T></code><!--]--><!--]--><!--[2--> as its first extractor that can refuse,
+never axum's <!--]--><!--[3--><!--[-1--><code>Query</code><!--]--><!--]--><!--[2--> or <!--]--><!--[3--><!--[-1--><code>Path</code><!--]--><!--]--><!--[2-->: those decode leniently and refuse in plain
+text. An undecodable query is <!--]--><!--[3--><!--[-1--><code>invalid_query_params</code><!--]--><!--]--><!--[2-->, a param
+<!--]--><!--[3--><!--[-1--><code>invalid_route_params</code><!--]--><!--]--><!--[2--> (<!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/twin-impl"><!--[--><!--[2-->./twin-impl<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2--> §Request input). The fuz
+workspace enforces it with clippy's <!--]--><!--[3--><!--[-1--><code>disallowed-types</code><!--]--><!--]--><!--[2--> and
+<!--]--><!--[3--><!--[-1--><code>disallowed-methods</code><!--]--><!--]--><!--[2--> (axum's <!--]--><!--[3--><!--[-1--><code>Path</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>RawPathParams</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>Query</code><!--]--><!--]--><!--[2--> and <!--]--><!--[3--><!--[-1--><code>Form</code><!--]--><!--]--><!--[2-->,
+<!--]--><!--[3--><!--[-1--><code>form_urlencoded::parse</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>Url::query_pairs</code><!--]--><!--]--><!--[2-->); a consumer workspace copies
+those entries into its own <!--]--><!--[3--><!--[-1--><code>clippy.toml</code><!--]--><!--]--><!--[2-->, which replaces rather than
+merges with any other.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Route each path in one <!--]--><!--[3--><!--[-1--><code>RouteGroup</code><!--]--><!--]--><!--[2-->: each group's method router carries
+the 405 fallback, and <!--]--><!--[3--><!--[-1--><code>compose_stack</code><!--]--><!--]--><!--[2--> panics at boot on a path split
+across two. A server with a static or SPA fallback of its own answers an
+unmatched <!--]--><!--[3--><!--[-1--><code>/api/</code><!--]--><!--]--><!--[2--> path with <!--]--><!--[3--><!--[-1--><code>fuz_actions::server::unmatched_route_response</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A server that mints a session or token through its own code takes the
+account lock first (<!--]--><!--[7--><!--[1--><a href="/skills/fuz-stack/references/db-patterns"><!--[--><!--[2-->./db-patterns<!--]--><!--]--><!----></a><!--]--><!--]--><!--[2--> §Locks and order).<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Rate limiters<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[2-->Build every spine limiter through <!--]--><!--[3--><!--[-1--><code>RateLimiterMode</code><!--]--><!--]--><!--[2-->
 (<!--]--><!--[3--><!--[-1--><code>mode.limiter(fuz_auth::DEFAULT_LOGIN_IP_RATE_LIMIT)</code><!--]--><!--]--><!--[2-->), never
 <!--]--><!--[3--><!--[-1--><code>Some(Arc::new(RateLimiter::new(…)))</code><!--]--><!--]--><!--[2--> with a conditional null. Production
 passes <!--]--><!--[3--><!--[-1--><code>Enforced</code><!--]--><!--]--><!--[2--> and the testing binary <!--]--><!--[3--><!--[-1--><code>DisabledForTesting</code><!--]--><!--]--><!--[2-->, so a newly
 wired surface can't stay enforced while the rest are off, and a process
 that nulls a limiter says so at startup.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A consumer-owned limiter that isn't a spine surface (an upload cap) stays
-live in both modes.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Upkeep<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[2-->Periodic work runs through <!--]--><!--[3--><!--[-1--><code>ServeOptions::upkeep</code><!--]--><!--]--><!--[2-->: the spine's auth cleanup
-plus each consumer task in <!--]--><!--[3--><!--[-1--><code>extra</code><!--]--><!--]--><!--[2-->, a boxed closure taking the shutdown
-token and calling <!--]--><!--[3--><!--[-1--><code>fuz_http::spawn_periodic</code><!--]--><!--]--><!--[2--> or a spine sweeper
+live in both modes.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Upkeep<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[2-->The spine's auth cleanup rides on the router. <!--]--><!--[3--><!--[-1--><code>SpineBackendOptions</code><!--]--><!--]--><!--[2-->
+carries an <!--]--><!--[3--><!--[-1--><code>AuthCleanupSchedule</code><!--]--><!--]--><!--[2--> with no default (<!--]--><!--[3--><!--[-1--><code>Every(interval)</code><!--]--><!--]--><!--[2--> in
+production, <!--]--><!--[3--><!--[-1--><code>Off</code><!--]--><!--]--><!--[2--> for a server held to a twin that sweeps nothing, or a
+test that must not sweep), and for <!--]--><!--[3--><!--[-1--><code>Every</code><!--]--><!--]--><!--[2--> the backend's serve duties carry <!--]--><!--[3--><!--[-1--><code>fuz_auth::AuthCleanup</code><!--]--><!--]--><!--[2-->,
+a <!--]--><!--[3--><!--[-1--><code>fuz_http::Upkeep</code><!--]--><!--]--><!--[2-->.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A server's own periodic work goes in <!--]--><!--[3--><!--[-1--><code>ServeOptions::extra_upkeep</code><!--]--><!--]--><!--[2-->: each a
+boxed closure taking the shutdown token and calling
+<!--]--><!--[3--><!--[-1--><code>fuz_http::spawn_periodic</code><!--]--><!--]--><!--[2--> or a spine sweeper
 (<!--]--><!--[3--><!--[-1--><code>fuz_fact::spawn_orphan_temp_sweeper</code><!--]--><!--]--><!--[2--> for a server with a disk fact
-store). It starts after the bind, so migrations have run, and is joined
-before <!--]--><!--[3--><!--[-1--><code>serve_until_shutdown</code><!--]--><!--]--><!--[2--> returns. <!--]--><!--[3--><!--[-1--><code>build_router</code><!--]--><!--]--><!--[2--> spawns nothing.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Pass the closer the app already holds (<!--]--><!--[3--><!--[-1--><code>backend.connection_closer()</code><!--]--><!--]--><!--[2-->), so
-a swept session's connections close.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Consumer teardown (killing child processes) runs after
+store). All upkeep starts after the bind, so migrations have run, and must
+stop on the token: the shutdown joins it within its one bound and aborts
+it past that. <!--]--><!--[3--><!--[-1--><code>build_router</code><!--]--><!--]--><!--[2--> spawns nothing.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->The router carries what serving it owes: <!--]--><!--[3--><!--[-1--><code>AppBackend::stack_options</code><!--]--><!--]--><!--[2-->
+sets the backend's <!--]--><!--[3--><!--[-1--><code>ServeDuties</code><!--]--><!--]--><!--[2--> (the auth cleanup, the connection closer
+and the <!--]--><!--[3--><!--[-1--><code>BackgroundWrites</code><!--]--><!--]--><!--[2--> tracker), the composed <!--]--><!--[3--><!--[-1--><code>GatedRouter</code><!--]--><!--]--><!--[2--> keeps them,
+and <!--]--><!--[3--><!--[-1--><code>fuz_http::serve_with_shutdown</code><!--]--><!--]--><!--[2--> — which takes no closer — spawns the
+upkeep, then at shutdown closes, drains the requests, joins the upkeep,
+and drains the writes, all within one drain timeout. Compose a live router
+only over the backend's options: one over <!--]--><!--[3--><!--[-1--><code>StackOptions::without_backend</code><!--]--><!--]--><!--[2-->
+carries no duties, and is served with no cleanup, no close and no drain.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->A shutdown that gives up on anything is a failed exit:
+<!--]--><!--[3--><!--[-1--><code>serve_until_shutdown</code><!--]--><!--]--><!--[2--> returns <!--]--><!--[3--><!--[-1--><code>StartupError::ShutdownGivenUp</code><!--]--><!--]--><!--[2--> with the
+counts (exit <!--]--><!--[3--><!--[-1--><code>1</code><!--]--><!--]--><!--[2-->), and prints no <!--]--><!--[3--><!--[-1--><code>shutdown complete</code><!--]--><!--]--><!--[2--> line.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Consumer teardown (killing child processes) runs after
 <!--]--><!--[3--><!--[-1--><code>serve_until_shutdown</code><!--]--><!--]--><!--[2--> returns.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Actions and the JSON-RPC envelope<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[15--><!--[0--><!--[--><code data-lang="rust" class="svelte-jqsy8a"><!--[-1--><!----><span class="token_attribute token_attr_name">#[derive</span><span class="token_punctuation">(</span><span class="token_capitalized_identifier token_class_name">Deserialize</span><span class="token_punctuation">)</span><span class="token_attribute token_attr_name">]</span>
 <span class="token_attribute token_attr_name">#[serde</span><span class="token_punctuation">(</span>deny_unknown_fields<span class="token_punctuation">)</span><span class="token_attribute token_attr_name">]</span>
 <span class="token_keyword">struct</span> <span class="token_class_name">ThingGetParams</span> <span class="token_punctuation">{</span> id<span class="token_punctuation">:</span> <span class="token_capitalized_identifier token_class_name">Uuid</span> <span class="token_punctuation">}</span>
@@ -286,7 +323,13 @@ transaction: <!--]--><!--[3--><!--[-1--><code>fuz_db::action_db_dispatch!(ctx.db
 Effects that leave the database (closing a socket, a notification) queue
 on <!--]--><!--[3--><!--[-1--><code>post_commit_effects</code><!--]--><!--]--><!--[2--> and run after the commit.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Code that opens its own transaction (a hand-written route, a task) commits
 with <!--]--><!--[3--><!--[-1--><code>fuz_db::commit_checked</code><!--]--><!--]--><!--[2-->, which refuses to commit a transaction a
-swallowed statement error already aborted.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Gate reads by the action's <!--]--><!--[3--><!--[-1--><code>AuthSpec</code><!--]--><!--]--><!--[2-->, not by which transport it arrived
+swallowed statement error already aborted. That commit also marks the
+request, so a client that drops it past the commit no longer cancels
+what follows (<!--]--><!--[3--><!--[-1--><code>fuz_db::CommitWatch</code><!--]--><!--]--><!--[2-->). An autocommit write on a pooled
+client, or a commit on a task the request spawns, marks nothing: a
+request write with a tail (a broadcast, a close, an effect, an audit
+row) goes in a transaction committed through <!--]--><!--[3--><!--[-1--><code>commit_checked</code><!--]--><!--]--><!--[2-->, or keeps
+its tail on the task that commits.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!--[2-->Gate reads by the action's <!--]--><!--[3--><!--[-1--><code>AuthSpec</code><!--]--><!--]--><!--[2-->, not by which transport it arrived
 on.<!--]--><!--]--><!----></li><!--]--><!--]--><!----></ul><!--]--><!--]--><!--[8--><p><!--[--><!--[4--><strong><!--[--><!--[2-->Handler context<!--]--><!--]--><!----></strong><!--]--><!--]--><!----></p><!--]--><!--[9--><!--[-1--><ul><!--[--><!--[10--><li><!--[--><!--[3--><!--[-1--><code>ActionContext&lt;'a></code><!--]--><!--]--><!--[2--> is the borrowed per-request seam: <!--]--><!--[3--><!--[-1--><code>db</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>auth</code><!--]--><!--]--><!--[2-->,
 <!--]--><!--[3--><!--[-1--><code>audit</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>log</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>notify</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>signal</code><!--]--><!--]--><!--[2--> (the request's cancellation token, to
 thread into long work), <!--]--><!--[3--><!--[-1--><code>request_id</code><!--]--><!--]--><!--[2-->, <!--]--><!--[3--><!--[-1--><code>connection_id</code><!--]--><!--]--><!--[2--> (set on WebSocket,
@@ -349,16 +392,16 @@ whole runtime graph.<!--]--><!--]--><!----></li><!--]--><!--[10--><li><!--[--><!
 			
 			<script>
 				{
-					__sveltekit_v986jf = {
+					__sveltekit_5jy0qt = {
 						base: "",
-						version: "a7e9844b4ed0662fa85f1f7773a22f2f77a74e0b"
+						version: "629949baf38a1871356ad2d6bef890a7a308ddee"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					import("/_app/immutable/entry/start.DUOMWNPK.js").then(async (kit) => {
-						kit.init(__sveltekit_v986jf);
-						const app = await import("/_app/immutable/entry/app.SS_LbiBC.js");
+						kit.init(__sveltekit_5jy0qt);
+						const app = await import("/_app/immutable/entry/app.CSr7qELL.js");
 						kit.start(app, element, {
 							node_ids: [0, 2, 39],
 							data: [null,null,null],

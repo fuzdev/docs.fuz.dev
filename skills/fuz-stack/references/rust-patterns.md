@@ -441,10 +441,15 @@ Unit tests in `#[cfg(test)] mod tests`, integration tests in `tests/`.
   (see ./wasm-patterns.md).
 - **Servers on the spine**: the TS cross-backend suite (see ./twin-impl.md)
   drives the server's `testing_*` sibling binary (see ./rust-spine.md).
-- **Real-Postgres suites are `#[ignore]`**, each reading a `*_TEST_URL`, run
-  with `--ignored --test-threads=1` (a suite shares one database it resets
-  per test). Write and run them locally. A crate that gains one joins the CI
-  job's `-p` list by hand, and a missing entry leaves the job green with the
+- **DB tests open their database with `fuz_testing::fresh_test_db`**: a
+  fresh in-process pglet server per test, so they run in plain `cargo test`,
+  in parallel; with `FUZ_TEST_POSTGRES_URL` set, each creates and drops a
+  PostgreSQL database of its own. A test of what only PostgreSQL has takes
+  `TestEngine::Postgres` and `#[ignore = "postgres-only: <why>"]` (one
+  waiting on pglet, `#[ignore = "pglet: <feature>"]`), and the Postgres leg
+  is `cargo test -p <db crates> -- --include-ignored` with the variable set.
+  Run it locally. A crate that gains DB tests joins the CI job's `-p` list
+  by hand, and a missing entry leaves the job green with the
   suite never run, so a test holds that list to the tree (fuz's
   `db_suite_lists.rs`). A workspace with such a job has one. A race is made
   exact, not hammered (./testing-patterns.md §Tests that pin a change).

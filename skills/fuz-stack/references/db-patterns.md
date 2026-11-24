@@ -205,7 +205,7 @@ fn decode_grant_row(row: &tokio_postgres::Row) -> Result<CellGrantRow, CellError
   Scalar reads (`RETURNING id`, `SELECT EXISTS(…)`) and a single-site join
   whose projection sits beside its decoder stay literal.
 - **The drift guard is a crate integration test**, `tests/columns.rs`,
-  `#[ignore]`-gated like the other Postgres suites:
+  on a `fuz_testing::fresh_test_db` database like the other DB suites:
   `fuz_testing::assert_column_projections(&pool, &[…sets])`. Every live table
   in the migrated chains is a const or a reasoned exemption, and each const
   names exactly its live columns. Each spine crate exports a

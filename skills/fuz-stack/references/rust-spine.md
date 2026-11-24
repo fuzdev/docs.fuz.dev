@@ -7,7 +7,8 @@ description: Servers on the Rust spine — run_app shape, the server toolkit, en
 **Applies to**: the spine crates in the fuz workspace and the servers built
 on them (`zzz_server`, `fuz_forge_server`, app servers). The spine is the Rust
 twin of `fuz_app`'s TS backend (see ./twin-impl.md). Consumers take it as **path
-deps to a sibling checkout of the fuz repo**; nothing is published.
+deps to a sibling checkout of the fuz repo**, with a `pglet` checkout beside
+it, which `fuz_testing` path-depends on; nothing is published.
 
 Shape and idiom conventions are in ./rust-patterns.md. This reference is the
 exception to conventions-not-inventory: a server author needs the names they

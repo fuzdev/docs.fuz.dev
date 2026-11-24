@@ -267,8 +267,10 @@ The essentials, each expanded in ./references/rust-patterns.md:
   `cargo clippy --workspace --all-targets -- -D warnings`,
   `cargo test --workspace`, `cargo doc` with warnings denied, and
   `cargo xtask check-release` where the workspace has it. `cargo check`
-  skips test targets, and real-Postgres suites are `#[ignore]`: a green
-  `cargo test` hasn't run them.
+  skips test targets, and DB tests run on in-process pglet while the
+  Postgres-only ones are `#[ignore = "postgres-only: …"]`: a green
+  `cargo test` hasn't run those (the Postgres leg sets
+  `FUZ_TEST_POSTGRES_URL` and passes `--include-ignored`).
 - **No `unsafe`** outside a dedicated boundary crate. **No `unwrap`,
   `expect`, or `panic!`** in production code without
   `#[expect(clippy::…, reason = "…")]`.

@@ -177,8 +177,8 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
 - **Which engines is the consumer's choice.** The default factory is an
   in-memory Postgres (install `@fuzdev/pglet-wasm` as a devDependency);
   `create_pg_factory` runs the same suites on a real server when
-  `TEST_DATABASE_URL` is set. fuz_app runs both. fuz_forge runs only
-  PostgreSQL, the engine its production backend uses.
+  `TEST_DATABASE_URL` is set. fuz_app and fuz_forge run both, CI setting the variable, since
+  PostgreSQL is the engine their production backends use.
 - **A factory hands each `create()` an empty schema**, so `init_schema` only
   migrates, and `describe_db` truncates the listed tables between tests.
   Don't write drop or teardown logic.
@@ -215,7 +215,7 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
 - **What only real Postgres can show is said so in the test's doc**: lock
   waits, deadlocks and row order need a second connection, which the
   in-memory drivers don't have. Those cases run under `create_pg_factory`
-  (`TEST_DATABASE_URL`) or the Rust `#[ignore]` suites, and the module doc
+  (`TEST_DATABASE_URL`) or the Rust suites' `postgres-only` tests (`FUZ_TEST_POSTGRES_URL`), and the module doc
   names which half is which.
 
 ## Fixture tests

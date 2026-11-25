@@ -143,7 +143,7 @@ anything else a builtin.
 
 A `--` section forwards to a tool that some task in the run calls, at any
 depth. The first word after each `--` names the tool:
-`gro check -- vitest --run foo -- eslint --max-warnings -1`.
+`gro check --lint -- vitest --run foo -- eslint --max-warnings -1`.
 
 - **An outside tool gets its section verbatim**, and a forwarded flag
   replaces the same flag the task passes itself.

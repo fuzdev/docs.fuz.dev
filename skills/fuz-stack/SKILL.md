@@ -163,14 +163,17 @@ gro typecheck   # svelte-check or tsc
 gro test        # vitest; `gro test foo` filters
 gro gen         # run *.gen.ts files; `gro gen --check` fails on drift
 gro format      # tsv; `gro format --check` verifies
-gro lint        # eslint
+gro lint        # eslint; CI's job, not an agent's (see below)
 gro sync        # svelte-kit sync + package.json exports; run when check says they drifted
 ```
 
 - **Run `gro` directly**, never through `npx`.
 - **`gro check` syncs first** (`svelte-kit sync`, `package.json` exports),
   then runs typecheck, tests, `gen --check`, a `package.json` drift check,
-  `format --check`, and lint.
+  and `format --check`.
+- **Linting is opt-in and CI's job.** `gro check --lint` adds it, as CI
+  (`gro check --workspace --build --lint`) and `gro publish` run it. Don't
+  run `gro lint` or `--lint` unless asked; fix what CI's lint reports.
 - **The test step runs when vitest is a declared dependency**, or when args
   are forwarded to the tests. Without either, `gro check` skips tests when
   there are no test files and fails naming them when there are.

@@ -67,7 +67,7 @@ out:
 ## Gro commands
 
 ```bash
-gro check      # typecheck, test, gen --check, format --check, lint (run before committing)
+gro check      # typecheck, test, gen --check, format --check (run before committing)
 gro typecheck  # typecheck only (faster iteration)
 gro test       # run tests with vitest
 gro gen        # regenerate the skill routes from skills/, and the sidebar manifest

@@ -158,7 +158,9 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
   	await run_migrations(db, [AUTH_MIGRATION_NS]);
   };
   const default_factory = create_default_db_factory(init_schema);
-  const pg_factory = create_pg_factory(init_schema, process.env.TEST_DATABASE_URL);
+  const pg_factory = create_pg_factory(init_schema, process.env[FUZ_TEST_POSTGRES_URL_ENV], {
+  	suite: 'my_app',
+  });
   export const describe_db = create_describe_db(
   	[default_factory, pg_factory],
   	auth_integration_truncate_tables
@@ -177,8 +179,12 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
 - **Which engines is the consumer's choice.** The default factory is an
   in-memory Postgres (install `@fuzdev/pglet-wasm` as a devDependency);
   `create_pg_factory` runs the same suites on a real server when
-  `TEST_DATABASE_URL` is set. fuz_app and fuz_forge run both, CI setting the variable, since
-  PostgreSQL is the engine their production backends use.
+  `FUZ_TEST_POSTGRES_URL` is set, the variable the Rust spine's `fuz_testing`
+  reads too. It names a server and a role with `CREATEDB`: each `create()`
+  gets a `fuz_testing_<suite>_…` database of its own, dropped on `close()`,
+  and a killed run's leftovers are dropped by that prefix. fuz_app and
+  fuz_forge run both, CI setting the variable, since PostgreSQL is the
+  engine their production backends use.
 - **A factory hands each `create()` an empty schema**, so `init_schema` only
   migrates, and `describe_db` truncates the listed tables between tests.
   Don't write drop or teardown logic.
@@ -215,7 +221,8 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
 - **What only real Postgres can show is said so in the test's doc**: lock
   waits, deadlocks and row order need a second connection, which the
   in-memory drivers don't have. Those cases run under `create_pg_factory`
-  (`TEST_DATABASE_URL`) or the Rust suites' `postgres-only` tests (`FUZ_TEST_POSTGRES_URL`), and the module doc
+  or the Rust suites' `postgres-only` tests, both under
+  `FUZ_TEST_POSTGRES_URL`, and the module doc
   names which half is which.
 
 ## Fixture tests

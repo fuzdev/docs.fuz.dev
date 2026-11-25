@@ -316,8 +316,10 @@ parent-child selectors, with every value a token.
   either, so a list that mixes elements and components fails silently. Pass
   a class or a variable, or write `.list > :global(*)`.
 - **Reveal-on-hover and other parent-driven states** are the standard reason
-  for a `<style>` block: fuz_ui's `TomeSectionHeader.svelte` shows its
-  hashlink with `:hover :global(.hashlink)`.
+  for a `<style>` block. Across a component boundary the parent sets a
+  variable the child reads, not `:global`: fuz_ui's
+  `TomeSectionHeader.svelte` reveals its hashlink with
+  `.tome-section-header:hover { --hashlink_opacity: 1; }`.
 
 ### Anti-patterns
 

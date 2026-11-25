@@ -173,6 +173,7 @@ describe('repo classes', () => {
 		assert.notInclude(members('ci_gro_exports'), 'corpora');
 		assert.include(members('ci_gro_build'), 'fuz_ui');
 		assert.include(members('ci_gro_exports'), 'fuz_ui');
+		assert.include(members('ci_gro_lint'), 'fuz_ui');
 		// a site is no library
 		assert.notInclude(members('ci_gro_exports'), 'docs.fuz.dev');
 		assert.include(members('cargo'), 'fuz');
@@ -192,7 +193,7 @@ describe('repo classes', () => {
 				}
 			]
 		});
-		const { ci_gro_workspace, ci_gro_build } = repo_classes;
+		const { ci_gro_workspace, ci_gro_build, ci_gro_lint } = repo_classes;
 		assert.ok(ci_gro_workspace.has(with_step('npx gro check --workspace')));
 		assert.ok(!ci_gro_workspace.has(with_step('npx gro check')));
 		assert.ok(!ci_gro_workspace.has(with_step('# gro check --workspace runs elsewhere')));
@@ -200,6 +201,8 @@ describe('repo classes', () => {
 		assert.ok(!ci_gro_workspace.has(with_step('npx gro check --workspace', 'push', 'true')));
 		assert.ok(ci_gro_build.has(with_step('npx gro check --workspace --build')));
 		assert.ok(!ci_gro_build.has(with_step('npx gro check --build-only')));
+		assert.ok(ci_gro_lint.has(with_step('npx gro check --workspace --build --lint')));
+		assert.ok(!ci_gro_lint.has(with_step('npx gro check --workspace --build')));
 	});
 
 	test('a gate that speaks of a class names one with members', () => {

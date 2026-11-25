@@ -2062,11 +2062,11 @@ export const kept_actions: Array<KeptAction> = [
 /** Soonest `runs` first. */
 export const gates: Array<Gate> = [
 	{
-		gate: 'Types, tests, lints and format',
-		catches: 'Type errors, regressions, lint errors and style drift',
+		gate: 'Types, tests and format',
+		catches: 'Type errors, regressions and style drift',
 		runs: 'every_change',
 		where:
-			"The repos whose check script runs gro's check, with lints where the repo has a lint config. pglet's check script reaches it through a script of its own, for its TypeScript",
+			"The repos whose check script runs gro's check. pglet's check script reaches it through a script of its own, for its TypeScript",
 		where_class: 'check_gro',
 		probes: [
 			{ kind: 'check_script', repo: 'pglet', has: 'npm run check:ts' },
@@ -2220,6 +2220,15 @@ export const gates: Array<Gate> = [
 		runs: 'ci',
 		where: "The repos whose CI runs gro's check with its build flag",
 		where_class: 'ci_gro_build',
+		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
+	},
+	{
+		gate: 'Lints',
+		catches: 'Lint errors',
+		runs: 'ci',
+		where:
+			"The repos whose CI runs gro's check with its lint flag, where the repo has a lint config. gro's publish task lints too, and the local gate leaves lints to CI",
+		where_class: 'ci_gro_lint',
 		source: '[check task](https://github.com/fuzdev/gro/blob/main/src/lib/check.task.ts)'
 	},
 	{

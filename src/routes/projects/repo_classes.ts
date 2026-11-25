@@ -15,7 +15,13 @@ import type { StackRepo, StackWorkflow } from './stack_snapshot.ts';
 import { workflow_commands } from './workflow_read.ts';
 
 export type RepoClassId =
-	'check_gro' | 'ci_gro_workspace' | 'ci_gro_exports' | 'ci_gro_build' | 'cargo' | 'no_ci';
+	| 'check_gro'
+	| 'ci_gro_workspace'
+	| 'ci_gro_exports'
+	| 'ci_gro_build'
+	| 'ci_gro_lint'
+	| 'cargo'
+	| 'no_ci';
 
 export interface RepoClass {
 	/** The class as a phrase that follows "the repos". */
@@ -60,6 +66,10 @@ export const repo_classes: Record<RepoClassId, RepoClass> = {
 	ci_gro_build: {
 		label: 'with a CI step, on a push or a pull request, that runs gro check with --build',
 		has: (repo) => ci_gro_with(repo, '--build')
+	},
+	ci_gro_lint: {
+		label: 'with a CI step, on a push or a pull request, that runs gro check with --lint',
+		has: (repo) => ci_gro_with(repo, '--lint')
 	},
 	cargo: {
 		label: 'with a Cargo workspace at the root',

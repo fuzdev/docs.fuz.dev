@@ -163,7 +163,7 @@ and differ only in injected options. The sibling is what the TS cross-backend
 suite launches.
 
 - It boots on `fuz_testing::testing_backend_options` (a fast test hasher,
-  limiters disabled, a daemon token, the startup reset hook) and passes an
+  limiters disabled, a daemon token) and passes an
   `extra_action_specs_factory` that mounts its `_testing_*` actions. In
   forge's shape those include `testing_reset_specs`, whose reset truncates
   with `truncate_reset_state` over the spine's exported table lists plus the

@@ -190,20 +190,39 @@ The unit project excludes `*.db.test.ts` and `*.cross.test.ts`.
   Don't write drop or teardown logic.
 - **`isolate: false` shares module state between DB files.** Don't `vi.mock`
   in a `.db.test.ts`.
-- **A DB test with the wrong name should fail, not pass slowly.** fuz_app's
-  unit project has a `setupFiles` entry that calls `set_default_db_factory`
-  with a factory whose `create()` rejects, naming the fix. It runs before any
-  test module builds a factory.
+- **A DB test with the wrong name should fail, not pass slowly.** The unit
+  project's `setupFiles` entry should call fuz_app's
+  `install_unit_db_guard()`, whose default factory's `create()` rejects,
+  naming the fix. It runs before any test module builds a factory.
 - **`.integration.db.test.ts`** drives a whole app in process: fuz_app's
   `create_test_app` builds the server with middleware, routes, and a
   database, and returns the app with helpers that mint session and bearer
   headers.
 - **`.cross.test.ts`** runs against a spawned backend, in its own vitest
-  projects behind `FUZ_TEST_CROSS_BACKEND` so the default run doesn't need
+  projects behind `FUZ_TEST_CROSS_BACKEND=1` so the default run doesn't need
   the binaries. Keep the suffix for that: mdz has an in-process test under
   the same name, which a project split would drop. The
   suites and their harness are fuz_app's (its `src/lib/testing/CLAUDE.md`);
-  how TS and Rust twins are held together is in ./twin-impl.md.
+  how TS and Rust twins are held together is in ./twin-impl.md. Wire them one
+  way:
+
+  - `src/test/cross_backend/<repo>_backend_config.ts`, the backend configs,
+    each on a port no other repo binds, and `global_setup.ts`, a
+    `create_cross_backend_global_setup` call (`cargo_binaries` for a Rust
+    backend);
+  - in `vite.config.ts`, `make_cross_backend_project` per backend, behind
+    `cross_backend_enabled()`;
+  - test files reading the backend with `inject_backend_handle`, and one
+    `spine_suites.cross.test.ts` calling `describe_spine_cross_suites` with
+    its `expected_skips`;
+  - an `npm run test:cross` script.
+
+- **A gated suite never passes by skipping**, as in Rust
+  (./rust-patterns.md). When a suite needs a host tool, skip its cases where
+  the tool is absent and add one sentinel test that fails naming each missing
+  tool unless an explicit `*_ALLOW_NO_<NAME>=1` accepts it. Declare a
+  capability-gated cross skip in `expected_skips` instead, which fails on one
+  nobody listed.
 
 ## Tests that pin a change
 
@@ -280,4 +299,7 @@ to add one:
 
 Helpers local to a repo go in `src/test/test_helpers.ts`; a library whose
 consumers need its fakes exports them from `src/lib` (fuz_app's `testing/`,
-`runtime/mock.ts`).
+`runtime/mock.ts`). A frontend state class gets fuz_app's `create_stub_api`,
+which throws naming any method the test didn't stub, rejecting with
+`rpc_error`; a client that opens sockets runs for real over
+`install_mock_websocket`.

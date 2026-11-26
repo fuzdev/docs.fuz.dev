@@ -296,6 +296,12 @@ or wire identifier, which matches the other side exactly:
 `query_<table>_<verb>` (see ./db-patterns.md), a handler named for its wire
 method (`diskfile_create`).
 
+A crate may expose a flat root API over private modules (`mod seed;` and a
+root `pub use seed::seed_account_actor;`), so each item has one path, the
+root's (`fuz_testing`). The TS rule against re-exports doesn't carry over,
+but a re-export kept so an old path still works is a compat shim, banned
+like any other.
+
 ## Type modeling
 
 - **A closed set is an enum**, not a `bool` or a sentinel string. An
@@ -441,10 +447,12 @@ Unit tests in `#[cfg(test)] mod tests`, integration tests in `tests/`.
   (see ./wasm-patterns.md).
 - **Servers on the spine**: the TS cross-backend suite (see ./twin-impl.md)
   drives the server's `testing_*` sibling binary (see ./rust-spine.md).
-- **DB tests open their database with `fuz_testing::fresh_test_db`**: a
-  fresh in-process pglet server per test, so they run in plain `cargo test`,
-  in parallel; with `FUZ_TEST_POSTGRES_URL` set, each creates and drops a
-  PostgreSQL database of its own. A test of what only PostgreSQL has takes
+- **DB tests open their database with `fuz_testing::fresh_test_db`** (a
+  suite's const as `DB.open()`): an in-process pglet server per test, forked
+  copy-on-write from a base the process migrated once for that migration
+  set, so they run in plain `cargo test`, in parallel; with
+  `FUZ_TEST_POSTGRES_URL` set, each creates and drops a PostgreSQL database
+  of its own. A test of what only PostgreSQL has takes
   `TestEngine::Postgres` and `#[ignore = "postgres-only: <why>"]` (one
   waiting on pglet, `#[ignore = "pglet: <feature>"]`), and the Postgres leg
   is `cargo test -p <db crates> -- --include-ignored` with the variable set.
@@ -452,7 +460,14 @@ Unit tests in `#[cfg(test)] mod tests`, integration tests in `tests/`.
   by hand, and a missing entry leaves the job green with the
   suite never run, so a test holds that list to the tree (fuz's
   `db_suite_lists.rs`). A workspace with such a job has one. A race is made
-  exact, not hammered (./testing-patterns.md §Tests that pin a change).
+  exact, not hammered (./testing-patterns.md §Tests that pin a change): a
+  lock wait is observed with `fuz_testing`'s `until_lock_waiters` or
+  `until_blocked_by` (PostgreSQL only; pglet has no `pg_stat_activity`),
+  never inferred from a sleep, and `in_tx!` / `race!` play the transactions.
+- **Shared spine doubles are `fuz_testing`'s**: `unreachable_pool`,
+  `RecordingConnectionCloser`, the seeding and credential mints, and the
+  dispatcher harness (`dispatch_options`, `perform_as`, `assert_rpc_ok`,
+  `assert_rpc_err`) for a suite that drives `perform_action` directly.
 - **A gated suite never passes by skipping.** A test that needs an external
   program returns early where it's absent, and one sentinel test fails
   naming every missing program unless an explicit `*_ALLOW_NO_<NAME>=1`

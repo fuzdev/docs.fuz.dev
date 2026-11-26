@@ -175,9 +175,12 @@ suite launches.
   The `testing_` prefix and `check-release` keep the binary unshippable.
 - The factory returns `Result<Vec<ActionSpec>, StartupError>`, so a test seam
   can refuse the boot.
-- In-process router tests use `fuz_testing::inert_app_backend` and
-  `GatedRouter::into_router_for_testing` (`fuz_http`'s `test_router_access`
-  feature, dev-deps only).
+- In-process router tests build the core with `fuz_testing::test_app_backend`
+  (`inert_app_backend` without a database) and send through
+  `GatedRouter::send_for_testing` from `fuz_http::TEST_PEER` (`fuz_http`'s
+  `test_router_access` feature, dev-deps only, which also has
+  `into_router_for_testing`). `fuz_testing::assert_strict_server_argv` pins
+  the sibling binary's command line.
 
 ## Rules
 

@@ -168,9 +168,10 @@ gro sync        # svelte-kit sync + package.json exports; run when check says th
 ```
 
 - **Run `gro` directly**, never through `npx`.
-- **`gro check` syncs first** (`svelte-kit sync`, `package.json` exports),
-  then runs typecheck, tests, `gen --check`, a `package.json` drift check,
-  and `format --check`.
+- **`gro check` writes no source**: it runs typecheck, tests, `gen --check`,
+  a `package.json` drift check, and `format --check`, its typecheck syncing
+  SvelteKit's generated files first; `gro check --install` also installs
+  and runs `gro sync`.
 - **Linting is opt-in and CI's job.** `gro check --lint` adds it, as CI
   (`gro check --workspace --build --lint`) and `gro publish` run it. Don't
   run `gro lint` or `--lint` unless asked; fix what CI's lint reports.
